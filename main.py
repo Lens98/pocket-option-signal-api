@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import random
 
 app = FastAPI()
 
@@ -10,7 +11,8 @@ def root():
 def get_signal():
     return {
         "asset": "EUR/USD",
-        "signal": "CALL",
+        "signal": random.choice(["CALL", "PUT"]),
         "timeframe": "1m",
-        "confidence": "High"
+        "confidence": random.choice(["Low", "Medium", "High"])
     }
+
