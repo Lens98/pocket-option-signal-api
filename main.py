@@ -1,25 +1,25 @@
 from fastapi import FastAPI
-import random
-import os
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def root():
-    return {"status": "Pocket Option Signal API is running"}
+    return {"status": "API is running"}
 
-@app.get("/signal")
+@app.get("/get-signal")
 def get_signal():
     return {
         "asset": "EUR/USD",
-        "signal": random.choice(["CALL", "PUT"]),
+        "signal": "CALL",
         "timeframe": "1m",
-        "expiry": "next candle",
-        "confidence": random.choice(["low", "medium", "high"])
+        "confidence": "High"
     }
-
-# Render uses PORT environment variable
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 10000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
