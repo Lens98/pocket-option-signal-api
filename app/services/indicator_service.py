@@ -5,6 +5,8 @@ from app.indicators.ema import calculate_ema
 from app.indicators.rsi import calculate_rsi
 from app.indicators.macd import calculate_macd
 
+from app.config.settings import settings
+
 
 class IndicatorService:
 
@@ -17,13 +19,25 @@ class IndicatorService:
 
         return IndicatorResult(
 
-            ema20=calculate_ema(closes, 20),
+            ema20=calculate_ema(
+                closes,
+                settings.EMA_FAST
+            ),
 
-            ema50=calculate_ema(closes, 50),
+            ema50=calculate_ema(
+                closes,
+                settings.EMA_MIDDLE
+            ),
 
-            ema200=calculate_ema(closes, 200),
+            ema200=calculate_ema(
+                closes,
+                settings.EMA_SLOW
+            ),
 
-            rsi=calculate_rsi(closes),
+            rsi=calculate_rsi(
+                closes,
+                settings.RSI_PERIOD
+            ),
 
             macd=macd["macd"],
 

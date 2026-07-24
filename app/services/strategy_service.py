@@ -1,75 +1,64 @@
+from app.models.market import MarketData
 from app.models.indicator import IndicatorResult
 from app.models.signal import Signal
-from app.models.market import MarketData
-from app.indicators.candle_patterns import CandlePatternDetector
+
+from app.strategies.ema_strategy import EmaStrategy
+from app.strategies.rsi_strategy import RsiStrategy
+from app.strategies.macd_strategy import MacdStrategy
+from app.strategies.candlestick_strategy import CandlestickStrategy
+from app.strategies.scoring_strategy import ScoringStrategy
 
 
 class StrategyService:
-def analyze(self, market: MarketData, indicators: IndicatorResult):
 
-        score = 0
-        reasons = []
-        detector = CandlePatternDetector()
+    def __init__(self):
 
-patterns = detector.detect(market.candles)
+        self.ema = EmaStrategy()
 
-        trend = "SIDEWAYS"
-        action = "WAIT"
+        self.rsi = RsiStrategy()
 
-        # EMA Trend
-        if indicators.ema20 > indicators.ema50 > indicators.ema200:
-            trend = "BULLISH"
-            score += 40
-            reasons.append("EMA bullish alignment")
+        self.macd = MacdStrategy()
 
-        elif indicators.ema20 < indicators.ema50 < indicators.ema200:
-            trend = "BEARISH"
-            score += 40
-            reasons.append("EMA bearish alignment")
+        self.candles = CandlestickStrategy()
 
-        # RSI
-        if indicators.rsi < 30:
-            score += 20
-            reasons.append("RSI Oversold")
+        self.scoring = ScoringStrategy()
 
-        elif indicators.rsi > 70:
-            score += 20
-            reasons.append("RSI Overbought")
+    def analyze(
+        self,
+        market: MarketData,
+        indicators: IndicatorResult
+    ) -> Signal:
 
-        # MACD
-        if indicators.macd > indicators.signal_line:
-            score += 20
-            reasons.append("MACD Bullish Cross")
+        ema_result = self.ema.analyze(indicators)
 
-        elif indicators.macd < indicators.signal_line:
-            score += 20
-            reasons.append("MACD Bearish Cross")
+        rsi_result = self.rsi.analyze(indicators)
 
-            # Candlestick Patterns
-for pattern in patterns:
+        macd_result = self.macd.analyze(indicators)
 
-    if pattern.bullish:
-        score += pattern.strength
-        reasons.append(pattern.name)
+        candle_result = self.candles.analyze(market)
 
-    elif pattern.bearish:
-       score += pattern.strength
-        reasons.append(pattern.name)
+        final = self.scoring.calculate([
 
-        # Final Decision
-        if trend == "BULLISH" and score >= 70:
-            action = "CALL"
+            ema_result,
 
-        elif trend == "BEARISH" and score >= 70:
-            action = "PUT"
+            rsi_result,
 
-        else:
-            action = "WAIT"
+            macd_result,
+
+            candle_result
+
+        ])
 
         return Signal(
-           asset=market.asset,
-            action=action,
-            confidence=float(score),
-            trend=trend,
-            reasons=reasons
+
+            asset=market.asset,
+
+            action=final["action"],
+
+            confidence=float(final["confidence"]),
+
+            trend=final["trend"],
+
+            reasons=final["reasons"]
+
         )

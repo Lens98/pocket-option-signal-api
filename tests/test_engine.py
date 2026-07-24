@@ -7,21 +7,34 @@ from app.services.strategy_service import StrategyService
 # Create sample candles
 candles = []
 
+import random
+
+candles = []
+
 price = 100.0
 
 for i in range(250):
+
+    movement = random.uniform(-0.8, 1.2)
+
+    open_price = price
+    close_price = price + movement
+
+    high = max(open_price, close_price) + random.uniform(0.1, 0.5)
+    low = min(open_price, close_price) - random.uniform(0.1, 0.5)
+
     candles.append(
         Candle(
             timestamp=f"2026-07-23 {i}",
-            open=price,
-            high=price + 1,
-            low=price - 1,
-            close=price + 0.5,
-            volume=1000
+            open=open_price,
+            high=high,
+            low=low,
+            close=close_price,
+            volume=random.randint(800, 1500)
         )
     )
 
-    price += 0.3
+    price = close_price
 
 market = MarketData(
     asset="EUR/USD",
@@ -33,6 +46,17 @@ indicator_service = IndicatorService()
 strategy_service = StrategyService()
 
 indicators = indicator_service.calculate(market)
+print("\n===== INDICATORS =====")
+
+print("EMA20:", indicators.ema20)
+print("EMA50:", indicators.ema50)
+print("EMA200:", indicators.ema200)
+
+print("RSI:", indicators.rsi)
+
+print("MACD:", indicators.macd)
+print("Signal:", indicators.signal_line)
+print("Histogram:", indicators.histogram)
 
 signal = strategy_service.analyze(
     market=market,

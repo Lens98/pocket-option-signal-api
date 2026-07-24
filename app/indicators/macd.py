@@ -1,34 +1,31 @@
-from app.indicators.ema import calculate_ema
+from app.indicators.ema import calculate_ema_series
 
 
 def calculate_macd(prices):
 
-    if len(prices) < 35:
-        raise ValueError("Not enough prices to calculate MACD")
+    ema12 = calculate_ema_series(prices, 12)
+    ema26 = calculate_ema_series(prices, 26)
 
-    macd_values = []
+    # Align the two EMA series
+    offset = len(ema12) - len(ema26)
+    ema12 = ema12[offset:]
 
-    # Build the MACD line
-    for i in range(26, len(prices) + 1):
+    macd_line = []
 
-        data = prices[:i]
+    for fast, slow in zip(ema12, ema26):
+        macd_line.append(fast - slow)
 
-        ema12 = calculate_ema(data, 12)
-        ema26 = calculate_ema(data, 26)
+    signal_line = calculate_ema_series(macd_line, 9)
 
-        macd = ema12 - ema26
+    # Align MACD line with Signal line
+    macd_line = macd_line[-len(signal_line):]
 
-        macd_values.append(macd)
-
-    # Signal line (9 EMA of MACD values)
-    signal = calculate_ema(macd_values, 9)
-
-    current_macd = macd_values[-1]
-
-    histogram = current_macd - signal
+    current_macd = macd_line[-1]
+    current_signal = signal_line[-1]
+    histogram = current_macd - current_signal
 
     return {
         "macd": round(current_macd, 5),
-        "signal": round(signal, 5),
+        "signal": round(current_signal, 5),
         "histogram": round(histogram, 5)
     }
