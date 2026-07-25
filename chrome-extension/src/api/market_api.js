@@ -8,29 +8,30 @@ export async function sendMarket(asset, timeframe, candles) {
 
         timeframe: String(timeframe),
 
-        candles: candles.map(c => ({
+        candles: candles.map(candle => ({
 
-            timestamp: String(c.openTime),
+            timestamp: String(candle.openTime),
 
-            open: c.open,
+            open: candle.open,
 
-            high: c.high,
+            high: candle.high,
 
-            low: c.low,
+            low: candle.low,
 
-            close: c.close,
+            close: candle.close,
 
-            volume: c.volume
+            volume: candle.volume
 
         }))
 
     };
 
-    console.log("=====================================");
-    console.log("📤 Sending Candle History");
+    console.log("======================================");
+    console.log("📤 Sending Candle History to FastAPI");
+    console.log("Asset:", asset);
     console.log("Candles:", payload.candles.length);
     console.log(payload);
-    console.log("=====================================");
+    console.log("======================================");
 
     try {
 
@@ -48,19 +49,21 @@ export async function sendMarket(asset, timeframe, candles) {
 
         });
 
-        console.log("HTTP:", response.status);
+        console.log("HTTP Status:", response.status);
 
         const text = await response.text();
 
+        console.log("Response:");
         console.log(text);
 
         return text;
 
-    }
+    } catch (err) {
 
-    catch (err) {
-
+        console.error("❌ FastAPI Error");
         console.error(err);
+
+        return null;
 
     }
 

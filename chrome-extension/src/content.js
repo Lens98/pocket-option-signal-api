@@ -2,6 +2,7 @@ import { Tick } from "./market/tick.js";
 import { MarketManager } from "./market/market_manager.js";
 import { sendMarket } from "./api/market_api.js";
 import { CandleHistory } from "./market/history.js";
+import { HistoryManager } from "./market/history_manager.js";
 console.log("✅ Content script loaded");
 
 const manager = new MarketManager();
@@ -33,23 +34,21 @@ window.addEventListener("message", async (event) => {
 
     const candle = manager.update(tick);
 
-    if (candle) {
+   if (candle) {
 
-    console.log("========== CLOSED CANDLE ==========");
-    console.log(candle);
+    history.add(candle);
 
-    console.log("🚀 Calling sendMarket()");
-const candles = history.add(candle);
+    const candles = history.get(candle.asset);
 
-console.log("History Size:", candles.length);
+    console.log("=====================================");
+    console.log("History Size:", candles.length);
+    console.log("=====================================");
 
-await sendMarket(
-    candle.asset,
-    candle.timeframe,
-    candles
-);
-console.log("✅ sendMarket() finished");
+    await sendMarket(
+        candle.asset,
+        candle.timeframe,
+        candles
+    );
 
 }
-
 });
