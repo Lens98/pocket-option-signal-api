@@ -1,15 +1,27 @@
+from datetime import datetime
+from typing import Optional, List
+
 from pydantic import BaseModel
-from typing import List
 
 
 class Signal(BaseModel):
 
     asset: str
 
-    action: str          # CALL | PUT | WAIT
+    timeframe: str
+
+    action: str
 
     confidence: float
 
     trend: str
+
+    expiration: str
+
+    entry_price: float
+
+    timestamp: Optional[datetime] = None
+
+    risk: str
 
     reasons: List[str]

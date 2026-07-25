@@ -1,0 +1,1 @@
+console.log("Pocket Option AI Extension Started");

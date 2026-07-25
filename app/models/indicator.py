@@ -14,3 +14,6 @@ class IndicatorResult(BaseModel):
     signal_line: float
 
     histogram: float
+    
+    adx: float
+    atr: float

@@ -1,11 +1,7 @@
 from app.models.candle import Candle
 from app.models.market import MarketData
-
 from app.services.indicator_service import IndicatorService
-from app.services.strategy_service import StrategyService
-
-# Create sample candles
-candles = []
+from app.services.trading_engine import TradingEngine
 
 import random
 
@@ -13,7 +9,7 @@ candles = []
 
 price = 100.0
 
-for i in range(250):
+for i in range(5000):
 
     movement = random.uniform(-0.8, 1.2)
 
@@ -42,10 +38,14 @@ market = MarketData(
     candles=candles
 )
 
+# ----------------------------
+# Calculate indicators
+# ----------------------------
+
 indicator_service = IndicatorService()
-strategy_service = StrategyService()
 
 indicators = indicator_service.calculate(market)
+
 print("\n===== INDICATORS =====")
 
 print("EMA20:", indicators.ema20)
@@ -58,10 +58,17 @@ print("MACD:", indicators.macd)
 print("Signal:", indicators.signal_line)
 print("Histogram:", indicators.histogram)
 
-signal = strategy_service.analyze(
-    market=market,
-    indicators=indicators
-)
+print("ADX:", indicators.adx)
+print("ATR:", indicators.atr)
+
+# ----------------------------
+# Run trading engine
+# ----------------------------
+
+engine = TradingEngine()
+
+signal = engine.generate_signal(market)
 
 print("\n========== ENGINE RESULT ==========")
+
 print(signal)

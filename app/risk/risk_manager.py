@@ -8,7 +8,21 @@ class RiskManager:
         allowed = True
         reasons = []
 
-        if signal.confidence < settings.MIN_CONFIDENCE:
+        # ----------------------------
+        # Determine Risk Level
+        # ----------------------------
+
+        if signal.confidence >= 80:
+
+            risk = "LOW"
+
+        elif signal.confidence >= settings.MIN_CONFIDENCE:
+
+            risk = "MEDIUM"
+
+        else:
+
+            risk = "HIGH"
 
             allowed = False
 
@@ -17,6 +31,11 @@ class RiskManager:
             )
 
         return {
+
             "allowed": allowed,
+
+            "risk": risk,
+
             "reasons": reasons
+
         }

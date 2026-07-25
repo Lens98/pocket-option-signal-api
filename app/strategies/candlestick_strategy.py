@@ -1,3 +1,4 @@
+from app.strategies.strategy_result import StrategyResult
 from app.indicators.candle_patterns import CandlePatternDetector
 
 
@@ -9,17 +10,16 @@ class CandlestickStrategy:
 
         patterns = detector.detect(market.candles)
 
-        score = 0
-
-        reasons = []
+        result = StrategyResult()
 
         for pattern in patterns:
 
-            score += pattern.strength
+            result.reasons.append(pattern.name)
 
-            reasons.append(pattern.name)
+            if pattern.bullish:
+                result.bullish_score += pattern.strength
 
-        return {
-            "score": score,
-            "reasons": reasons
-        }
+            elif pattern.bearish:
+                result.bearish_score += pattern.strength
+
+        return result

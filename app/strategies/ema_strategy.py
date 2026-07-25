@@ -1,27 +1,27 @@
+from app.config.weights import Weights
+from app.strategies.strategy_result import StrategyResult
+
+
 class EmaStrategy:
 
     def analyze(self, indicators):
 
-        score = 0
-        reasons = []
-        trend = "SIDEWAYS"
+        result = StrategyResult()
 
         if indicators.ema20 > indicators.ema50 > indicators.ema200:
 
-            trend = "BULLISH"
-            score = 30
-
-            reasons.append("EMA 20 > EMA 50 > EMA 200")
+            result.trend = "BULLISH"
+            result.bullish_score += Weights.EMA
+            result.reasons.append(
+                "EMA Bullish Alignment"
+            )
 
         elif indicators.ema20 < indicators.ema50 < indicators.ema200:
 
-            trend = "BEARISH"
-            score = 30
+            result.trend = "BEARISH"
+            result.bearish_score += Weights.EMA
+            result.reasons.append(
+                "EMA Bearish Alignment"
+            )
 
-            reasons.append("EMA 20 < EMA 50 < EMA 200")
-
-        return {
-            "trend": trend,
-            "score": score,
-            "reasons": reasons
-        }
+        return result

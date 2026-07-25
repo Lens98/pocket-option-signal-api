@@ -5,32 +5,46 @@ class ScoringStrategy:
 
     def calculate(self, results):
 
-        total_score = 0
+        bullish = 0
+        bearish = 0
+
         reasons = []
+
         trend = "SIDEWAYS"
 
         for result in results:
 
-            total_score += result.get("score", 0)
+            bullish += result.bullish_score
+            bearish += result.bearish_score
 
-            reasons.extend(result.get("reasons", []))
+            reasons.extend(result.reasons)
 
-            if "trend" in result:
-                trend = result["trend"]
-
-        confidence = min(total_score, 100)
+            if result.trend != "SIDEWAYS":
+                trend = result.trend
 
         action = "WAIT"
 
-        if trend == "BULLISH" and confidence >= settings.MIN_CONFIDENCE:
-            action = "CALL"
+        confidence = abs(bullish - bearish)
 
-        elif trend == "BEARISH" and confidence >= settings.MIN_CONFIDENCE:
-            action = "PUT"
+        if trend == "BULLISH":
+
+            if bullish >= settings.MIN_CONFIDENCE and bullish > bearish:
+
+                action = "CALL"
+
+        elif trend == "BEARISH":
+
+            if bearish >= settings.MIN_CONFIDENCE and bearish > bullish:
+
+                action = "PUT"
 
         return {
+
             "action": action,
+
             "confidence": confidence,
+
             "trend": trend,
+
             "reasons": reasons
         }
