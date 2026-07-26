@@ -1,20 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+
+    <meta charset="UTF-8">
 
 
-  <script type="module" crossorigin src="/assets/popup.html-U6id4v4x.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/popup-DwUciW65.css">
+  <script type="module" crossorigin src="/assets/popup.html-B21QVzb-.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/popup-BkrwIgfU.css">
 </head>
 
 <body>
 
-    <h2>Pocket Option AI</h2>
+    <div class="container">
 
-    <div id="signal">
+        <div class="header">
 
-        Waiting...
+            <div>
+
+                <h1>Pocket Option AI</h1>
+
+                <span class="version">Professional</span>
+
+            </div>
+
+            <div id="status" class="status offline">
+                ● Offline
+            </div>
+
+        </div>
+
+        <div class="signal-card">
+
+            <div id="action" class="action wait">
+
+                WAIT
+
+            </div>
+
+            <div class="gauge">
+
+                <svg width="150" height="150">
+
+                    <circle cx="75" cy="75" r="60" class="gauge-bg" />
+
+                    <circle id="gauge" cx="75" cy="75" r="60" class="gauge-progress" />
+
+                </svg>
+
+                <div id="confidenceText" class="gauge-text">
+
+                    0%
+
+                </div>
+
+            </div>
+
+        </div>
+        <div class="info-grid">
+
+            <div class="card">
+
+                <span>Trend</span>
+
+                <strong id="trend">---</strong>
+
+            </div>
+
+            <div class="card">
+
+                <span>Risk</span>
+
+                <strong id="risk">---</strong>
+
+            </div>
+
+            <div class="card">
+
+                <span>Asset</span>
+
+                <strong id="asset">---</strong>
+
+            </div>
+
+            <div class="card">
+
+                <span>Expiration</span>
+
+                <strong id="expiration">---</strong>
+
+            </div>
+
+        </div>
+        <div class="history">
+
+            <h3>Signal History</h3>
+
+            <div id="history">
+
+                No signals yet
+
+            </div>
+
+        </div>
+        <div class="footer">
+
+            Last Update
+
+            <div id="updated">
+
+                --
+
+            </div>
+
+        </div>
 
     </div>
 
