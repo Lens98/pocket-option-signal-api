@@ -44,7 +44,7 @@ def update_market(data: MarketUpdate):
     # Store history
     storage.update(market)
 
-    # Read complete history
+    # Read full history
     market = storage.get(data.asset)
 
     print("----------------------------------------")
@@ -72,8 +72,26 @@ def latest_signal():
     signal = signal_storage.get()
 
     if signal is None:
+
         return {
             "status": "No signal yet"
         }
 
     return signal
+
+
+# ============================================
+# NEW
+# Candle History API
+# ============================================
+
+@router.get("/market/history/{asset}")
+def market_history(asset: str):
+
+    candles = storage.history(asset)
+
+    return {
+        "asset": asset,
+        "count": len(candles),
+        "candles": candles
+    }

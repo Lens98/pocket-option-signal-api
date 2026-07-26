@@ -5,7 +5,44 @@ class SessionFilter:
 
     def allowed(self):
 
-        hour = datetime.utcnow().hour
+    now = datetime.utcnow()
 
-        # Example: allow only 07:00–20:00 UTC
-        return 7 <= hour <= 20
+    hour = now.hour
+
+    weekday = now.weekday()
+
+    # ----------------------------
+    # Weekend Filter
+    # ----------------------------
+
+    if weekday >= 5:
+
+        return {
+
+            "allowed": False,
+
+            "reason": "Weekend"
+
+        }
+
+    # ----------------------------
+    # Trading Session
+    # ----------------------------
+
+    if 7 <= hour <= 20:
+
+        return {
+
+            "allowed": True,
+
+            "reason": "Trading Session"
+
+        }
+
+    return {
+
+        "allowed": False,
+
+        "reason": "Outside Trading Session"
+
+    }

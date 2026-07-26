@@ -5,46 +5,83 @@ class ScoringStrategy:
 
     def calculate(self, results):
 
-        bullish = 0
-        bearish = 0
+    bullish = 0.0
+    bearish = 0.0
 
-        reasons = []
+    reasons = []
 
-        trend = "SIDEWAYS"
+    trend = "SIDEWAYS"
 
-        for result in results:
+    for result in results:
 
-            bullish += result.bullish_score
-            bearish += result.bearish_score
+        bullish += float(result.bullish_score)
 
-            reasons.extend(result.reasons)
+        bearish += float(result.bearish_score)
 
-            if result.trend != "SIDEWAYS":
-                trend = result.trend
+        reasons.extend(result.reasons)
 
-        action = "WAIT"
+        if result.trend != "SIDEWAYS":
 
-        confidence = abs(bullish - bearish)
+            trend = result.trend
 
-        if trend == "BULLISH":
+    total = bullish + bearish
 
-            if bullish >= settings.MIN_CONFIDENCE and bullish > bearish:
+    if total == 0:
 
-                action = "CALL"
+        confidence = 0.0
 
-        elif trend == "BEARISH":
+    else:
 
-            if bearish >= settings.MIN_CONFIDENCE and bearish > bullish:
+        confidence = round(
 
-                action = "PUT"
+            max(bullish, bearish)
 
-        return {
+            / total
 
-            "action": action,
+            * 100,
 
-            "confidence": confidence,
+            1
 
-            "trend": trend,
+        )
 
-            "reasons": reasons
-        }
+    action = "WAIT"
+
+    if (
+
+        trend == "BULLISH"
+
+        and bullish > bearish
+
+        and confidence >= settings.MIN_CONFIDENCE
+
+    ):
+
+        action = "CALL"
+
+    elif (
+
+        trend == "BEARISH"
+
+        and bearish > bullish
+
+        and confidence >= settings.MIN_CONFIDENCE
+
+    ):
+
+        action = "PUT"
+
+    return {
+
+        "action": action,
+
+        "confidence": confidence,
+
+        "trend": trend,
+
+        "bullish_score": round(bullish, 1),
+
+        "bearish_score": round(bearish, 1),
+
+        "reasons": reasons
+
+    }

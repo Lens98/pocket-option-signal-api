@@ -4,7 +4,7 @@ from app.services.indicator_service import IndicatorService
 from app.services.strategy_service import StrategyService
 from app.support_resistance.support_resistance import SupportResistance
 from app.risk.risk_manager import RiskManager
-
+from app.services.ai_reason_service import AIReasonService
 from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
@@ -21,7 +21,7 @@ class TradingEngine:
         self.strategy = StrategyService()
         self.support = SupportResistance()
         self.risk = RiskManager()
-
+self.ai = AIReasonService()
         self.timeframes = TimeframeBuilder()
         self.trend = TrendAnalyzer()
         self.filter = MultiTimeframeFilter()
@@ -143,21 +143,46 @@ class TradingEngine:
 
         risk = self.risk.evaluate(signal)
 
-        print("----------------------------------------")
-        print("Risk Result:")
-        print(risk)
+print("----------------------------------------")
+print("Risk Result:")
+print(risk)
 
-        signal.risk = risk["risk"]
+signal.risk = risk["risk"]
+signal.grade = risk["grade"]
 
-        if not risk["allowed"]:
+formatted = self.ai.format(signal)
 
-            signal.action = "WAIT"
-            signal.reasons.extend(risk["reasons"])
+if not risk["allowed"]:
 
-        print("\n========================================")
-        print("✅ FINAL SIGNAL")
-        print("========================================")
-        print(signal)
-        print("========================================\n")
+    signal.action = "WAIT"
+    signal.reasons.extend(risk["reasons"])
+
+print("\n========================================")
+print("✅ FINAL SIGNAL")
+print("========================================")
+
+print("Action     :", signal.action)
+print("Confidence :", signal.confidence)
+print("Grade      :", signal.grade)
+print("Risk       :", signal.risk)
+print("Trend      :", signal.trend)
+print("Asset      :", signal.asset)
+
+print("----------------------------------------")
+
+for section, items in formatted.items():
+
+    if not items:
+        continue
+
+    print(section)
+
+    for item in items:
+
+        print("  •", item)
+
+    print()
+
+print("========================================\n")
 
         return signal

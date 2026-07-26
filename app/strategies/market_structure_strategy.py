@@ -5,66 +5,116 @@ class MarketStructureStrategy:
 
     def analyze(self, data):
 
-        result = StrategyResult()
+    result = StrategyResult()
 
-        structure = data["structure"]
-        bos = data["bos"]
-        choch = data["choch"]
+    structure = data.get("structure", "UNKNOWN")
+    bos = data.get("bos", "NONE")
+    choch = data.get("choch", "NONE")
 
-        # ----------------------------
-        # Market Structure
-        # ----------------------------
+    # ---------------------------------
+    # Market Structure
+    # ---------------------------------
 
-        if structure == "HH_HL":
+    if structure == "HH_HL":
 
-            result.trend = "BULLISH"
-            result.bullish_score += Weights.MARKET_STRUCTURE
-            result.reasons.append(
-                "Higher High + Higher Low"
-            )
+        result.trend = "BULLISH"
 
-        elif structure == "LH_LL":
+        result.bullish_score += Weights.MARKET_STRUCTURE
 
-            result.trend = "BEARISH"
-            result.bearish_score += Weights.MARKET_STRUCTURE
-            result.reasons.append(
-                "Lower High + Lower Low"
-            )
+        result.reasons.append(
+            "Higher High + Higher Low"
+        )
 
-        # ----------------------------
-        # Break of Structure
-        # ----------------------------
+    elif structure == "LH_LL":
 
-        if bos == "BULLISH_BOS":
+        result.trend = "BEARISH"
 
-            result.bullish_score += Weights.BOS
-            result.reasons.append(
-                "Bullish Break of Structure"
-            )
+        result.bearish_score += Weights.MARKET_STRUCTURE
 
-        elif bos == "BEARISH_BOS":
+        result.reasons.append(
+            "Lower High + Lower Low"
+        )
 
-            result.bearish_score += Weights.BOS
-            result.reasons.append(
-                "Bearish Break of Structure"
-            )
+    else:
 
-        # ----------------------------
-        # Change of Character
-        # ----------------------------
+        result.reasons.append(
+            "Neutral Market Structure"
+        )
 
-        if choch == "BULLISH_CHOCH":
+    # ---------------------------------
+    # Break Of Structure
+    # ---------------------------------
 
-            result.bullish_score += Weights.CHOCH
-            result.reasons.append(
-                "Bullish Change of Character"
-            )
+    if bos == "BULLISH_BOS":
 
-        elif choch == "BEARISH_CHOCH":
+        result.bullish_score += Weights.BOS
 
-            result.bearish_score += Weights.CHOCH
-            result.reasons.append(
-                "Bearish Change of Character"
-            )
+        result.reasons.append(
+            "Bullish Break of Structure"
+        )
 
-        return result
+        result.bullish_score += 3
+
+    elif bos == "BEARISH_BOS":
+
+        result.bearish_score += Weights.BOS
+
+        result.reasons.append(
+            "Bearish Break of Structure"
+        )
+
+        result.bearish_score += 3
+
+    # ---------------------------------
+    # Change Of Character
+    # ---------------------------------
+
+    if choch == "BULLISH_CHOCH":
+
+        result.bullish_score += Weights.CHOCH
+
+        result.reasons.append(
+            "Bullish Change of Character"
+        )
+
+        result.bullish_score += 2
+
+    elif choch == "BEARISH_CHOCH":
+
+        result.bearish_score += Weights.CHOCH
+
+        result.reasons.append(
+            "Bearish Change of Character"
+        )
+
+        result.bearish_score += 2
+
+    # ---------------------------------
+    # Bonus Confirmation
+    # ---------------------------------
+
+    if (
+        structure == "HH_HL"
+        and bos == "BULLISH_BOS"
+        and choch == "BULLISH_CHOCH"
+    ):
+
+        result.bullish_score += 5
+
+        result.reasons.append(
+            "Full Bullish Structure Confirmation"
+        )
+
+    elif (
+        structure == "LH_LL"
+        and bos == "BEARISH_BOS"
+        and choch == "BEARISH_CHOCH"
+    ):
+
+        result.bearish_score += 5
+
+        result.reasons.append(
+            "Full Bearish Structure Confirmation"
+        )
+
+    return result

@@ -5,37 +5,112 @@ class RiskManager:
 
     def evaluate(self, signal):
 
-        allowed = True
-        reasons = []
+    allowed = True
 
-        # ----------------------------
-        # Determine Risk Level
-        # ----------------------------
+    reasons = []
 
-        if signal.confidence >= 80:
+    risk_score = 100
 
-            risk = "LOW"
+    # ---------------------------------
+    # Confidence
+    # ---------------------------------
 
-        elif signal.confidence >= settings.MIN_CONFIDENCE:
+    if signal.confidence >= 90:
 
-            risk = "MEDIUM"
+        risk_score -= 40
 
-        else:
+    elif signal.confidence >= 80:
 
-            risk = "HIGH"
+        risk_score -= 30
 
-            allowed = False
+    elif signal.confidence >= 70:
 
-            reasons.append(
-                f"Confidence too low ({signal.confidence})"
-            )
+        risk_score -= 20
 
-        return {
+    elif signal.confidence >= settings.MIN_CONFIDENCE:
 
-            "allowed": allowed,
+        risk_score -= 10
 
-            "risk": risk,
+    else:
 
-            "reasons": reasons
+        reasons.append(
+            f"Low confidence ({signal.confidence}%)"
+        )
 
-        }
+    # ---------------------------------
+    # Trend
+    # ---------------------------------
+
+    if signal.trend == "BULLISH":
+
+        risk_score -= 10
+
+    elif signal.trend == "BEARISH":
+
+        risk_score -= 10
+
+    else:
+
+        risk_score += 10
+
+        reasons.append(
+            "Sideways trend"
+        )
+
+    # ---------------------------------
+    # Risk Level
+    # ---------------------------------
+
+    if risk_score <= 30:
+
+        risk = "LOW"
+
+    elif risk_score <= 60:
+
+        risk = "MEDIUM"
+
+    else:
+
+        risk = "HIGH"
+
+        allowed = False
+
+        reasons.append(
+            "Risk score too high"
+        )
+
+  # ---------------------------------
+# Trade Grade
+# ---------------------------------
+
+grade = "D"
+
+if signal.confidence >= 95 and risk == "LOW":
+
+    grade = "A+"
+
+elif signal.confidence >= 90 and risk == "LOW":
+
+    grade = "A"
+
+elif signal.confidence >= 80:
+
+    grade = "B"
+
+elif signal.confidence >= settings.MIN_CONFIDENCE:
+
+    grade = "C"
+
+return {
+
+    "allowed": allowed,
+
+    "risk": risk,
+
+    "risk_score": risk_score,
+
+    "grade": grade,
+
+    "reasons": reasons
+
+}

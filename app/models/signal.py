@@ -22,6 +22,8 @@ class Signal(BaseModel):
 
     timestamp: Optional[datetime] = None
 
-    risk: str
+   risk: str
 
-    reasons: List[str]
+grade: str = "N/A"
+
+reasons: List[str]

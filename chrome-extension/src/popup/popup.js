@@ -1,11 +1,45 @@
+// ============================================
+// Pocket Option AI PRO
+// popup.js
+// Part 1 - Core Application
+// ============================================
+
+// -----------------------------
+// Global State
+// -----------------------------
+
 const signalHistory = [];
+
+let currentCandles = [];
+
 let mouseX = null;
 let mouseY = null;
+
+let animation = 0;
+
+const stats = {
+
+    CALL: 0,
+
+    PUT: 0,
+
+    WAIT: 0
+
+};
+
+// -----------------------------
+// Canvas
+// -----------------------------
+
 const canvas = document.getElementById("miniChart");
 
-if(canvas){
+// -----------------------------
+// Mouse Events
+// -----------------------------
 
-    canvas.addEventListener("mousemove",(e)=>{
+if (canvas) {
+
+    canvas.addEventListener("mousemove", (e) => {
 
         const rect = canvas.getBoundingClientRect();
 
@@ -13,31 +47,43 @@ if(canvas){
 
         mouseY = e.clientY - rect.top;
 
-        drawFakeChart();
+        drawChart(currentCandles);
 
     });
 
-    canvas.addEventListener("mouseleave",()=>{
+    canvas.addEventListener("mouseleave", () => {
 
         mouseX = null;
+
         mouseY = null;
 
-        drawFakeChart();
+        drawChart(currentCandles);
 
     });
 
 }
-let animation = 0;
-let chart = null;
-let stats = {
 
-    CALL:0,
+// -----------------------------
+// API
+// -----------------------------
 
-    PUT:0,
+async function loadChart(asset) {
 
-    WAIT:0
+    const response = await fetch(
 
-};
+        `http://127.0.0.1:8000/market/history/${asset}`
+
+    );
+
+    const history = await response.json();
+
+    return history.candles;
+
+}
+
+// -----------------------------
+// Main
+// -----------------------------
 
 async function loadSignal() {
 
@@ -46,92 +92,69 @@ async function loadSignal() {
     try {
 
         const response = await fetch(
+
             "http://127.0.0.1:8000/signal"
+
         );
 
         const signal = await response.json();
 
-        // -----------------------------
-        // Connection Status
-        // -----------------------------
+        //------------------------
+        // Connection
+        //------------------------
 
         status.className = "status online";
+
         status.innerHTML = "● Connected";
 
-        // -----------------------------
-        // No Signal Yet
-        // -----------------------------
+        //------------------------
+        // No Signal
+        //------------------------
 
         if (signal.status) {
 
             document.getElementById("action").innerHTML = "WAIT";
-            document.getElementById("action").className = "action wait";
 
-            document.getElementById("confidenceText").innerHTML = "0%";
-const gauge =
-    document.getElementById("gauge");
+            document.getElementById("action").className =
+                "action wait";
 
-gauge.style.strokeDashoffset = offset;
+            document.getElementById("confidenceText").innerHTML =
+                "0%";
 
-if(percent>=80){
+            document.getElementById("trend").innerHTML =
+                "---";
 
-    gauge.style.stroke="#22C55E";
+            document.getElementById("risk").innerHTML =
+                "---";
 
-}
+            document.getElementById("asset").innerHTML =
+                "---";
 
-else if(percent>=60){
+            document.getElementById("expiration").innerHTML =
+                "---";
 
-    gauge.style.stroke="#FACC15";
-
-}
-
-else{
-
-    gauge.style.stroke="#EF4444";
-
-}
-
-            document.getElementById("trend").innerHTML = "---";
-            document.getElementById("risk").innerHTML = "---";
-            document.getElementById("asset").innerHTML = "---";
-            document.getElementById("expiration").innerHTML = "---";
+            document.getElementById("analysis").innerHTML =
+                "Waiting for analysis...";
 
             document.getElementById("updated").innerHTML =
                 new Date().toLocaleTimeString();
-                drawFakeChart();
 
-
-                signalHistory.unshift({
-
-    asset: signal.asset,
-
-    action: signal.action,
-
-    confidence: signal.confidence
-
-});
-
-if (signalHistory.length > 10) {
-
-    signalHistory.pop();
-
-}
-
-renderHistory();
-updateStats(signal.action);
             return;
 
         }
 
-        // -----------------------------
-        // Signal
-        // -----------------------------
+        //------------------------
+        // Action
+        //------------------------
 
-        const action = document.getElementById("action");
+        const action =
+            document.getElementById("action");
 
-        action.innerHTML = signal.action;
+        action.innerHTML =
+            signal.action;
 
-        action.className = "action";
+        action.className =
+            "action";
 
         if (signal.action === "CALL") {
 
@@ -151,48 +174,59 @@ updateStats(signal.action);
 
         }
 
-        // -----------------------------
-        // Circular Confidence Gauge
-        // -----------------------------
+        //------------------------
+        // Gauge
+        //------------------------
 
-        const percent = signal.confidence;
+        const percent =
+            signal.confidence;
 
-        document.getElementById("confidenceText").innerHTML =
+        document.getElementById(
+
+            "confidenceText"
+
+        ).innerHTML =
             `${percent}%`;
 
         const circumference = 377;
 
         const offset =
             circumference -
-            (percent / 100) * circumference;
+            (percent / 100) *
+            circumference;
 
-        const gauge = document.getElementById("gauge");
+        const gauge =
+            document.getElementById(
+                "gauge"
+            );
 
-        gauge.style.strokeDashoffset = offset;
+        gauge.style.strokeDashoffset =
+            offset;
 
-        // Optional: Change gauge color
+        if (percent >= 80) {
 
-        if (signal.action === "CALL") {
-
-            gauge.style.stroke = "#22C55E";
+            gauge.style.stroke =
+                "#22C55E";
 
         }
 
-        else if (signal.action === "PUT") {
+        else if (percent >= 60) {
 
-            gauge.style.stroke = "#EF4444";
+            gauge.style.stroke =
+                "#FACC15";
 
         }
 
         else {
 
-            gauge.style.stroke = "#F59E0B";
+            gauge.style.stroke =
+                "#EF4444";
 
         }
 
-        // -----------------------------
-        // Info Cards
-        // -----------------------------
+        //------------------------
+        // Cards
+        //------------------------
 
         document.getElementById("trend").innerHTML =
             signal.trend;
@@ -200,19 +234,114 @@ updateStats(signal.action);
         document.getElementById("risk").innerHTML =
             signal.risk;
 
-        document.getElementById("asset").innerHTML =
-            signal.asset;
+       document.getElementById("asset").innerHTML =
+    signal.asset
+        .replace("_otc"," OTC")
+        .toUpperCase();
 
         document.getElementById("expiration").innerHTML =
             signal.expiration;
+                    //------------------------
+        // AI Analysis
+        //------------------------
 
-        // -----------------------------
+        renderAnalysis(signal);
+
+        //------------------------
+        // Signal History
+        //------------------------
+
+        signalHistory.unshift({
+
+            asset: signal.asset,
+
+            action: signal.action,
+
+            confidence: signal.confidence,
+
+            time: new Date().toLocaleTimeString()
+
+        });
+
+        if (signalHistory.length > 10) {
+
+            signalHistory.pop();
+
+        }
+
+        renderHistory();
+
+        //------------------------
+        // Statistics
+        //------------------------
+
+        updateStats(signal.action);
+
+        //------------------------
+        // Load Real Candle History
+        //------------------------
+
+  currentCandles =
+    await loadChart(signal.asset);
+
+drawChart(currentCandles);
+
+//--------------------------------
+// Update Header
+//--------------------------------
+
+if(currentCandles.length){
+
+    const last =
+        currentCandles[
+            currentCandles.length - 1
+        ];
+
+    document.getElementById(
+        "chartAsset"
+    ).innerHTML =
+        signal.asset
+        .replace("_otc"," OTC")
+        .toUpperCase();
+
+    document.querySelector(
+        ".chart-price"
+    ).innerHTML =
+        Number(last.close)
+        .toFixed(5);
+
+}
+    //----------------------------------
+// Update Chart Header
+//----------------------------------
+
+document.getElementById("chartAsset").innerHTML =
+    signal.asset.replace("_otc", " OTC");
+
+if (currentCandles.length > 0) {
+
+    const last =
+        currentCandles[currentCandles.length - 1];
+
+    document.querySelector(".chart-price").innerHTML =
+        Number(last.close).toFixed(5);
+
+}
+
+console.log(
+    "Chart Candles:",
+    currentCandles
+);
+
+drawChart(currentCandles);
+
+        //------------------------
         // Last Updated
-        // -----------------------------
+        //------------------------
 
         document.getElementById("updated").innerHTML =
             new Date().toLocaleTimeString();
-renderAnalysis(signal);
+
     }
 
     catch (err) {
@@ -220,60 +349,131 @@ renderAnalysis(signal);
         console.error(err);
 
         status.className = "status offline";
+
         status.innerHTML = "● Offline";
 
     }
 
 }
 
+// ========================================
+// Auto Refresh
+// ========================================
+
 loadSignal();
 
 setInterval(loadSignal, 1000);
+
+// ========================================
+// Signal History
+// ========================================
+
 function renderHistory() {
 
-    const container = document.getElementById("history");
+    const container =
+        document.getElementById("history");
 
     container.innerHTML = "";
 
+    if (signalHistory.length === 0) {
+
+        container.innerHTML =
+            "No signals yet";
+
+        return;
+
+    }
+
     signalHistory.forEach(signal => {
 
-        const div = document.createElement("div");
+        const row =
+            document.createElement("div");
 
-        div.className = "history-item";
+        row.className =
+            "history-item";
 
-        let cls = "wait-text";
+        let color =
+            "wait-text";
+
+        if (signal.action === "CALL")
+            color = "call-text";
+
+        if (signal.action === "PUT")
+            color = "put-text";
+
+        row.innerHTML = `
+
+            <span>${signal.time}</span>
+
+            <span class="${color}">
+                ${signal.action}
+            </span>
+
+            <span>
+                ${signal.confidence}%
+            </span>
+
+        `;
+
+        container.appendChild(row);
+
+    });
+
+}
+
+// ========================================
+// AI Analysis
+// ========================================
+
+function renderAnalysis(signal) {
+
+    const container =
+        document.getElementById("analysis");
+
+    container.innerHTML = "";
+
+    if (!signal.reasons ||
+        signal.reasons.length === 0) {
+
+        container.innerHTML =
+            "Waiting for analysis...";
+
+        return;
+
+    }
+
+    signal.reasons.forEach(reason => {
+
+        const div =
+            document.createElement("div");
+
+        div.className =
+            "reason";
+
+        let icon = "⚠";
+        let cls = "warning";
 
         if (signal.action === "CALL") {
 
-            cls = "call-text";
+            icon = "✔";
+            cls = "good";
 
         }
 
         if (signal.action === "PUT") {
 
-            cls = "put-text";
+            icon = "✔";
+            cls = "bad";
 
         }
 
         div.innerHTML = `
 
             <span class="${cls}">
-
-                ${signal.action}
-
+                ${icon}
             </span>
 
-            <span>
-
-                ${signal.confidence}%
-
-            </span>
-
-            <span>
-
-                ${signal.asset}
-
-            </span>
+            ${reason}
 
         `;
 
@@ -281,75 +481,15 @@ function renderHistory() {
 
     });
 
-    if (signalHistory.length === 0) {
-
-        container.innerHTML = "No signals yet";
-
-    }
-
 }
 
-function renderAnalysis(signal){
+// ========================================
+// Statistics
+// ========================================
 
-    const container =
-        document.getElementById("analysis");
+function updateStats(action) {
 
-    container.innerHTML = "";
-
-    if(signal.reasons){
-
-        signal.reasons.forEach(reason=>{
-
-            const div =
-                document.createElement("div");
-
-            div.className="reason";
-
-            let icon="⚠";
-
-            let cls="warning";
-
-            if(signal.action==="CALL"){
-
-                icon="✔";
-
-                cls="good";
-
-            }
-
-            if(signal.action==="PUT"){
-
-                icon="✔";
-
-                cls="bad";
-
-            }
-
-            div.innerHTML=`
-                <span class="${cls}">
-                    ${icon}
-                </span>
-                ${reason}
-            `;
-
-            container.appendChild(div);
-
-        });
-
-    }
-
-    else{
-
-        container.innerHTML=
-            "Waiting for analysis...";
-
-    }
-
-}
-
-function updateStats(action){
-
-    if(stats[action] !== undefined){
+    if (stats[action] !== undefined) {
 
         stats[action]++;
 
@@ -370,262 +510,355 @@ function updateStats(action){
         stats.WAIT;
 
 }
-function drawFakeChart() {
+// ========================================
+// TradingView Chart Engine
+// ========================================
 
-    const canvas = document.getElementById("miniChart");
+function drawChart(candles) {
+    console.log("drawChart()", candles.length);
+if (!candles || candles.length === 0) {
 
-    if (!canvas) return;
+    console.log("No candles to draw");
 
-    const ctx = canvas.getContext("2d");
+    return;
 
-    const W = canvas.width;
-    const H = canvas.height;
+}
+const canvas = document.getElementById("miniChart");
 
-    animation += 0.08;
+if (!canvas) {
+    return;
+}
 
-ctx.clearRect(
-    0,
-    0,
-    W,
-    H
-);
+const ctx = canvas.getContext("2d");
 
+const W = canvas.width;
+const H = canvas.height;
+
+animation += 0.08;
+
+//----------------------------------
+// Clear
+//----------------------------------
+
+ctx.clearRect(0, 0, W, H);
+
+//----------------------------------
+// Debug Square
+//----------------------------------
+
+ctx.fillStyle = "#FF0000";
+ctx.fillRect(0, 0, 40, 40);
+
+    //----------------------------------
     // Background
-    ctx.fillStyle = "#0F172A";
-    ctx.fillRect(0, 0, W, H);
-    ctx.shadowBlur = 0;
+    //----------------------------------
 
-    //--------------------------------
-// Current Price Line
-//--------------------------------
+    const gradient = ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        H
+    );
 
-const last = candles[candles.length - 1];
+    gradient.addColorStop(0, "#18263F");
+    gradient.addColorStop(1, "#0B1220");
 
-const priceY = scale(last.close);
+    ctx.fillStyle = gradient;
 
-ctx.strokeStyle =
-    last.close >= last.open
-        ? "#22C55E"
-        : "#EF4444";
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
 
-ctx.setLineDash([6, 6]);
+    //----------------------------------
+    // Grid
+    //----------------------------------
 
-ctx.beginPath();
-
-ctx.moveTo(0, priceY);
-
-ctx.lineTo(W, priceY);
-
-ctx.stroke();
-
-ctx.setLineDash([]);
-
-//--------------------------------
-// Price Label
-//--------------------------------
-
-ctx.fillStyle =
-    last.close >= last.open
-        ? "#22C55E"
-        : "#EF4444";
-
-ctx.font = "bold 12px Segoe UI";
-
-ctx.fillText(
-    last.close.toFixed(2),
-    W - 45,
-    priceY - 5
-);
-
-} 
-if(mouseX!==null){
-
-    ctx.strokeStyle="#475569";
-
-    ctx.setLineDash([4,4]);
-
-    ctx.beginPath();
-
-    ctx.moveTo(mouseX,0);
-
-    ctx.lineTo(mouseX,H);
-
-    ctx.stroke();
-
-    ctx.beginPath();
-
-    ctx.moveTo(0,mouseY);
-
-    ctx.lineTo(W,mouseY);
-
-    ctx.stroke();
-
-    ctx.setLineDash([]);
-
-}
-// <-- End of drawFakeChart()
-    //--------------------------------
-// Grid
-//--------------------------------
-
-ctx.strokeStyle = "#1E293B";
-
-ctx.lineWidth = 1;
-
-// Horizontal
-
-for(let i=0;i<5;i++){
-
-    const y = i*(H/4);
-
-    ctx.beginPath();
-
-    ctx.moveTo(0,y);
-
-    ctx.lineTo(W,y);
-
-    ctx.stroke();
-
-}
-
-// Vertical
-
-for(let i=0;i<8;i++){
-
-    const x = i*(W/7);
-
-    ctx.beginPath();
-
-    ctx.moveTo(x,0);
-
-    ctx.lineTo(x,H);
-
-    ctx.stroke();
-
-}
-
-    // Horizontal Grid
-    ctx.strokeStyle = "#1E293B";
+    ctx.strokeStyle = "#22324C";
     ctx.lineWidth = 1;
 
-    for (let i = 1; i < 5; i++) {
+    for (let i = 0; i <= 4; i++) {
 
-        const y = (H / 5) * i;
+        const y = (H / 4) * i;
 
         ctx.beginPath();
+
         ctx.moveTo(0, y);
+
         ctx.lineTo(W, y);
+
         ctx.stroke();
 
     }
 
-    //------------------------------------------------
-    // Fake Candles
-    //------------------------------------------------
+    for (let i = 0; i <= 7; i++) {
 
-    const candles = [
+        const x = (W / 7) * i;
 
-        {open:50, high:70, low:45, close:65},
-        {open:65, high:80, low:60, close:72},
-        {open:72, high:78, low:58, close:61},
-        {open:61, high:68, low:55, close:66},
-        {open:66, high:90, low:62, close:88},
-        {open:88, high:92, low:74, close:78},
-        {open:78, high:95, low:70, close:91},
-        {open:91, high:98, low:84, close:95},
-        {open:95, high:99, low:80, close:82},
-        {open:82, high:86, low:75, close:84},
-        {open:84, high:100, low:82, close:98},
-        {open:98, high:105, low:90, close:93}
+        ctx.beginPath();
 
-    ];
+        ctx.moveTo(x, 0);
 
-    //------------------------------------------------
+        ctx.lineTo(x, H);
+
+        ctx.stroke();
+
+    }
+
+    //----------------------------------
     // Scale
-    //------------------------------------------------
+    //----------------------------------
 
-    const max = Math.max(...candles.map(c => c.high));
+  const max =
+    Math.max(...candles.map(
+        c => Number(c.high)
+    ));
 
-    const min = Math.min(...candles.map(c => c.low));
+const min =
+    Math.min(...candles.map(
+        c => Number(c.low)
+    ));
 
-    const scale = value => {
+const padding =
+    (max-min)*0.15;
 
-        return H - ((value - min) / (max - min)) * (H - 20) - 10;
+const top =
+    max + padding;
+
+const bottom =
+    min - padding;
+
+    const range = Math.max(
+        maxPrice - minPrice,
+        0.000001
+    );
+
+    const scale = price => {
+
+    return H-10-
+
+    (
+
+        (Number(price)-bottom)
+
+        /
+
+        (top-bottom)
+
+    )*(H-20);
+
+};
+
+        return (
+            H - 10 -
+            ((Number(price) - minPrice) / range) *
+            (H - 20)
+        );
 
     };
 
-    //------------------------------------------------
-    // Draw Candles
-    //------------------------------------------------
+    //----------------------------------
+    // Candles
+    //----------------------------------
 
-    const candleWidth = 14;
+    const spacing =
+        (W - 20) / candles.length;
 
-    const spacing = 12;
+    const candleWidth =
+        Math.min(
+            12,
+            spacing * 0.6
+        );
 
     candles.forEach((candle, index) => {
 
-       const x =
-    15 +
-    index *
-    (candleWidth + spacing) +
-    Math.sin(animation) * 0.3;
+        const x =
+            10 +
+            index * spacing +
+            Math.sin(animation) * 0.2;
 
-        const openY = scale(candle.open);
+        const openY =
+            scale(candle.open);
 
-        const closeY = scale(candle.close);
+        const closeY =
+            scale(candle.close);
 
-        const highY = scale(candle.high);
+        const highY =
+            scale(candle.high);
 
-        const lowY = scale(candle.low);
+        const lowY =
+            scale(candle.low);
 
-        const bullish = candle.close >= candle.open;
+        const bullish =
+            Number(candle.close) >=
+            Number(candle.open);
 
-        //--------------------------------------------
+        //--------------------------------
         // Wick
-        //--------------------------------------------
+        //--------------------------------
 
-        ctx.strokeStyle = bullish
-            ? "#22C55E"
-            : "#EF4444";
+        ctx.strokeStyle =
+            bullish
+                ? "#22C55E"
+                : "#EF4444";
 
         ctx.lineWidth = 2;
 
         ctx.beginPath();
 
-        ctx.moveTo(x + candleWidth / 2, highY);
+        ctx.moveTo(
+            x + candleWidth / 2,
+            highY
+        );
 
-        ctx.lineTo(x + candleWidth / 2, lowY);
+        ctx.lineTo(
+            x + candleWidth / 2,
+            lowY
+        );
 
         ctx.stroke();
 
-        //--------------------------------------------
+        //--------------------------------
         // Body
-        //--------------------------------------------
+        //--------------------------------
 
-      ctx.shadowBlur = 8;
+        ctx.shadowBlur = 8;
 
-ctx.shadowColor = bullish
-    ? "#22C55E"
-    : "#EF4444";
+        ctx.shadowColor =
+            bullish
+                ? "#22C55E"
+                : "#EF4444";
 
-ctx.fillStyle = bullish
-    ? "#22C55E"
-    : "#EF4444";
+        ctx.fillStyle =
+            bullish
+                ? "#22C55E"
+                : "#EF4444";
 
-        const top = Math.min(openY, closeY);
+        const top =
+            Math.min(openY, closeY);
 
-        const height = Math.max(
-            Math.abs(closeY - openY),
-            3
-        );
+        const bodyHeight =
+            Math.max(
+                Math.abs(closeY - openY),
+                3
+            );
 
-                ctx.fillRect(
+        ctx.fillRect(
             x,
             top,
             candleWidth,
-            height
+            bodyHeight
         );
 
+        ctx.shadowBlur = 0;
+
     });
+
+    //----------------------------------
+    // Current Price
+    //----------------------------------
+
+    const last =
+        candles[candles.length - 1];
+
+    const priceY =
+        scale(last.close);
+
+    const bullish =
+        Number(last.close) >=
+        Number(last.open);
+
+    ctx.strokeStyle =
+        bullish
+            ? "#22C55E"
+            : "#EF4444";
+
+    ctx.setLineDash([6, 6]);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        priceY
+    );
+
+    ctx.lineTo(
+        W,
+        priceY
+    );
+
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    //----------------------------------
+    // Price Label
+    //----------------------------------
+
+    ctx.fillStyle =
+        bullish
+            ? "#22C55E"
+            : "#EF4444";
+
+    ctx.font =
+        "bold 12px Segoe UI";
+
+    ctx.fillText(
+
+        Number(last.close).toFixed(5),
+
+        W - 55,
+
+        priceY - 6
+
+    );
+
+    //----------------------------------
+    // Crosshair
+    //----------------------------------
+
+    if (
+        mouseX !== null &&
+        mouseY !== null
+    ) {
+
+        ctx.strokeStyle =
+            "#64748B";
+
+        ctx.setLineDash([4, 4]);
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            mouseX,
+            0
+        );
+
+        ctx.lineTo(
+            mouseX,
+            H
+        );
+
+        ctx.stroke();
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            mouseY
+        );
+
+        ctx.lineTo(
+            W,
+            mouseY
+        );
+
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+
+    }
 
 }

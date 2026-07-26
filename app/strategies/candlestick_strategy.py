@@ -6,20 +6,60 @@ class CandlestickStrategy:
 
     def analyze(self, market):
 
-        detector = CandlePatternDetector()
+    detector = CandlePatternDetector()
 
-        patterns = detector.detect(market.candles)
+    patterns = detector.detect(market.candles)
 
-        result = StrategyResult()
+    result = StrategyResult()
 
-        for pattern in patterns:
+    if len(patterns) == 0:
 
-            result.reasons.append(pattern.name)
-
-            if pattern.bullish:
-                result.bullish_score += pattern.strength
-
-            elif pattern.bearish:
-                result.bearish_score += pattern.strength
+        result.reasons.append(
+            "No Candlestick Pattern"
+        )
 
         return result
+
+    for pattern in patterns:
+
+        result.reasons.append(
+            f"{pattern.name} ({pattern.strength})"
+        )
+
+        # ----------------------------
+        # Bullish Pattern
+        # ----------------------------
+
+        if pattern.bullish:
+
+            result.trend = "BULLISH"
+
+            result.bullish_score += pattern.strength
+
+            if pattern.strength >= 20:
+
+                result.bullish_score += 5
+
+                result.reasons.append(
+                    "Strong Bullish Pattern"
+                )
+
+        # ----------------------------
+        # Bearish Pattern
+        # ----------------------------
+
+        elif pattern.bearish:
+
+            result.trend = "BEARISH"
+
+            result.bearish_score += pattern.strength
+
+            if pattern.strength >= 20:
+
+                result.bearish_score += 5
+
+                result.reasons.append(
+                    "Strong Bearish Pattern"
+                )
+
+    return result
