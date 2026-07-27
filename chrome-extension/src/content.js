@@ -2,23 +2,29 @@ import { Tick } from "./market/tick.js";
 import { MarketManager } from "./market/market_manager.js";
 import { sendMarket } from "./api/market_api.js";
 import { CandleHistory } from "./market/history.js";
-import { HistoryManager } from "./market/history_manager.js";
+
 console.log("✅ Content script loaded");
 
 const manager = new MarketManager();
 const history = new CandleHistory(300);
 
-// Inject the page script
+// --------------------------------------
+// Inject page script
+// --------------------------------------
+
 const script = document.createElement("script");
+
 script.src = chrome.runtime.getURL("src/injected.js");
+
 script.onload = () => script.remove();
 
 (document.head || document.documentElement).appendChild(script);
 
-// Listen for messages from injected.js
-window.addEventListener("message", async (event) => {
+// --------------------------------------
+// Listen for injected messages
+// --------------------------------------
 
-    console.log("Content received message:", event.data);
+window.addEventListener("message", async (event) => {
 
     if (event.source !== window) return;
 
@@ -30,19 +36,41 @@ window.addEventListener("message", async (event) => {
         event.data.data.price
     );
 
-    console.log("Tick:", tick);
-
     const candle = manager.update(tick);
 
-   if (candle) {
+    if (!candle) return;
 
     history.add(candle);
 
     const candles = history.get(candle.asset);
 
-    console.log("=====================================");
+    console.log("======================================");
+    console.log("📊 LOCAL HISTORY");
+    console.log("Asset:", candle.asset);
     console.log("History Size:", candles.length);
-    console.log("=====================================");
+
+    if (candles.length > 0) {
+
+        console.log(
+            "First Timestamp:",
+            candles[0].timestamp
+        );
+
+        console.log(
+            "Last Timestamp:",
+           candles[candles.length - 1].timestamp
+        );
+
+        console.log(
+            "Unique Timestamps:",
+            new Set(
+               candles.map(c => String(c.timestamp))
+            ).size
+        );
+
+    }
+
+    console.log("======================================");
 
     await sendMarket(
         candle.asset,
@@ -50,5 +78,4 @@ window.addEventListener("message", async (event) => {
         candles
     );
 
-}
 });

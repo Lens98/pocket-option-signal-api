@@ -1,91 +1,68 @@
 from app.strategies.strategy_result import StrategyResult
 from app.config.settings import settings
+from app.config.weights import Weights
 
 
 class RsiStrategy:
 
     def analyze(self, indicators):
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    rsi = indicators.rsi
+        rsi = indicators.rsi
 
-    # ----------------------------
-    # Oversold
-    # ----------------------------
+        # ----------------------------
+        # Oversold
+        # ----------------------------
 
-    if rsi <= settings.RSI_OVERSOLD:
+        if rsi <= settings.RSI_OVERSOLD:
 
-        result.trend = "BULLISH"
+            result.trend = "BULLISH"
 
-        result.bullish_score += 20
-
-        result.reasons.append(
-            "RSI Oversold"
-        )
-
-        if rsi <= 20:
-
-            result.bullish_score += 5
+            result.bullish_score += Weights.RSI
 
             result.reasons.append(
-                "Extreme Oversold"
+                "RSI Oversold"
             )
 
-    # ----------------------------
-    # Overbought
-    # ----------------------------
+            if rsi <= 20:
 
-    elif rsi >= settings.RSI_OVERBOUGHT:
+                result.bullish_score += 5
 
-        result.trend = "BEARISH"
+                result.reasons.append(
+                    "Strong RSI Reversal"
+                )
 
-        result.bearish_score += 20
+        # ----------------------------
+        # Overbought
+        # ----------------------------
 
-        result.reasons.append(
-            "RSI Overbought"
-        )
+        elif rsi >= settings.RSI_OVERBOUGHT:
 
-        if rsi >= 80:
+            result.trend = "BEARISH"
 
-            result.bearish_score += 5
+            result.bearish_score += Weights.RSI
 
             result.reasons.append(
-                "Extreme Overbought"
+                "RSI Overbought"
             )
 
-    # ----------------------------
-    # Bullish Momentum
-    # ----------------------------
+            if rsi >= 80:
 
-    elif rsi >= 55 and rsi < settings.RSI_OVERBOUGHT:
+                result.bearish_score += 5
 
-        result.trend = "BULLISH"
+                result.reasons.append(
+                    "Strong RSI Reversal"
+                )
 
-        result.bullish_score += 8
+        # ----------------------------
+        # Neutral
+        # ----------------------------
 
-        result.reasons.append(
-            "Bullish RSI Momentum"
-        )
+        else:
 
-    # ----------------------------
-    # Bearish Momentum
-    # ----------------------------
+            result.reasons.append(
+                "RSI Neutral"
+            )
 
-    elif rsi <= 45 and rsi > settings.RSI_OVERSOLD:
-
-        result.trend = "BEARISH"
-
-        result.bearish_score += 8
-
-        result.reasons.append(
-            "Bearish RSI Momentum"
-        )
-
-    else:
-
-        result.reasons.append(
-            "RSI Neutral"
-        )
-
-    return result
+        return result

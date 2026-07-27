@@ -3,15 +3,15 @@ from fastapi import APIRouter
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
 
-from app.storage.market_storage import MarketStorage
-from app.storage.signal_storage import SignalStorage
+from app.storage.shared import (
+    market_storage,
+    signal_storage,
+)
 
 from app.services.trading_engine import TradingEngine
 
 router = APIRouter()
 
-storage = MarketStorage()
-signal_storage = SignalStorage()
 engine = TradingEngine()
 
 
@@ -42,13 +42,13 @@ def update_market(data: MarketUpdate):
     )
 
     # Store history
-    storage.update(market)
+    market_storage.update(market)
 
     # Read full history
-    market = storage.get(data.asset)
+    market = market_storage.get(data.asset)
 
     print("----------------------------------------")
-    print("Stored Candles:", storage.size(data.asset))
+    print("Stored Candles:", market_storage.size(data.asset))
     print("----------------------------------------")
 
     # Generate signal
@@ -62,7 +62,7 @@ def update_market(data: MarketUpdate):
         "asset": data.asset,
         "timeframe": data.timeframe,
         "candles": len(data.candles),
-        "stored": storage.size(data.asset)
+        "stored": market_storage.size(data.asset)
     }
 
 
@@ -80,15 +80,10 @@ def latest_signal():
     return signal
 
 
-# ============================================
-# NEW
-# Candle History API
-# ============================================
-
 @router.get("/market/history/{asset}")
 def market_history(asset: str):
 
-    candles = storage.history(asset)
+    candles = market_storage.history(asset)
 
     return {
         "asset": asset,

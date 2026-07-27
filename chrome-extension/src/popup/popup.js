@@ -606,58 +606,41 @@ ctx.fillRect(0, 0, 40, 40);
         ctx.stroke();
 
     }
+   
 
-    //----------------------------------
-    // Scale
-    //----------------------------------
+const max = Math.max(
+    ...candles.map(c => Number(c.high))
+);
 
-  const max =
-    Math.max(...candles.map(
-        c => Number(c.high)
-    ));
+const min = Math.min(
+    ...candles.map(c => Number(c.low))
+);
 
-const min =
-    Math.min(...candles.map(
-        c => Number(c.low)
-    ));
+const padding = (max - min) * 0.15;
 
-const padding =
-    (max-min)*0.15;
+const top = max + padding;
 
-const top =
-    max + padding;
+const bottom = min - padding;
 
-const bottom =
-    min - padding;
+const scale = price => {
 
-    const range = Math.max(
-        maxPrice - minPrice,
-        0.000001
+    return (
+
+        H - 10 -
+
+        (
+
+            (Number(price) - bottom)
+
+            /
+
+            (top - bottom)
+
+        ) * (H - 20)
+
     );
 
-    const scale = price => {
-
-    return H-10-
-
-    (
-
-        (Number(price)-bottom)
-
-        /
-
-        (top-bottom)
-
-    )*(H-20);
-
 };
-
-        return (
-            H - 10 -
-            ((Number(price) - minPrice) / range) *
-            (H - 20)
-        );
-
-    };
 
     //----------------------------------
     // Candles
@@ -860,5 +843,4 @@ const bottom =
         ctx.setLineDash([]);
 
     }
-
-}
+ }

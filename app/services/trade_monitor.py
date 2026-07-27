@@ -1,0 +1,203 @@
+from datetime import datetime, timedelta
+import threading
+import time
+from app.models.trade_learning import TradeLearning
+from app.storage.learning_storage import LearningStorage
+from app.services.win_loss_tracker import WinLossTracker
+from app.storage.trade_storage import TradeStorage
+from app.storage.shared import (
+    market_storage,
+    trade_storage,
+)
+
+
+class TradeMonitor:
+
+    def __init__(self):
+
+        self.trade_storage = TradeStorage()
+        self.market_storage = market_storage
+        self.trade_storage = trade_storage
+        self.tracker = WinLossTracker()
+        self.learning = LearningStorage()
+        self.running = False
+        self.thread = None
+
+    # ----------------------------------------
+    # Start Monitor
+    # ----------------------------------------
+
+    def start(self):
+
+        if self.running:
+            return
+
+        self.running = True
+
+        self.thread = threading.Thread(
+            target=self.run,
+            daemon=True
+        )
+
+        self.thread.start()
+
+        print("----------------------------------------")
+        print("✅ Trade Monitor Started")
+        print("----------------------------------------")
+
+    # ----------------------------------------
+    # Stop Monitor
+    # ----------------------------------------
+
+    def stop(self):
+
+        self.running = False
+
+        print("----------------------------------------")
+        print("🛑 Trade Monitor Stopped")
+        print("----------------------------------------")
+
+    # ----------------------------------------
+    # Main Loop
+    # ----------------------------------------
+
+    def run(self):
+
+        while self.running:
+
+            try:
+
+                self.check_open_trades()
+
+            except Exception as e:
+
+                print("----------------------------------------")
+                print("Trade Monitor Error")
+                print(e)
+                print("----------------------------------------")
+
+            time.sleep(1)
+
+    # ----------------------------------------
+    # Check Open Trades
+    # ----------------------------------------
+
+    def check_open_trades(self):
+
+        trades = self.trade_storage.open_trades()
+
+        if not trades:
+            return
+
+        now = datetime.now()
+
+        for trade in trades:
+
+            expire_time = (
+                trade.entry_time +
+                timedelta(
+                    seconds=trade.expiration_seconds
+                )
+            )
+
+            if now < expire_time:
+                continue
+
+            market = self.market_storage.get(
+                trade.asset
+            )
+
+            if len(market.candles) == 0:
+                continue
+
+            latest = market.candles[-1]
+
+            exit_price = latest.close
+
+            print("----------------------------------------")
+            print("Closing Trade:", trade.id)
+            print("Entry :", trade.entry_price)
+            print("Exit  :", exit_price)
+            print("----------------------------------------")
+            closed_trade = self.tracker.close_trade(
+            trade,
+            exit_price
+            )
+
+        if closed_trade:
+
+         learning = TradeLearning(
+
+        trade_id=closed_trade.id,
+
+        asset=closed_trade.asset,
+
+        timeframe=closed_trade.timeframe,
+
+        session="UNKNOWN",
+
+        action=closed_trade.action,
+
+        indicator_mode="UNKNOWN",
+
+        regime="UNKNOWN",
+
+        trend=closed_trade.trend,
+
+        confidence=closed_trade.confidence,
+
+        probability=0.0,
+
+        risk=closed_trade.risk,
+
+        grade=closed_trade.grade,
+
+        ema20=None,
+        ema50=None,
+        ema200=None,
+
+        rsi=None,
+
+        macd=None,
+        signal_line=None,
+        histogram=None,
+
+        adx=None,
+        atr=None,
+
+        entry_price=closed_trade.entry_price,
+
+        exit_price=closed_trade.exit_price,
+
+        payout=closed_trade.payout,
+
+        profit=closed_trade.profit,
+
+        result=closed_trade.result,
+
+        entry_time=closed_trade.entry_time,
+
+        exit_time=closed_trade.exit_time,
+
+        duration=(
+
+            closed_trade.exit_time -
+
+            closed_trade.entry_time
+
+        ).total_seconds(),
+
+        reasons=closed_trade.reasons
+
+    )
+
+        self.learning.add(learning)
+
+        print("----------------------------------------")
+        print("🧠 Learning Record Saved")
+        print("----------------------------------------")
+        print("Trade :", closed_trade.id)
+        print("Result:", closed_trade.result)
+        print("----------------------------------------")
+            
+               

@@ -6,80 +6,179 @@ class EmaStrategy:
 
     def analyze(self, indicators):
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    ema20 = indicators.ema20
-    ema50 = indicators.ema50
-    ema200 = indicators.ema200
+        ema20 = indicators.ema20
+        ema50 = indicators.ema50
+        ema200 = indicators.ema200
+        mode = indicators.mode
 
-    # ----------------------------
-    # Bullish Alignment
-    # ----------------------------
+        print("----------------------------------------")
+        print("EMA Strategy")
+        print("----------------------------------------")
+        print("Mode :", mode)
+        print("EMA20 :", ema20)
+        print("EMA50 :", ema50)
+        print("EMA200:", ema200)
 
-    if ema20 > ema50 > ema200:
+        # ========================================
+        # STARTUP MODE
+        # EMA20 only
+        # ========================================
 
-        result.trend = "BULLISH"
+        if mode == "STARTUP":
 
-        result.bullish_score += Weights.EMA
+            if ema20 is not None:
 
-        result.reasons.append(
-            "EMA Bullish Alignment"
-        )
+                result.reasons.append(
+                    "Startup EMA20 Available"
+                )
 
-        spread = ema20 - ema200
+            return result
 
-        if spread > 0.0010:
+        # ========================================
+        # STANDARD MODE
+        # EMA20 vs EMA50
+        # ========================================
 
-            result.bullish_score += 5
+        if mode == "STANDARD":
 
-            result.reasons.append(
-                "Strong EMA Separation"
-            )
+            if ema20 is not None and ema50 is not None:
 
-        elif spread > 0.0005:
+                if ema20 > ema50:
 
-            result.bullish_score += 2
+                    result.trend = "BULLISH"
+                    result.bullish_score += Weights.EMA
 
-            result.reasons.append(
-                "Moderate EMA Separation"
-            )
+                    result.reasons.append(
+                        "EMA20 Above EMA50"
+                    )
 
-    # ----------------------------
-    # Bearish Alignment
-    # ----------------------------
+                elif ema20 < ema50:
 
-    elif ema20 < ema50 < ema200:
+                    result.trend = "BEARISH"
+                    result.bearish_score += Weights.EMA
 
-        result.trend = "BEARISH"
+                    result.reasons.append(
+                        "EMA20 Below EMA50"
+                    )
 
-        result.bearish_score += Weights.EMA
+                else:
 
-        result.reasons.append(
-            "EMA Bearish Alignment"
-        )
+                    result.reasons.append(
+                        "EMA Flat"
+                    )
 
-        spread = ema200 - ema20
+            return result
 
-        if spread > 0.0010:
+        # ========================================
+        # ADVANCED MODE
+        # EMA20 vs EMA50
+        # ========================================
 
-            result.bearish_score += 5
+        if mode == "ADVANCED":
 
-            result.reasons.append(
-                "Strong EMA Separation"
-            )
+            if ema20 is not None and ema50 is not None:
 
-        elif spread > 0.0005:
+                if ema20 > ema50:
 
-            result.bearish_score += 2
+                    result.trend = "BULLISH"
+                    result.bullish_score += Weights.EMA
 
-            result.reasons.append(
-                "Moderate EMA Separation"
-            )
+                    result.reasons.append(
+                        "EMA Bullish"
+                    )
 
-    else:
+                elif ema20 < ema50:
 
-        result.reasons.append(
-            "EMA Mixed Alignment"
-        )
+                    result.trend = "BEARISH"
+                    result.bearish_score += Weights.EMA
 
-    return result
+                    result.reasons.append(
+                        "EMA Bearish"
+                    )
+
+            return result
+
+        # ========================================
+        # FULL MODE
+        # EMA20 > EMA50 > EMA200
+        # ========================================
+
+        if (
+
+            ema20 is not None
+            and
+            ema50 is not None
+            and
+            ema200 is not None
+
+        ):
+
+            # Bullish
+
+            if ema20 > ema50 > ema200:
+
+                result.trend = "BULLISH"
+
+                result.bullish_score += Weights.EMA
+
+                result.reasons.append(
+                    "EMA Bullish Alignment"
+                )
+
+                spread = ema20 - ema200
+
+                if spread > 0.0010:
+
+                    result.bullish_score += 5
+
+                    result.reasons.append(
+                        "Strong EMA Separation"
+                    )
+
+                elif spread > 0.0005:
+
+                    result.bullish_score += 2
+
+                    result.reasons.append(
+                        "Moderate EMA Separation"
+                    )
+
+            # Bearish
+
+            elif ema20 < ema50 < ema200:
+
+                result.trend = "BEARISH"
+
+                result.bearish_score += Weights.EMA
+
+                result.reasons.append(
+                    "EMA Bearish Alignment"
+                )
+
+                spread = ema200 - ema20
+
+                if spread > 0.0010:
+
+                    result.bearish_score += 5
+
+                    result.reasons.append(
+                        "Strong EMA Separation"
+                    )
+
+                elif spread > 0.0005:
+
+                    result.bearish_score += 2
+
+                    result.reasons.append(
+                        "Moderate EMA Separation"
+                    )
+
+            else:
+
+                result.reasons.append(
+                    "EMA Mixed Alignment"
+                )
+
+        return result

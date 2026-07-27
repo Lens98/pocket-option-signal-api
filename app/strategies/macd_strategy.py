@@ -1,81 +1,84 @@
 from app.strategies.strategy_result import StrategyResult
 from app.config.weights import Weights
 
+
 class MacdStrategy:
 
     def analyze(self, indicators):
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    macd = indicators.macd
-    signal = indicators.signal_line
+        macd = indicators.macd
+        signal = indicators.signal_line
 
-    histogram = macd - signal
+        # ----------------------------
+        # Bullish Cross
+        # ----------------------------
 
-    # --------------------------------
-    # Bullish MACD
-    # --------------------------------
+        if macd > signal:
 
-    if macd > signal:
+            result.trend = "BULLISH"
 
-        result.trend = "BULLISH"
-
-        result.bullish_score += Weights.MACD
-
-        result.reasons.append(
-            "MACD Bullish Cross"
-        )
-
-        if histogram > 0.0005:
-
-            result.bullish_score += 5
+            result.bullish_score += Weights.MACD
 
             result.reasons.append(
-                "Strong Bullish Momentum"
+                "MACD Bullish Cross"
             )
 
-        elif histogram > 0:
+            strength = macd - signal
 
-            result.bullish_score += 2
+            if strength > 0.0005:
+
+                result.bullish_score += 5
+
+                result.reasons.append(
+                    "Strong Bullish Momentum"
+                )
+
+            elif strength > 0.0002:
+
+                result.bullish_score += 2
+
+                result.reasons.append(
+                    "Moderate Bullish Momentum"
+                )
+
+        # ----------------------------
+        # Bearish Cross
+        # ----------------------------
+
+        elif macd < signal:
+
+            result.trend = "BEARISH"
+
+            result.bearish_score += Weights.MACD
 
             result.reasons.append(
-                "Bullish Momentum Building"
+                "MACD Bearish Cross"
             )
 
-    # --------------------------------
-    # Bearish MACD
-    # --------------------------------
+            strength = signal - macd
 
-    elif macd < signal:
+            if strength > 0.0005:
 
-        result.trend = "BEARISH"
+                result.bearish_score += 5
 
-        result.bearish_score += Weights.MACD
+                result.reasons.append(
+                    "Strong Bearish Momentum"
+                )
 
-        result.reasons.append(
-            "MACD Bearish Cross"
-        )
+            elif strength > 0.0002:
 
-        if histogram < -0.0005:
+                result.bearish_score += 2
 
-            result.bearish_score += 5
+                result.reasons.append(
+                    "Moderate Bearish Momentum"
+                )
+
+        else:
 
             result.reasons.append(
-                "Strong Bearish Momentum"
+                "MACD Neutral"
             )
 
-        elif histogram < 0:
-
-            result.bearish_score += 2
-
-            result.reasons.append(
-                "Bearish Momentum Building"
-            )
-
-    else:
-
-        result.reasons.append(
-            "MACD Neutral"
-        )
-
-    return result
+        return result

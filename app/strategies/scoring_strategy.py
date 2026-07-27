@@ -5,83 +5,64 @@ class ScoringStrategy:
 
     def calculate(self, results):
 
-    bullish = 0.0
-    bearish = 0.0
+        bullish = 0.0
+        bearish = 0.0
 
-    reasons = []
+        reasons = []
 
-    trend = "SIDEWAYS"
+        trend = "SIDEWAYS"
 
-    for result in results:
+        # ----------------------------
+        # Combine Strategy Results
+        # ----------------------------
 
-        bullish += float(result.bullish_score)
+        for result in results:
 
-        bearish += float(result.bearish_score)
+            bullish += result.bullish_score
+            bearish += result.bearish_score
 
-        reasons.extend(result.reasons)
+            reasons.extend(result.reasons)
 
-        if result.trend != "SIDEWAYS":
+            if result.trend == "BULLISH":
+                trend = "BULLISH"
 
-            trend = result.trend
+            elif result.trend == "BEARISH":
+                trend = "BEARISH"
 
-    total = bullish + bearish
+        # ----------------------------
+        # Confidence
+        # ----------------------------
 
-    if total == 0:
+        confidence = abs(bullish - bearish)
 
-        confidence = 0.0
+        confidence = min(confidence, 100)
 
-    else:
+        # ----------------------------
+        # Final Action
+        # ----------------------------
 
-        confidence = round(
+        action = "WAIT"
 
-            max(bullish, bearish)
+        if trend == "BULLISH":
 
-            / total
+            if bullish >= settings.MIN_CONFIDENCE and bullish > bearish:
 
-            * 100,
+                action = "CALL"
 
-            1
+        elif trend == "BEARISH":
 
-        )
+            if bearish >= settings.MIN_CONFIDENCE and bearish > bullish:
 
-    action = "WAIT"
+                action = "PUT"
 
-    if (
+        return {
 
-        trend == "BULLISH"
+            "action": action,
 
-        and bullish > bearish
+            "confidence": confidence,
 
-        and confidence >= settings.MIN_CONFIDENCE
+            "trend": trend,
 
-    ):
+            "reasons": reasons
 
-        action = "CALL"
-
-    elif (
-
-        trend == "BEARISH"
-
-        and bearish > bullish
-
-        and confidence >= settings.MIN_CONFIDENCE
-
-    ):
-
-        action = "PUT"
-
-    return {
-
-        "action": action,
-
-        "confidence": confidence,
-
-        "trend": trend,
-
-        "bullish_score": round(bullish, 1),
-
-        "bearish_score": round(bearish, 1),
-
-        "reasons": reasons
-
-    }
+        }

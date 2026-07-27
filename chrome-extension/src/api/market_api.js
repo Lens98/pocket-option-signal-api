@@ -10,7 +10,7 @@ export async function sendMarket(asset, timeframe, candles) {
 
         candles: candles.map(candle => ({
 
-            timestamp: String(candle.openTime),
+           timestamp: String(candle.timestamp),
 
             open: candle.open,
 
@@ -27,33 +27,63 @@ export async function sendMarket(asset, timeframe, candles) {
     };
 
     console.log("======================================");
-    console.log("📤 Sending Candle History to FastAPI");
+    console.log("📤 Sending Candle History");
     console.log("Asset:", asset);
     console.log("Candles:", payload.candles.length);
+
+    console.log(
+        "Unique:",
+        new Set(
+            payload.candles.map(c => c.timestamp)
+        ).size
+    );
+
+    if (payload.candles.length > 0) {
+
+        console.log(
+            "First:",
+            payload.candles[0].timestamp
+        );
+
+        console.log(
+            "Last:",
+            payload.candles[
+                payload.candles.length - 1
+            ].timestamp
+        );
+
+    }
+
     console.log(payload);
+
     console.log("======================================");
 
     try {
 
-        const response = await fetch(`${API}/market/update`, {
+        const response = await fetch(
+            `${API}/market/update`,
+            {
 
-            method: "POST",
+                method: "POST",
 
-            headers: {
+                headers: {
 
-                "Content-Type": "application/json"
+                    "Content-Type": "application/json"
 
-            },
+                },
 
-            body: JSON.stringify(payload)
+                body: JSON.stringify(payload)
 
-        });
+            }
+        );
 
-        console.log("HTTP Status:", response.status);
+        console.log(
+            "HTTP Status:",
+            response.status
+        );
 
         const text = await response.text();
 
-        console.log("Response:");
         console.log(text);
 
         return text;

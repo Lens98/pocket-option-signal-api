@@ -1,5 +1,6 @@
-from app.strategies.strategy_result import StrategyResult
 from app.config.weights import Weights
+from app.strategies.strategy_result import StrategyResult
+
 
 class AdxStrategy:
 
@@ -7,29 +8,46 @@ class AdxStrategy:
 
         result = StrategyResult()
 
-        # Strong trend
-        if indicators.adx >= 25:
+        # ----------------------------------
+        # ADX not available yet
+        # ----------------------------------
 
-            # ADX confirms the existing trend
-            if indicators.ema20 > indicators.ema50 > indicators.ema200:
-
-                result.bullish_score = Weights.ADX
-                result.trend = "BULLISH"
-
-            elif indicators.ema20 < indicators.ema50 < indicators.ema200:
-
-                result.bearish_score = Weights.ADX
-                result.trend = "BEARISH"
+        if indicators.adx is None:
 
             result.reasons.append(
-                f"ADX Strong ({indicators.adx:.2f})"
+                "ADX Not Available"
             )
 
-        # Weak trend
+            return result
+
+        # ----------------------------------
+        # Strong Trend
+        # ----------------------------------
+
+        if indicators.adx >= 35:
+
+            result.bullish_score += Weights.ADX + 5
+
+            result.bearish_score += Weights.ADX + 5
+
+            result.reasons.append(
+                "ADX Strong Trend"
+            )
+
+        elif indicators.adx >= 25:
+
+            result.bullish_score += Weights.ADX
+
+            result.bearish_score += Weights.ADX
+
+            result.reasons.append(
+                "ADX Moderate Trend"
+            )
+
         else:
 
             result.reasons.append(
-                f"ADX Weak ({indicators.adx:.2f})"
+                "ADX Weak Trend"
             )
 
         return result

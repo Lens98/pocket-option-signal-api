@@ -25,36 +25,41 @@ window.WebSocket = function (...args) {
 
             try {
 
-                const packet = JSON.parse(text);
+    const packet = JSON.parse(text);
 
-                if (
-                    Array.isArray(packet) &&
-                    Array.isArray(packet[0]) &&
-                    packet[0].length >= 3
-                ) {
+    if (
+        Array.isArray(packet) &&
+        Array.isArray(packet[0]) &&
+        packet[0].length === 3 &&
+        typeof packet[0][0] === "string" &&
+        typeof packet[0][1] === "number" &&
+        typeof packet[0][2] === "number"
+    ) {
 
-                    const tick = packet[0];
+        const tick = packet[0];
 
-                    console.log("Sending tick to content script", {
-                        asset: tick[0],
-                        timestamp: tick[1],
-                        price: tick[2]
-                    });
+        console.log("Sending tick to content script", {
+            asset: tick[0],
+            timestamp: tick[1],
+            price: tick[2]
+        });
 
-                    window.postMessage({
-                        type: "POCKET_OPTION_TICK",
-                        data: {
-                            asset: tick[0],
-                            timestamp: tick[1],
-                            price: tick[2]
-                        }
-                    }, "*");
-
-                }
-
-            } catch (err) {
-                console.log("Non-JSON binary packet");
+        window.postMessage({
+            type: "POCKET_OPTION_TICK",
+            data: {
+                asset: tick[0],
+                timestamp: tick[1],
+                price: tick[2]
             }
+        }, "*");
+
+    }
+
+} catch (err) {
+
+    console.log("Non-JSON binary packet");
+
+}
 
             return;
         }

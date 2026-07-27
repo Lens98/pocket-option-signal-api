@@ -12,34 +12,77 @@ class MarketStorage:
         asset = market.asset
 
         if asset not in self.markets:
+
             self.markets[asset] = []
 
         history = self.markets[asset]
 
-        # Existing candle timestamps
+        # ----------------------------------------
+        # Existing timestamps
+        # ----------------------------------------
+
         existing = {
-            candle.timestamp
+            str(candle.timestamp)
             for candle in history
         }
 
-        # Add only new candles
+        print("----------------------------------------")
+        print("Existing Candles :", len(existing))
+        print("Incoming Candles :", len(market.candles))
+        print("----------------------------------------")
+
+        added = 0
+        ignored = 0
+
+        # ----------------------------------------
+        # Merge new candles
+        # ----------------------------------------
+
         for candle in market.candles:
 
-            if candle.timestamp not in existing:
+            ts = str(candle.timestamp).strip()
+
+            # Skip invalid timestamps
+            if (
+                ts == ""
+                or ts.lower() == "undefined"
+                or ts.lower() == "none"
+            ):
+                print("⚠ Ignoring invalid candle:", candle)
+                ignored += 1
+                continue
+
+            if ts not in existing:
+
                 history.append(candle)
+                existing.add(ts)
+                added += 1
 
-        # Keep history sorted
-        history.sort(
-            key=lambda c: c.timestamp
+        # ----------------------------------------
+        # Sort history safely
+        # ----------------------------------------
+
+        history = sorted(
+            history,
+            key=lambda c: int(str(c.timestamp))
+            if str(c.timestamp).isdigit()
+            else 0
         )
 
-        # Keep only latest 500 candles
-        self.markets[asset] = history[-500:]
+        # ----------------------------------------
+        # Keep latest 500 candles
+        # ----------------------------------------
 
-        print(
-            "Stored History:",
-            len(self.markets[asset])
-        )
+        if len(history) > 500:
+            history = history[-500:]
+
+        self.markets[asset] = history
+
+        print("----------------------------------------")
+        print("New Candles Added :", added)
+        print("Ignored Candles   :", ignored)
+        print("Stored History    :", len(history))
+        print("----------------------------------------")
 
     def get(self, asset):
 
@@ -58,12 +101,30 @@ class MarketStorage:
         )
 
     # ----------------------------------------
-    # NEW
-    # Return latest candle history
+    # Return candle history
     # ----------------------------------------
 
-    def history(self, asset, limit=50):
+    def history(self, asset, limit=None):
 
         history = self.markets.get(asset, [])
 
+        if limit is None:
+            return history
+
         return history[-limit:]
+
+    # ----------------------------------------
+    # Clear one asset
+    # ----------------------------------------
+
+    def clear(self, asset):
+
+        self.markets[asset] = []
+
+    # ----------------------------------------
+    # Clear all assets
+    # ----------------------------------------
+
+    def clear_all(self):
+
+        self.markets.clear()

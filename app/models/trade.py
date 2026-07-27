@@ -1,23 +1,23 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel
 
 
-class Signal(BaseModel):
+class Trade(BaseModel):
 
     # ========================================
-    # Market Information
+    # Identity
     # ========================================
+
+    id: str
 
     asset: str
 
     timeframe: str
 
-    session: str = "UNKNOWN"
-
     # ========================================
-    # Trade Decision
+    # Trade
     # ========================================
 
     action: str
@@ -26,11 +26,17 @@ class Signal(BaseModel):
 
     probability: float = 0.0
 
+    grade: str
+
+    risk: str
+
     trend: str
 
     regime: str = "UNKNOWN"
 
-    expiration: str
+    session: str = "UNKNOWN"
+
+    indicator_mode: str = "UNKNOWN"
 
     # ========================================
     # Prices
@@ -38,18 +44,28 @@ class Signal(BaseModel):
 
     entry_price: float
 
-    timestamp: Optional[datetime] = None
+    entry_time: datetime
+
+    expiration_seconds: int
 
     # ========================================
-    # Risk Management
+    # AI Reasons
     # ========================================
 
-    risk: str
-
-    grade: str = "N/A"
+    reasons: list[str]
 
     # ========================================
-    # AI Explanation
+    # Trade Status
     # ========================================
 
-    reasons: List[str]
+    status: str = "OPEN"
+
+    result: Optional[str] = None
+
+    exit_price: Optional[float] = None
+
+    exit_time: Optional[datetime] = None
+
+    profit: float = 0.0
+
+    payout: float = 0.0

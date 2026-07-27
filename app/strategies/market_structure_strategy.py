@@ -1,120 +1,121 @@
 from app.strategies.strategy_result import StrategyResult
 from app.config.weights import Weights
 
+
 class MarketStructureStrategy:
 
     def analyze(self, data):
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    structure = data.get("structure", "UNKNOWN")
-    bos = data.get("bos", "NONE")
-    choch = data.get("choch", "NONE")
+        structure = data.get("structure", "UNKNOWN")
+        bos = data.get("bos", "NONE")
+        choch = data.get("choch", "NONE")
 
-    # ---------------------------------
-    # Market Structure
-    # ---------------------------------
+        # ---------------------------------
+        # Market Structure
+        # ---------------------------------
 
-    if structure == "HH_HL":
+        if structure == "HH_HL":
 
-        result.trend = "BULLISH"
+            result.trend = "BULLISH"
 
-        result.bullish_score += Weights.MARKET_STRUCTURE
+            result.bullish_score += Weights.MARKET_STRUCTURE
 
-        result.reasons.append(
-            "Higher High + Higher Low"
-        )
+            result.reasons.append(
+                "Higher High + Higher Low"
+            )
 
-    elif structure == "LH_LL":
+        elif structure == "LH_LL":
 
-        result.trend = "BEARISH"
+            result.trend = "BEARISH"
 
-        result.bearish_score += Weights.MARKET_STRUCTURE
+            result.bearish_score += Weights.MARKET_STRUCTURE
 
-        result.reasons.append(
-            "Lower High + Lower Low"
-        )
+            result.reasons.append(
+                "Lower High + Lower Low"
+            )
 
-    else:
+        else:
 
-        result.reasons.append(
-            "Neutral Market Structure"
-        )
+            result.reasons.append(
+                "Neutral Market Structure"
+            )
 
-    # ---------------------------------
-    # Break Of Structure
-    # ---------------------------------
+        # ---------------------------------
+        # Break Of Structure
+        # ---------------------------------
 
-    if bos == "BULLISH_BOS":
+        if bos == "BULLISH_BOS":
 
-        result.bullish_score += Weights.BOS
+            result.bullish_score += Weights.BOS
 
-        result.reasons.append(
-            "Bullish Break of Structure"
-        )
+            result.reasons.append(
+                "Bullish Break of Structure"
+            )
 
-        result.bullish_score += 3
+            result.bullish_score += 3
 
-    elif bos == "BEARISH_BOS":
+        elif bos == "BEARISH_BOS":
 
-        result.bearish_score += Weights.BOS
+            result.bearish_score += Weights.BOS
 
-        result.reasons.append(
-            "Bearish Break of Structure"
-        )
+            result.reasons.append(
+                "Bearish Break of Structure"
+            )
 
-        result.bearish_score += 3
+            result.bearish_score += 3
 
-    # ---------------------------------
-    # Change Of Character
-    # ---------------------------------
+        # ---------------------------------
+        # Change Of Character
+        # ---------------------------------
 
-    if choch == "BULLISH_CHOCH":
+        if choch == "BULLISH_CHOCH":
 
-        result.bullish_score += Weights.CHOCH
+            result.bullish_score += Weights.CHOCH
 
-        result.reasons.append(
-            "Bullish Change of Character"
-        )
+            result.reasons.append(
+                "Bullish Change of Character"
+            )
 
-        result.bullish_score += 2
+            result.bullish_score += 2
 
-    elif choch == "BEARISH_CHOCH":
+        elif choch == "BEARISH_CHOCH":
 
-        result.bearish_score += Weights.CHOCH
+            result.bearish_score += Weights.CHOCH
 
-        result.reasons.append(
-            "Bearish Change of Character"
-        )
+            result.reasons.append(
+                "Bearish Change of Character"
+            )
 
-        result.bearish_score += 2
+            result.bearish_score += 2
 
-    # ---------------------------------
-    # Bonus Confirmation
-    # ---------------------------------
+        # ---------------------------------
+        # Bonus Confirmation
+        # ---------------------------------
 
-    if (
-        structure == "HH_HL"
-        and bos == "BULLISH_BOS"
-        and choch == "BULLISH_CHOCH"
-    ):
+        if (
+            structure == "HH_HL"
+            and bos == "BULLISH_BOS"
+            and choch == "BULLISH_CHOCH"
+        ):
 
-        result.bullish_score += 5
+            result.bullish_score += 5
 
-        result.reasons.append(
-            "Full Bullish Structure Confirmation"
-        )
+            result.reasons.append(
+                "Full Bullish Structure Confirmation"
+            )
 
-    elif (
-        structure == "LH_LL"
-        and bos == "BEARISH_BOS"
-        and choch == "BEARISH_CHOCH"
-    ):
+        elif (
+            structure == "LH_LL"
+            and bos == "BEARISH_BOS"
+            and choch == "BEARISH_CHOCH"
+        ):
 
-        result.bearish_score += 5
+            result.bearish_score += 5
 
-        result.reasons.append(
-            "Full Bearish Structure Confirmation"
-        )
+            result.reasons.append(
+                "Full Bearish Structure Confirmation"
+            )
 
-    return result
+        return result
