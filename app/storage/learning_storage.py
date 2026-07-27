@@ -93,3 +93,10 @@ class LearningStorage:
     def recent_stats(self, limit=50):
 
         return self.repository.recent_stats(limit)
+        # ========================================
+    # Session Statistics
+    # ========================================
+
+    def session_stats(self, session):
+
+        return self.repository.session_stats(session)

@@ -1,4 +1,5 @@
 from app.storage.learning_storage import LearningStorage
+from app.services.session_ranking import SessionRanking
 
 
 class ProbabilityEngine:
@@ -6,6 +7,7 @@ class ProbabilityEngine:
     def __init__(self):
 
         self.learning = LearningStorage()
+        self.sessions = SessionRanking()
 
     # ========================================
     # Safe Win Rate
@@ -70,6 +72,22 @@ class ProbabilityEngine:
                 probability = probability * 0.85 + regime_rate * 0.15
 
         # ========================================
+        # Session Statistics
+        # ========================================
+
+        session = self.learning.session_stats(signal.session)
+
+        if session and (session["total"] or 0) >= 10:
+
+            session_rate = self._win_rate(session)
+
+            if session_rate is not None:
+
+                print("Session Win Rate :", round(session_rate, 2))
+
+                probability = probability * 0.90 + session_rate * 0.10
+
+        # ========================================
         # Indicator Mode
         # ========================================
 
@@ -116,6 +134,61 @@ class ProbabilityEngine:
                 print("Recent Win Rate :", round(recent_rate, 2))
 
                 probability = probability * 0.80 + recent_rate * 0.20
+
+        # ========================================
+        # Session Ranking
+        # ========================================
+
+        rankings = self.sessions.rank()
+
+        current = None
+
+        for item in rankings:
+
+            if item["session"] == signal.session:
+
+                current = item
+
+                break
+
+        if current:
+
+            trades = current["trades"]
+
+            rate = current["win_rate"]
+
+            if trades >= 20:
+
+                print("----------------------------------------")
+                print("Session Ranking")
+                print("----------------------------------------")
+                print("Session :", current["session"])
+                print("Trades  :", trades)
+                print("Win Rate:", rate)
+
+                if rate >= 70:
+
+                    probability += 5
+
+                    print("Bonus : +5")
+
+                elif rate >= 60:
+
+                    probability += 3
+
+                    print("Bonus : +3")
+
+                elif rate <= 45:
+
+                    probability -= 5
+
+                    print("Penalty : -5")
+
+                elif rate <= 50:
+
+                    probability -= 2
+
+                    print("Penalty : -2")
 
         # ========================================
         # Clamp

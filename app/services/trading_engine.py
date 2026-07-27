@@ -13,7 +13,7 @@ from app.services.probability_engine import ProbabilityEngine
 from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
-
+from app.services.session_detector import SessionDetector
 from app.storage.trade_storage import TradeStorage
 
 
@@ -34,6 +34,7 @@ class TradingEngine:
         self.market_regime = MarketRegimeDetector()
         # NEW
         self.probability = ProbabilityEngine()
+        self.session = SessionDetector()
         # ----------------------------------------
         # Risk
         # ----------------------------------------
