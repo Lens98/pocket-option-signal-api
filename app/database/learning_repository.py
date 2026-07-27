@@ -78,6 +78,15 @@ class LearningRepository:
             adx REAL,
 
             atr REAL,
+            ema_used INTEGER,
+
+rsi_used INTEGER,
+
+macd_used INTEGER,
+
+adx_used INTEGER,
+
+atr_used INTEGER,
 
             entry_price REAL,
 
@@ -142,6 +151,15 @@ class LearningRepository:
 
             adx,
             atr,
+            ema_used,
+
+rsi_used,
+
+macd_used,
+
+adx_used,
+
+atr_used,
 
             entry_price,
             exit_price,
@@ -162,21 +180,24 @@ class LearningRepository:
 
         VALUES (
 
-            ?,?,?,?,?,?,
-            ?,?,?,?,
-            ?,?,
-            ?,?,?,
-            ?,
-            ?,?,?,
-            ?,?,
-            ?,?,
-            ?,?,
-            ?,
-            ?,?,
-            ?,
-            ?
+    ?,?,?,?,?,?,
+    ?,?,?,?,
+    ?,?,
+    ?,?,?,
+    ?,
+    ?,?,?,
+    ?,?,
 
-        )
+    ?,?,?,?,?,
+
+    ?,?,
+    ?,?,
+    ?,
+    ?,?,
+    ?,
+    ?
+
+)
 
         """, (
 
@@ -206,10 +227,16 @@ class LearningRepository:
             record.histogram,
 
             record.adx,
-            record.atr,
+record.atr,
 
-            record.entry_price,
-            record.exit_price,
+int(record.ema_used),
+int(record.rsi_used),
+int(record.macd_used),
+int(record.adx_used),
+int(record.atr_used),
+
+record.entry_price,
+record.exit_price,
 
             record.payout,
             record.profit,
@@ -600,3 +627,202 @@ class LearningRepository:
             )
 
         """, (limit,)).fetchone()
+        # ========================================
+    # EMA Statistics
+    # ========================================
+
+    def ema_stats(self):
+
+        cursor = self._cursor()
+
+        return cursor.execute("""
+
+            SELECT
+
+                COUNT(*) AS total,
+
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
+                ) AS wins
+
+            FROM learning
+
+            WHERE ema_used=1
+
+        """).fetchone()
+
+    # ========================================
+    # RSI Statistics
+    # ========================================
+
+    def rsi_stats(self):
+
+        cursor = self._cursor()
+
+        return cursor.execute("""
+
+            SELECT
+
+                COUNT(*) AS total,
+
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
+                ) AS wins
+
+            FROM learning
+
+            WHERE rsi_used=1
+
+        """).fetchone()
+
+    # ========================================
+    # MACD Statistics
+    # ========================================
+
+    def macd_stats(self):
+
+        cursor = self._cursor()
+
+        return cursor.execute("""
+
+            SELECT
+
+                COUNT(*) AS total,
+
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
+                ) AS wins
+
+            FROM learning
+
+            WHERE macd_used=1
+
+        """).fetchone()
+
+    # ========================================
+    # ADX Statistics
+    # ========================================
+
+    def adx_stats(self):
+
+        cursor = self._cursor()
+
+        return cursor.execute("""
+
+            SELECT
+
+                COUNT(*) AS total,
+
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
+                ) AS wins
+
+            FROM learning
+
+            WHERE adx_used=1
+
+        """).fetchone()
+
+    # ========================================
+    # ATR Statistics
+    # ========================================
+
+    def atr_stats(self):
+
+        cursor = self._cursor()
+
+        return cursor.execute("""
+
+            SELECT
+
+                COUNT(*) AS total,
+
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
+                ) AS wins
+
+            FROM learning
+
+            WHERE atr_used=1
+
+        """).fetchone()

@@ -89,3 +89,16 @@ class TradeLearning(BaseModel):
     # ========================================
 
     reasons: List[str]
+    # ----------------------------------------
+    # Indicator Usage
+    # ----------------------------------------
+
+    ema_used: bool = False
+
+    rsi_used: bool = False
+
+    macd_used: bool = False
+
+    adx_used: bool = False
+
+    atr_used: bool = False

@@ -181,6 +181,30 @@ class TradeMonitor:
                 adx=None,
 
                 atr=None,
+                ema_used=any(
+               "EMA" in reason
+                for reason in closed_trade.reasons
+              ),
+
+rsi_used=any(
+    "RSI" in reason
+    for reason in closed_trade.reasons
+),
+
+macd_used=any(
+    "MACD" in reason
+    for reason in closed_trade.reasons
+),
+
+adx_used=any(
+    "ADX" in reason
+    for reason in closed_trade.reasons
+),
+
+atr_used=any(
+    "ATR" in reason
+    for reason in closed_trade.reasons
+),
 
                 entry_price=closed_trade.entry_price,
 
@@ -207,7 +231,15 @@ class TradeMonitor:
                 reasons=closed_trade.reasons
 
             )
-
+            print("========================================")
+            print("INDICATOR FLAGS")
+            print("EMA :", learning.ema_used)
+            print("RSI :", learning.rsi_used)
+            print("MACD:", learning.macd_used)
+            print("ADX :", learning.adx_used)
+            print("ATR :", learning.atr_used)
+            print("Reasons:", learning.reasons)
+            print("========================================")
             self.learning.add(learning)
 
             print("----------------------------------------")

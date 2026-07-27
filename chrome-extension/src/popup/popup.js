@@ -144,42 +144,46 @@ async function loadSignal() {
         }
 
         //------------------------
-        // Action
-        //------------------------
+// Action
+//------------------------
 
-        const action =
-            document.getElementById("action");
+const action = document.getElementById("action");
+const banner = document.getElementById("buyBanner");
 
-        action.innerHTML =
-            signal.action;
+if (signal.action === "CALL") {
 
-        action.className =
-            "action";
+    action.innerHTML = "CALL";
+    action.className = "action call";
 
-        if (signal.action === "CALL") {
+    banner.innerHTML = "🟢 BUY CALL NOW";
+    banner.className = "buy-banner call";
 
-            action.classList.add("call");
+}
+else if (signal.action === "PUT") {
 
-        }
+    action.innerHTML = "PUT";
+    action.className = "action put";
 
-        else if (signal.action === "PUT") {
+    banner.innerHTML = "🔴 BUY PUT NOW";
+    banner.className = "buy-banner put";
 
-            action.classList.add("put");
+}
+else {
 
-        }
+    action.innerHTML = "WAIT";
+    action.className = "action wait";
 
-        else {
+    banner.innerHTML = "🟡 WAIT FOR NEXT CANDLE";
+    banner.className = "buy-banner wait";
 
-            action.classList.add("wait");
+}
 
-        }
+//------------------------
+// Gauge
+//------------------------
 
-        //------------------------
-        // Gauge
-        //------------------------
+const percent = signal.confidence;
 
-        const percent =
-            signal.confidence;
 
         document.getElementById(
 
@@ -241,6 +245,17 @@ async function loadSignal() {
 
         document.getElementById("expiration").innerHTML =
             signal.expiration;
+        document.getElementById("probability").innerHTML =
+    `${signal.probability}%`;
+
+document.getElementById("grade").innerHTML =
+    signal.grade;
+
+document.getElementById("session").innerHTML =
+    signal.session;
+
+document.getElementById("regime").innerHTML =
+    signal.regime;
                     //------------------------
         // AI Analysis
         //------------------------
@@ -341,6 +356,7 @@ drawChart(currentCandles);
 
         document.getElementById("updated").innerHTML =
             new Date().toLocaleTimeString();
+        startCountdown();
 
     }
 
@@ -843,4 +859,48 @@ const scale = price => {
         ctx.setLineDash([]);
 
     }
- }
+}
+ // ========================================
+// Countdown Timer
+// ========================================
+let countdownInterval = null;
+
+function startCountdown() {
+
+    if (countdownInterval) {
+
+        clearInterval(countdownInterval);
+
+    }
+
+    const timer = document.getElementById("countdown");
+
+    function updateCountdown() {
+
+        const now = new Date();
+
+        const secondsRemaining = 60 - now.getSeconds();
+
+        const minutes = String(
+            Math.floor(secondsRemaining / 60)
+        ).padStart(2, "0");
+
+        const seconds = String(
+            secondsRemaining % 60
+        ).padStart(2, "0");
+
+        timer.innerHTML = `${minutes}:${seconds}`;
+
+    }
+
+    updateCountdown();
+
+    countdownInterval = setInterval(
+
+        updateCountdown,
+
+        1000
+
+    );
+
+}

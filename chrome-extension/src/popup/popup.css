@@ -684,3 +684,56 @@ body {
     }
 
 }
+.buy-banner{
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    padding:10px;
+
+    border-radius:10px;
+
+    margin-bottom:15px;
+
+    text-align:center;
+
+}
+
+.buy-banner.call{
+
+    background:#16a34a;
+
+    color:white;
+
+}
+
+.buy-banner.put{
+
+    background:#dc2626;
+
+    color:white;
+
+}
+
+.buy-banner.wait{
+
+    background:#374151;
+
+    color:#ddd;
+
+}
+
+.countdown{
+
+    margin-top:20px;
+
+    text-align:center;
+
+}
+
+.countdown strong{
+
+    font-size:26px;
+
+}

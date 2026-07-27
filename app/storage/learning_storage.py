@@ -100,3 +100,42 @@ class LearningStorage:
     def session_stats(self, session):
 
         return self.repository.session_stats(session)
+        # ========================================
+    # EMA Statistics
+    # ========================================
+
+    def ema_stats(self):
+
+        return self.repository.ema_stats()
+
+    # ========================================
+    # RSI Statistics
+    # ========================================
+
+    def rsi_stats(self):
+
+        return self.repository.rsi_stats()
+
+    # ========================================
+    # MACD Statistics
+    # ========================================
+
+    def macd_stats(self):
+
+        return self.repository.macd_stats()
+
+    # ========================================
+    # ADX Statistics
+    # ========================================
+
+    def adx_stats(self):
+
+        return self.repository.adx_stats()
+
+    # ========================================
+    # ATR Statistics
+    # ========================================
+
+    def atr_stats(self):
+
+        return self.repository.atr_stats()
