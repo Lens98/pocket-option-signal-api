@@ -11,9 +11,21 @@ class MacdStrategy:
         macd = indicators.macd
         signal = indicators.signal_line
 
-        # ----------------------------
+        # ----------------------------------------
+        # MACD Not Available
+        # ----------------------------------------
+
+        if macd is None or signal is None:
+
+            result.reasons.append(
+                "MACD unavailable"
+            )
+
+            return result
+
+        # ----------------------------------------
         # Bullish Cross
-        # ----------------------------
+        # ----------------------------------------
 
         if macd > signal:
 
@@ -43,9 +55,9 @@ class MacdStrategy:
                     "Moderate Bullish Momentum"
                 )
 
-        # ----------------------------
+        # ----------------------------------------
         # Bearish Cross
-        # ----------------------------
+        # ----------------------------------------
 
         elif macd < signal:
 

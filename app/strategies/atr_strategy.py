@@ -1,6 +1,7 @@
 from app.strategies.strategy_result import StrategyResult
 from app.config.weights import Weights
 
+
 class AtrStrategy:
 
     def analyze(self, indicators):
@@ -8,6 +9,22 @@ class AtrStrategy:
         result = StrategyResult()
 
         atr = indicators.atr
+
+        # ----------------------------------------
+        # ATR Not Available Yet
+        # ----------------------------------------
+
+        if atr is None:
+
+            result.reasons.append(
+                "ATR unavailable"
+            )
+
+            return result
+
+        # ----------------------------------------
+        # High Volatility
+        # ----------------------------------------
 
         if atr >= 1.5:
 
@@ -18,6 +35,10 @@ class AtrStrategy:
                 f"ATR High ({atr:.5f})"
             )
 
+        # ----------------------------------------
+        # Normal Volatility
+        # ----------------------------------------
+
         elif atr >= 0.8:
 
             result.bullish_score = Weights.ATR
@@ -26,6 +47,10 @@ class AtrStrategy:
             result.reasons.append(
                 f"ATR Normal ({atr:.5f})"
             )
+
+        # ----------------------------------------
+        # Low Volatility
+        # ----------------------------------------
 
         else:
 

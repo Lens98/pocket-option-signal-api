@@ -77,8 +77,7 @@ class TradeMonitor:
                 print("----------------------------------------")
 
             time.sleep(1)
-
-    # ----------------------------------------
+        # ----------------------------------------
     # Check Open Trades
     # ----------------------------------------
 
@@ -107,6 +106,9 @@ class TradeMonitor:
                 trade.asset
             )
 
+            if market is None:
+                continue
+
             if len(market.candles) == 0:
                 continue
 
@@ -119,85 +121,98 @@ class TradeMonitor:
             print("Entry :", trade.entry_price)
             print("Exit  :", exit_price)
             print("----------------------------------------")
+
+            # ----------------------------------------
+            # Close Trade
+            # ----------------------------------------
+
             closed_trade = self.tracker.close_trade(
-            trade,
-            exit_price
+                trade,
+                exit_price
             )
 
-        if closed_trade:
+            if not closed_trade:
+                continue
 
-         learning = TradeLearning(
+            # ----------------------------------------
+            # Save Learning Record
+            # ----------------------------------------
 
-        trade_id=closed_trade.id,
+            learning = TradeLearning(
 
-        asset=closed_trade.asset,
+                trade_id=closed_trade.id,
 
-        timeframe=closed_trade.timeframe,
+                asset=closed_trade.asset,
 
-        session="UNKNOWN",
+                timeframe=closed_trade.timeframe,
 
-        action=closed_trade.action,
+                session="UNKNOWN",
 
-        indicator_mode="UNKNOWN",
+                action=closed_trade.action,
 
-        regime="UNKNOWN",
+                indicator_mode="UNKNOWN",
 
-        trend=closed_trade.trend,
+                regime="UNKNOWN",
 
-        confidence=closed_trade.confidence,
+                trend=closed_trade.trend,
 
-        probability=0.0,
+                confidence=closed_trade.confidence,
 
-        risk=closed_trade.risk,
+                probability=0.0,
 
-        grade=closed_trade.grade,
+                risk=closed_trade.risk,
 
-        ema20=None,
-        ema50=None,
-        ema200=None,
+                grade=closed_trade.grade,
 
-        rsi=None,
+                ema20=None,
 
-        macd=None,
-        signal_line=None,
-        histogram=None,
+                ema50=None,
 
-        adx=None,
-        atr=None,
+                ema200=None,
 
-        entry_price=closed_trade.entry_price,
+                rsi=None,
 
-        exit_price=closed_trade.exit_price,
+                macd=None,
 
-        payout=closed_trade.payout,
+                signal_line=None,
 
-        profit=closed_trade.profit,
+                histogram=None,
 
-        result=closed_trade.result,
+                adx=None,
 
-        entry_time=closed_trade.entry_time,
+                atr=None,
 
-        exit_time=closed_trade.exit_time,
+                entry_price=closed_trade.entry_price,
 
-        duration=(
+                exit_price=closed_trade.exit_price,
 
-            closed_trade.exit_time -
+                payout=closed_trade.payout,
 
-            closed_trade.entry_time
+                profit=closed_trade.profit,
 
-        ).total_seconds(),
+                result=closed_trade.result,
 
-        reasons=closed_trade.reasons
+                entry_time=closed_trade.entry_time,
 
-    )
+                exit_time=closed_trade.exit_time,
 
-        self.learning.add(learning)
+                duration=(
 
-        print("----------------------------------------")
-        print("🧠 Learning Record Saved")
-        print("----------------------------------------")
-        print("Trade :", closed_trade.id)
-        print("Result:", closed_trade.result)
-        print("----------------------------------------")
-            
-               
+                    closed_trade.exit_time -
+
+                    closed_trade.entry_time
+
+                ).total_seconds(),
+
+                reasons=closed_trade.reasons
+
+            )
+
+            self.learning.add(learning)
+
+            print("----------------------------------------")
+            print("🧠 Learning Record Saved")
+            print("----------------------------------------")
+            print("Trade :", closed_trade.id)
+            print("Result:", closed_trade.result)
+            print("----------------------------------------")

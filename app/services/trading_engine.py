@@ -453,7 +453,7 @@ class TradingEngine:
 
         )
 
-        # ----------------------------------------
+                # ----------------------------------------
         # Save Trade
         # ----------------------------------------
 
@@ -482,6 +482,14 @@ class TradingEngine:
                     action=signal.action,
 
                     confidence=signal.confidence,
+
+                    probability=signal.probability,
+
+                    session=signal.session,
+
+                    regime=signal.regime,
+
+                    indicator_mode=indicator_result.mode,
 
                     grade=signal.grade,
 

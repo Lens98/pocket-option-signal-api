@@ -15,9 +15,15 @@ class LearningRepository:
 
         self.connection.row_factory = sqlite3.Row
 
-        self.cursor = self.connection.cursor()
-
         self.create_table()
+
+    # ========================================
+    # New Cursor
+    # ========================================
+
+    def _cursor(self):
+
+        return self.connection.cursor()
 
     # ========================================
     # Create Table
@@ -25,7 +31,9 @@ class LearningRepository:
 
     def create_table(self):
 
-        self.cursor.execute("""
+        cursor = self._cursor()
+
+        cursor.execute("""
 
         CREATE TABLE IF NOT EXISTS learning (
 
@@ -101,7 +109,9 @@ class LearningRepository:
 
     def add(self, record: TradeLearning):
 
-        self.cursor.execute("""
+        cursor = self._cursor()
+
+        cursor.execute("""
 
         INSERT OR REPLACE INTO learning (
 
@@ -218,24 +228,28 @@ class LearningRepository:
         self.connection.commit()
 
     # ========================================
-    # Get All Learning Records
+    # Get All
     # ========================================
 
     def all(self):
 
-        return self.cursor.execute(
+        cursor = self._cursor()
+
+        return cursor.execute(
 
             "SELECT * FROM learning"
 
         ).fetchall()
 
     # ========================================
-    # Find by Asset
+    # Find Asset
     # ========================================
 
     def by_asset(self, asset):
 
-        return self.cursor.execute(
+        cursor = self._cursor()
+
+        return cursor.execute(
 
             "SELECT * FROM learning WHERE asset=?",
 
@@ -244,12 +258,14 @@ class LearningRepository:
         ).fetchall()
 
     # ========================================
-    # Find by Regime
+    # Find Regime
     # ========================================
 
     def by_regime(self, regime):
 
-        return self.cursor.execute(
+        cursor = self._cursor()
+
+        return cursor.execute(
 
             "SELECT * FROM learning WHERE regime=?",
 
@@ -258,12 +274,14 @@ class LearningRepository:
         ).fetchall()
 
     # ========================================
-    # Find by Session
+    # Find Session
     # ========================================
 
     def by_session(self, session):
 
-        return self.cursor.execute(
+        cursor = self._cursor()
+
+        return cursor.execute(
 
             "SELECT * FROM learning WHERE session=?",
 
@@ -272,12 +290,14 @@ class LearningRepository:
         ).fetchall()
 
     # ========================================
-    # Total Records
+    # Count
     # ========================================
 
     def count(self):
 
-        return self.cursor.execute(
+        cursor = self._cursor()
+
+        return cursor.execute(
 
             "SELECT COUNT(*) FROM learning"
 
@@ -289,18 +309,32 @@ class LearningRepository:
 
     def asset_stats(self, asset):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
-                    CASE
-                        WHEN result='WIN'
-                        THEN 1
-                        ELSE 0
-                    END
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
                 ) AS wins,
 
                 AVG(profit) AS average_profit
@@ -317,18 +351,32 @@ class LearningRepository:
 
     def regime_stats(self, regime):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
-                    CASE
-                        WHEN result='WIN'
-                        THEN 1
-                        ELSE 0
-                    END
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
                 ) AS wins,
 
                 AVG(profit) AS average_profit
@@ -345,18 +393,32 @@ class LearningRepository:
 
     def session_stats(self, session):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
-                    CASE
-                        WHEN result='WIN'
-                        THEN 1
-                        ELSE 0
-                    END
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
                 ) AS wins,
 
                 AVG(profit) AS average_profit
@@ -373,18 +435,32 @@ class LearningRepository:
 
     def confidence_stats(self, minimum):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
-                    CASE
-                        WHEN result='WIN'
-                        THEN 1
-                        ELSE 0
-                    END
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
                 ) AS wins,
 
                 AVG(profit) AS average_profit
@@ -401,18 +477,32 @@ class LearningRepository:
 
     def mode_stats(self, mode):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
-                    CASE
-                        WHEN result='WIN'
-                        THEN 1
-                        ELSE 0
-                    END
+                COALESCE(
+
+                    SUM(
+
+                        CASE
+
+                            WHEN result='WIN'
+
+                            THEN 1
+
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
+
                 ) AS wins,
 
                 AVG(profit) AS average_profit
@@ -422,29 +512,38 @@ class LearningRepository:
             WHERE indicator_mode=?
 
         """, (mode,)).fetchone()
-        # ========================================
+
+    # ========================================
     # Overall Statistics
     # ========================================
 
     def overall_stats(self):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
+                COALESCE(
 
-                    CASE
+                    SUM(
 
-                        WHEN result='WIN'
+                        CASE
 
-                        THEN 1
+                            WHEN result='WIN'
 
-                        ELSE 0
+                            THEN 1
 
-                    END
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
 
                 ) AS wins,
 
@@ -460,23 +559,31 @@ class LearningRepository:
 
     def recent_stats(self, limit=50):
 
-        return self.cursor.execute("""
+        cursor = self._cursor()
+
+        return cursor.execute("""
 
             SELECT
 
                 COUNT(*) AS total,
 
-                SUM(
+                COALESCE(
 
-                    CASE
+                    SUM(
 
-                        WHEN result='WIN'
+                        CASE
 
-                        THEN 1
+                            WHEN result='WIN'
 
-                        ELSE 0
+                            THEN 1
 
-                    END
+                            ELSE 0
+
+                        END
+
+                    ),
+
+                    0
 
                 ) AS wins
 

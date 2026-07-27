@@ -8,6 +8,23 @@ class ProbabilityEngine:
         self.learning = LearningStorage()
 
     # ========================================
+    # Safe Win Rate
+    # ========================================
+
+    def _win_rate(self, row):
+
+        if not row:
+            return None
+
+        total = row["total"] or 0
+        wins = row["wins"] or 0
+
+        if total == 0:
+            return None
+
+        return (wins / total) * 100
+
+    # ========================================
     # Calculate Win Probability
     # ========================================
 
@@ -26,107 +43,63 @@ class ProbabilityEngine:
 
         asset = self.learning.asset_stats(signal.asset)
 
-        if asset and asset["total"] and asset["total"] >= 10:
+        if asset and (asset["total"] or 0) >= 10:
 
-            asset_rate = (
+            asset_rate = self._win_rate(asset)
 
-                asset["wins"] /
-                asset["total"]
+            if asset_rate is not None:
 
-            ) * 100
+                print("Asset Win Rate :", round(asset_rate, 2))
 
-            print("Asset Win Rate :", round(asset_rate, 2))
-
-            probability = (
-
-                probability * 0.75 +
-
-                asset_rate * 0.25
-
-            )
+                probability = probability * 0.75 + asset_rate * 0.25
 
         # ========================================
-        # Market Regime
+        # Regime History
         # ========================================
 
-        regime = self.learning.regime_stats(
+        regime = self.learning.regime_stats(signal.regime)
 
-            signal.regime
+        if regime and (regime["total"] or 0) >= 10:
 
-        )
+            regime_rate = self._win_rate(regime)
 
-        if regime and regime["total"] and regime["total"] >= 10:
+            if regime_rate is not None:
 
-            regime_rate = (
+                print("Regime Win Rate :", round(regime_rate, 2))
 
-                regime["wins"] /
-                regime["total"]
-
-            ) * 100
-
-            print("Regime Win Rate :", round(regime_rate, 2))
-
-            probability = (
-
-                probability * 0.85 +
-
-                regime_rate * 0.15
-
-            )
+                probability = probability * 0.85 + regime_rate * 0.15
 
         # ========================================
         # Indicator Mode
         # ========================================
 
-        mode = self.learning.mode_stats(
+        mode = self.learning.mode_stats(indicator_mode)
 
-            indicator_mode
+        if mode and (mode["total"] or 0) >= 10:
 
-        )
+            mode_rate = self._win_rate(mode)
 
-        if mode and mode["total"] and mode["total"] >= 10:
+            if mode_rate is not None:
 
-            mode_rate = (
+                print("Mode Win Rate :", round(mode_rate, 2))
 
-                mode["wins"] /
-                mode["total"]
-
-            ) * 100
-
-            print("Mode Win Rate :", round(mode_rate, 2))
-
-            probability = (
-
-                probability * 0.90 +
-
-                mode_rate * 0.10
-
-            )
+                probability = probability * 0.90 + mode_rate * 0.10
 
         # ========================================
-        # Overall AI Performance
+        # Overall Performance
         # ========================================
 
         overall = self.learning.overall_stats()
 
-        if overall and overall["total"] and overall["total"] >= 50:
+        if overall and (overall["total"] or 0) >= 50:
 
-            overall_rate = (
+            overall_rate = self._win_rate(overall)
 
-                overall["wins"] /
-                overall["total"]
+            if overall_rate is not None:
 
-            ) * 100
+                print("Overall Win Rate :", round(overall_rate, 2))
 
-            print("Overall Win Rate :", round(overall_rate, 2))
-
-            probability = (
-
-                probability * 0.90 +
-
-                overall_rate * 0.10
-
-            )
+                probability = probability * 0.90 + overall_rate * 0.10
 
         # ========================================
         # Recent Performance
@@ -134,50 +107,23 @@ class ProbabilityEngine:
 
         recent = self.learning.recent_stats(50)
 
-        if recent and recent["total"] and recent["total"] >= 20:
+        if recent and (recent["total"] or 0) >= 20:
 
-            recent_rate = (
+            recent_rate = self._win_rate(recent)
 
-                recent["wins"] /
-                recent["total"]
+            if recent_rate is not None:
 
-            ) * 100
+                print("Recent Win Rate :", round(recent_rate, 2))
 
-            print("Recent Win Rate :", round(recent_rate, 2))
-
-            probability = (
-
-                probability * 0.80 +
-
-                recent_rate * 0.20
-
-            )
+                probability = probability * 0.80 + recent_rate * 0.20
 
         # ========================================
-        # Clamp Probability
+        # Clamp
         # ========================================
 
-        probability = max(
+        probability = max(0, min(probability, 100))
 
-            0,
-
-            min(
-
-                probability,
-
-                100
-
-            )
-
-        )
-
-        probability = round(
-
-            probability,
-
-            2
-
-        )
+        probability = round(probability, 2)
 
         print("----------------------------------------")
         print("Final Probability :", probability)

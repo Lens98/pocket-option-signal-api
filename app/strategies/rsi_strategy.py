@@ -11,9 +11,21 @@ class RsiStrategy:
 
         rsi = indicators.rsi
 
-        # ----------------------------
+        # ----------------------------------------
+        # RSI Not Available
+        # ----------------------------------------
+
+        if rsi is None:
+
+            result.reasons.append(
+                "RSI unavailable"
+            )
+
+            return result
+
+        # ----------------------------------------
         # Oversold
-        # ----------------------------
+        # ----------------------------------------
 
         if rsi <= settings.RSI_OVERSOLD:
 
@@ -33,9 +45,9 @@ class RsiStrategy:
                     "Strong RSI Reversal"
                 )
 
-        # ----------------------------
+        # ----------------------------------------
         # Overbought
-        # ----------------------------
+        # ----------------------------------------
 
         elif rsi >= settings.RSI_OVERBOUGHT:
 
@@ -54,10 +66,6 @@ class RsiStrategy:
                 result.reasons.append(
                     "Strong RSI Reversal"
                 )
-
-        # ----------------------------
-        # Neutral
-        # ----------------------------
 
         else:
 
