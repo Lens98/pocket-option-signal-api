@@ -8,24 +8,12 @@
 // Global State
 // -----------------------------
 
-const signalHistory = [];
-
 let currentCandles = [];
 
 let mouseX = null;
 let mouseY = null;
-
+let marketState = "WAITING";
 let animation = 0;
-
-const stats = {
-
-    CALL: 0,
-
-    PUT: 0,
-
-    WAIT: 0
-
-};
 
 // -----------------------------
 // Canvas
@@ -81,9 +69,6 @@ async function loadChart(asset) {
 
 }
 
-// -----------------------------
-// Main
-// -----------------------------
 
 async function loadSignal() {
 
@@ -91,23 +76,44 @@ async function loadSignal() {
 
     try {
 
-        const response = await fetch(
 
-            "http://127.0.0.1:8000/signal"
+    const background =
+        await chrome.runtime.sendMessage({
+            type: "GET_STATE"
+        });
 
-        );
+    const signal =
+        background.signal;
 
-        const signal = await response.json();
+    // 👇 STEP 3 GOES HERE
 
-        //------------------------
-        // Connection
-        //------------------------
+    const status =
+        document.getElementById("status");
 
+    if (background.connected) {
+
+        status.innerHTML =
+            "🟢 Connected";
         status.className = "status online";
 
-        status.innerHTML = "● Connected";
+    }
+    else {
 
-        //------------------------
+        status.innerHTML =
+            "🔴 Offline";
+
+        status.className =
+            "status offline";
+
+    }
+
+    // Continue with the rest of loadSignal()
+
+
+    marketState =
+    background.tradeState;
+
+          //------------------------
         // No Signal
         //------------------------
 
@@ -147,40 +153,15 @@ async function loadSignal() {
 // Action
 //------------------------
 
-const action = document.getElementById("action");
-const banner = document.getElementById("buyBanner");
+const actionElement =
+    document.getElementById("action");
 
-if (signal.action === "CALL") {
+actionElement.innerHTML =
+    signal.action;
 
-    action.innerHTML = "CALL";
-    action.className = "action call";
-
-    banner.innerHTML = "🟢 BUY CALL NOW";
-    banner.className = "buy-banner call";
-
-}
-else if (signal.action === "PUT") {
-
-    action.innerHTML = "PUT";
-    action.className = "action put";
-
-    banner.innerHTML = "🔴 BUY PUT NOW";
-    banner.className = "buy-banner put";
-
-}
-else {
-
-    action.innerHTML = "WAIT";
-    action.className = "action wait";
-
-    banner.innerHTML = "🟡 WAIT FOR NEXT CANDLE";
-    banner.className = "buy-banner wait";
-
-}
-
-//------------------------
-// Gauge
-//------------------------
+actionElement.className =
+    "action " +
+    signal.action.toLowerCase();
 
 const percent = signal.confidence;
 
@@ -266,31 +247,29 @@ document.getElementById("regime").innerHTML =
         // Signal History
         //------------------------
 
-        signalHistory.unshift({
+        const history = background.history;
 
-            asset: signal.asset,
-
-            action: signal.action,
-
-            confidence: signal.confidence,
-
-            time: new Date().toLocaleTimeString()
-
-        });
-
-        if (signalHistory.length > 10) {
-
-            signalHistory.pop();
-
-        }
-
-        renderHistory();
-
+            renderHistory(history);
+        
         //------------------------
         // Statistics
         //------------------------
 
-        updateStats(signal.action);
+       const stats = background.stats;
+
+document.getElementById("callCount").innerHTML =
+    stats.CALL;
+
+document.getElementById("putCount").innerHTML =
+    stats.PUT;
+
+document.getElementById("waitCount").innerHTML =
+    stats.WAIT;
+
+document.getElementById("totalCount").innerHTML =
+    stats.CALL +
+    stats.PUT +
+    stats.WAIT;
 
         //------------------------
         // Load Real Candle History
@@ -356,7 +335,6 @@ drawChart(currentCandles);
 
         document.getElementById("updated").innerHTML =
             new Date().toLocaleTimeString();
-        startCountdown();
 
     }
 
@@ -368,7 +346,7 @@ drawChart(currentCandles);
 
         status.innerHTML = "● Offline";
 
-    }
+}
 
 }
 
@@ -377,21 +355,22 @@ drawChart(currentCandles);
 // ========================================
 
 loadSignal();
-
+startCountdown();
 setInterval(loadSignal, 1000);
+
 
 // ========================================
 // Signal History
 // ========================================
 
-function renderHistory() {
+function renderHistory(history) {
 
     const container =
         document.getElementById("history");
 
     container.innerHTML = "";
 
-    if (signalHistory.length === 0) {
+    if (!history || history.length === 0) {
 
         container.innerHTML =
             "No signals yet";
@@ -400,7 +379,7 @@ function renderHistory() {
 
     }
 
-    signalHistory.forEach(signal => {
+    history.forEach(signal => {
 
         const row =
             document.createElement("div");
@@ -408,18 +387,22 @@ function renderHistory() {
         row.className =
             "history-item";
 
-        let color =
-            "wait-text";
+        let color = "wait-text";
 
-        if (signal.action === "CALL")
+        if (signal.action === "CALL") {
+
             color = "call-text";
 
-        if (signal.action === "PUT")
+        }
+        else if (signal.action === "PUT") {
+
             color = "put-text";
+
+        }
 
         row.innerHTML = `
 
-            <span>${signal.time}</span>
+            <span>${new Date(signal.time).toLocaleTimeString()}</span>
 
             <span class="${color}">
                 ${signal.action}
@@ -436,10 +419,6 @@ function renderHistory() {
     });
 
 }
-
-// ========================================
-// AI Analysis
-// ========================================
 
 function renderAnalysis(signal) {
 
@@ -502,34 +481,6 @@ function renderAnalysis(signal) {
 // ========================================
 // Statistics
 // ========================================
-
-function updateStats(action) {
-
-    if (stats[action] !== undefined) {
-
-        stats[action]++;
-
-    }
-
-    document.getElementById("callCount").innerHTML =
-        stats.CALL;
-
-    document.getElementById("putCount").innerHTML =
-        stats.PUT;
-
-    document.getElementById("waitCount").innerHTML =
-        stats.WAIT;
-
-    document.getElementById("totalCount").innerHTML =
-        stats.CALL +
-        stats.PUT +
-        stats.WAIT;
-
-}
-// ========================================
-// TradingView Chart Engine
-// ========================================
-
 function drawChart(candles) {
     console.log("drawChart()", candles.length);
 if (!candles || candles.length === 0) {
@@ -864,43 +815,145 @@ const scale = price => {
 // Countdown Timer
 // ========================================
 let countdownInterval = null;
-
 function startCountdown() {
 
     if (countdownInterval) {
-
         clearInterval(countdownInterval);
-
     }
 
     const timer = document.getElementById("countdown");
 
-    function updateCountdown() {
+    function update() {
 
         const now = new Date();
 
-        const secondsRemaining = 60 - now.getSeconds();
+        const remaining = 60 - now.getSeconds();
 
-        const minutes = String(
-            Math.floor(secondsRemaining / 60)
-        ).padStart(2, "0");
+        timer.innerHTML =
+            `00:${String(remaining).padStart(2, "0")}`;
 
-        const seconds = String(
-            secondsRemaining % 60
-        ).padStart(2, "0");
+        // --------------------------------
+        // Banner
+        // --------------------------------
 
-        timer.innerHTML = `${minutes}:${seconds}`;
+       const banner =
+    document.getElementById("buyBanner");
 
-    }
+const action =
+    document.getElementById("action").innerHTML;
 
-    updateCountdown();
+switch (marketState) {
 
-    countdownInterval = setInterval(
+    case "WAITING":
 
-        updateCountdown,
+        banner.innerHTML =
+            "🟡 WAIT FOR NEXT CANDLE";
 
-        1000
+        banner.className =
+            "buy-banner wait";
 
-    );
+        break;
 
-}
+    case "ANALYZING":
+
+        banner.innerHTML =
+            "🔵 ANALYZING MARKET";
+
+        banner.className =
+            "buy-banner wait";
+
+        break;
+
+    case "READY":
+
+        banner.innerHTML =
+            "🟢 READY FOR ENTRY";
+
+        banner.className =
+            "buy-banner call";
+
+        break;
+
+    case "ENTRY":
+
+        if (action === "CALL") {
+
+            banner.innerHTML =
+                "🟢 BUY CALL NOW";
+
+            banner.className =
+                "buy-banner call";
+
+        }
+        else if (action === "PUT") {
+
+            banner.innerHTML =
+                "🔴 BUY PUT NOW";
+
+            banner.className =
+                "buy-banner put";
+
+        }
+        else {
+
+            banner.innerHTML =
+                "🟡 WAIT";
+
+            banner.className =
+                "buy-banner wait";
+
+        }
+
+        break;
+
+    case "ACTIVE":
+
+        banner.innerHTML =
+            "🔴 TRADE ACTIVE";
+
+        banner.className =
+            "buy-banner put";
+
+        break;
+
+    case "FINISHED":
+
+        banner.innerHTML =
+            "✅ TRADE FINISHED";
+
+        banner.className =
+            "buy-banner wait";
+
+        break;
+
+        case "LEARNING":
+
+    banner.innerHTML =
+        "🧠 AI LEARNING";
+
+    banner.className =
+        "buy-banner wait";
+
+    break;
+
+
+default:
+
+    banner.innerHTML =
+        "🟡 WAIT FOR NEXT CANDLE";
+
+    banner.className =
+        "buy-banner wait";
+
+    break;
+
+}   // closes switch
+
+}   // closes update()
+
+update();
+
+countdownInterval =
+    setInterval(update, 1000);
+
+}   // closes startCountdown()

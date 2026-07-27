@@ -15,7 +15,7 @@ from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
 from app.storage.trade_storage import TradeStorage
-
+from app.storage.shared import trade_state
 
 class TradingEngine:
 
@@ -28,7 +28,7 @@ class TradingEngine:
         self.indicators = IndicatorService()
         self.strategy = StrategyService()
         self.ai = AIReasonService()
-
+        self.trade_state = trade_state
         # NEW
         self.confidence = ConfidenceEngine()
         self.market_regime = MarketRegimeDetector()

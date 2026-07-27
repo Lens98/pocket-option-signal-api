@@ -6,6 +6,7 @@ from app.models.market_update import MarketUpdate
 from app.storage.shared import (
     market_storage,
     signal_storage,
+    trade_state,
 )
 
 from app.services.trading_engine import TradingEngine
@@ -89,4 +90,10 @@ def market_history(asset: str):
         "asset": asset,
         "count": len(candles),
         "candles": candles
+    }
+@router.get("/trade/state")
+def trade_state_status():
+
+    return {
+        "state": trade_state.get().value
     }
