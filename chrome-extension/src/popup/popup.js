@@ -81,14 +81,7 @@ async function loadSignal() {
         await chrome.runtime.sendMessage({
             type: "GET_STATE"
         });
-
-    const signal =
-        background.signal;
-
     // 👇 STEP 3 GOES HERE
-
-    const status =
-        document.getElementById("status");
 
     if (background.connected) {
 
@@ -99,8 +92,7 @@ async function loadSignal() {
     }
     else {
 
-        status.innerHTML =
-            "🔴 Offline";
+     status.innerHTML = "🔴 Offline";
 
         status.className =
             "status offline";
@@ -117,7 +109,7 @@ async function loadSignal() {
         // No Signal
         //------------------------
 
-        if (signal.status) {
+        if (!signal || signal.status) {
 
             document.getElementById("action").innerHTML = "WAIT";
 
@@ -338,13 +330,15 @@ drawChart(currentCandles);
 
     }
 
-    catch (err) {
+   catch (err) {
 
-        console.error(err);
+    console.error("Popup Error:");
 
-        status.className = "status offline";
+    console.error(err);
 
-        status.innerHTML = "● Offline";
+    status.className = "status offline";
+
+    status.innerHTML = "🔴 Offline";
 
 }
 

@@ -95,6 +95,8 @@ async function refresh() {
             trade.state;
 
         state.connected = true;
+        console.log("✅ Connected to API");
+console.log(state);
 
         state.lastUpdate =
             new Date().toISOString();
@@ -103,8 +105,8 @@ async function refresh() {
             state.signal &&
             !state.signal.status
         ) {
-           const signalKey =
-    `${state.signal.asset}-${state.signal.action}-${state.signal.timestamp}`;
+          const signalKey =
+`${state.signal.asset}-${state.signal.action}-${state.tradeState}-${state.lastUpdate}`;
             if (
     signalKey ===
     state.lastSignalKey
@@ -160,13 +162,18 @@ async function refresh() {
 
     }
 
-    catch (err) {
+    
+catch (err) {
 
-        state.connected = false;
-  await saveState();
-        console.error(err);
+    state.connected = false;
 
-    }
+    await saveState();
+
+    console.error("❌ Background refresh failed");
+
+    console.error(err);
+
+}
 
 }
 
@@ -174,30 +181,31 @@ async function refresh() {
 // Startup
 // ========================================
 
-await restoreState();
+async function initialize() {
 
-await refresh();
+    await restoreState();
 
-setInterval(refresh, 1000);
+    await refresh();
 
+    setInterval(refresh,1000);
+
+}
+
+initialize();
 // ========================================
 // Popup Communication
 // ========================================
 
 chrome.runtime.onMessage.addListener(
 
-    (message, sender, sendResponse) => {
+(message,sender,sendResponse)=>{
 
-        if (
-            message.type === "GET_STATE"
-        ) {
+    if(message.type==="GET_STATE"){
 
-            sendResponse(state);
-
-        }
-
-        return true;
+        sendResponse(state);
 
     }
 
-);
+    return true;
+
+});

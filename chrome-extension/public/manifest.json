@@ -4,9 +4,10 @@
     "version": "1.0.0",
     "description": "Reads live Pocket Option market data and displays AI trading signals.",
     "permissions": [
-        "storage",
-        "activeTab",
-        "scripting"
+      "storage",
+      "activeTab",
+      "scripting",
+      "tabs"
     ],
     "host_permissions": [
         "http://127.0.0.1:8000/*",
