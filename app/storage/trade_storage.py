@@ -70,3 +70,43 @@ class TradeStorage:
     def closed_trades(self):
 
         return self.repository.closed_trades()
+
+    # ----------------------------------------
+    # Statistics
+    # ----------------------------------------
+
+    def statistics(self):
+
+        return self.repository.statistics()
+
+    # ----------------------------------------
+    # Win Count
+    # ----------------------------------------
+
+    def win_count(self):
+
+        return self.repository.win_count()
+
+    # ----------------------------------------
+    # Loss Count
+    # ----------------------------------------
+
+    def loss_count(self):
+
+        return self.repository.loss_count()
+
+    # ----------------------------------------
+    # Draw Count
+    # ----------------------------------------
+
+    def draw_count(self):
+
+        return self.repository.draw_count()
+
+    # ----------------------------------------
+    # Win Rate
+    # ----------------------------------------
+
+    def win_rate(self):
+
+        return self.repository.win_rate()

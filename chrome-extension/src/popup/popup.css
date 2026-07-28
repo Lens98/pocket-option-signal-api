@@ -1,708 +1,389 @@
-body {
+/* =====================================================
+   Pocket Option AI PRO
+   Professional Trading Terminal
+   Phase 2 - Part 1
+===================================================== */
 
-    margin: 0;
+*{
 
-    width: 360px;
+    margin:0;
 
-    color: white;
+    padding:0;
 
-    font-family: "Segoe UI", Arial, sans-serif;
+    box-sizing:border-box;
+
+}
+
+body{
+
+    width:560px;
+
+    min-height:860px;
+
+    overflow-x:hidden;
+
+    color:#F8FAFC;
+
+    font-family:"Segoe UI",Arial,sans-serif;
 
     background:
 
-        radial-gradient(circle at top right, #18304F 0%, transparent 45%),
+        radial-gradient(circle at top right,
+            #1B3358 0%,
+            transparent 45%),
 
-        radial-gradient(circle at bottom left, #132238 0%, transparent 35%),
+        radial-gradient(circle at bottom left,
+            #132238 0%,
+            transparent 35%),
 
         #0B1220;
 
 }
 
-.container {
+/* =====================================================
+   CONTAINER
+===================================================== */
 
-    padding: 18px;
+.container{
 
-}
+    width:540px;
 
-.header {
+    margin:auto;
 
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    padding-bottom: 14px;
-
-    border-bottom: 1px solid #1E293B;
-
-    margin-bottom: 16px;
+    padding:18px;
 
 }
 
-.header h2 {
+/* =====================================================
+   HEADER
+===================================================== */
 
-    margin: 0;
+.header{
 
-    font-size: 22px;
+    display:flex;
 
-    font-weight: 700;
+    justify-content:space-between;
 
-    letter-spacing: .5px;
+    align-items:center;
 
-}
+    margin-bottom:20px;
 
-.version {
+    padding-bottom:16px;
 
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.status {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    padding: 8px 14px;
-
-    border-radius: 999px;
-
-    font-size: 12px;
-
-    font-weight: bold;
-
-    animation: pulse 2s infinite;
+    border-bottom:1px solid #24324A;
 
 }
 
-@keyframes pulse {
+.header h2{
 
-    0% {
+    font-size:34px;
 
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, .6);
+    font-weight:800;
 
-    }
+    line-height:1.1;
 
-    70% {
-
-        box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
-
-    }
-
-    100% {
-
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-
-    }
+    letter-spacing:.5px;
 
 }
 
-.online {
+.version{
 
-    background: #14532D;
+    display:block;
 
-    color: #4ADE80;
+    margin-top:4px;
 
-    animation: pulseLive 1.8s infinite;
+    color:#94A3B8;
 
-}
-
-.offline {
-
-    background: #4B1113;
-
-    color: #F87171;
+    font-size:13px;
 
 }
 
-.signal-card {
+/* =====================================================
+   CONNECTION STATUS
+===================================================== */
 
-    background: #141C2F;
+.status{
 
-    border-radius: 14px;
+    display:flex;
 
-    padding: 18px;
+    align-items:center;
 
-    text-align: center;
+    justify-content:center;
 
-    margin-bottom: 16px;
+    min-width:120px;
 
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .25);
+    padding:10px 18px;
 
-}
+    border-radius:999px;
 
-.action {
+    font-size:13px;
 
-    font-size: 52px;
+    font-weight:700;
 
-    font-weight: 800;
-
-    letter-spacing: 4px;
-
-    text-transform: uppercase;
+    transition:.25s;
 
 }
 
-.call {
+.online{
 
-    color: #22C55E;
+    color:#4ADE80;
 
-    text-shadow:
-        0 0 12px rgba(34, 197, 94, .8);
+    background:#14532D;
 
-}
-
-.put {
-
-    color: #EF4444;
-
-    text-shadow:
-        0 0 12px rgba(239, 68, 68, .8);
-
-}
-
-.wait {
-
-    color: #FACC15;
-
-    text-shadow:
-        0 0 12px rgba(250, 204, 21, .8);
-
-}
-
-.progress {
-
-    margin-top: 12px;
-
-    height: 12px;
-
-    border-radius: 10px;
-
-    background: #1E293B;
-
-    overflow: hidden;
-
-}
-
-#confidenceBar {
-
-    height: 100%;
-
-    width: 0%;
-
-    background: #22C55E;
-
-    transition: width .4s;
-
-}
-
-.info-grid {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 12px;
-
-}
-
-.card {
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 12px;
-
-}
-
-.card span {
-
-    display: block;
-
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.card strong {
-
-    font-size: 15px;
-
-}
-
-.footer {
-
-    margin-top: 18px;
-
-    text-align: center;
-
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.gauge {
-
-    position: relative;
-
-    width: 150px;
-
-    height: 150px;
-
-    margin: 15px auto;
-
-}
-
-.gauge svg {
-
-    transform: rotate(-90deg);
-
-}
-
-.gauge-bg {
-
-    fill: none;
-
-    stroke: #1E293B;
-
-    stroke-width: 10;
-
-}
-
-.gauge-progress {
-
-    fill: none;
-
-    stroke: #22C55E;
-
-    stroke-width: 10;
-
-    stroke-linecap: round;
-
-    stroke-dasharray: 377;
-
-    stroke-dashoffset: 377;
-
-    transition: stroke-dashoffset .6s ease;
-
-}
-
-.gauge-text {
-
-    position: absolute;
-
-    top: 50%;
-
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-
-    font-size: 36px;
-
-    font-weight: 700;
-
-    font-weight: bold;
-
-}
-
-.history {
-
-    margin-top: 18px;
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 14px;
-
-}
-
-.history h3 {
-
-    margin: 0 0 10px 0;
-
-    font-size: 14px;
-
-    color: #94A3B8;
-
-}
-
-.history-item {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    padding: 8px 0;
-
-    border-bottom: 1px solid #1E293B;
-
-    font-size: 13px;
-
-}
-
-.history-item:last-child {
-
-    border-bottom: none;
-
-}
-
-.call-text {
-
-    color: #22C55E;
-
-    font-weight: bold;
-
-}
-
-.put-text {
-
-    color: #EF4444;
-
-    font-weight: bold;
-
-}
-
-.wait-text {
-
-    color: #F59E0B;
-
-    font-weight: bold;
-
-}
-
-.analysis {
-
-    margin-top: 18px;
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 14px;
-
-}
-
-.analysis h3 {
-
-    margin: 0 0 10px 0;
-
-    font-size: 14px;
-
-    color: #94A3B8;
-
-}
-
-.reason {
-
-    padding: 6px 0;
-
-    border-bottom: 1px solid #1E293B;
-
-    font-size: 13px;
-
-}
-
-.reason:last-child {
-
-    border-bottom: none;
-
-}
-
-.good {
-
-    color: #22C55E;
-
-}
-
-.bad {
-
-    color: #EF4444;
-
-}
-
-.warning {
-
-    color: #F59E0B;
-
-}
-
-.stats {
-
-    margin-top: 18px;
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 14px;
-
-}
-
-.stats h3 {
-
-    margin: 0 0 12px 0;
-
-    color: #94A3B8;
-
-    font-size: 14px;
-
-}
-
-.stats-grid {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 10px;
-
-}
-
-.stat {
-
-    background: #1A2338;
-
-    padding: 12px;
-
-    border-radius: 10px;
-
-    text-align: center;
-
-}
-
-.stat span {
-
-    display: block;
-
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.stat strong {
-
-    font-size: 22px;
-
-    margin-top: 6px;
-
-    display: block;
-
-}
-
-.container {
-
-    max-width: 360px;
-
-    margin: auto;
-
-}
-
-.card {
-
-    background:
-
-        linear-gradient(180deg,
-
-            rgba(29, 40, 66, .95),
-
-            rgba(15, 23, 42, .95));
-    backdrop-filter: blur(8px);
-
-    border-radius: 18px;
-
-    padding: 16px;
-
-    margin-bottom: 14px;
-
-    border: 1px solid #23314F;
+    border:1px solid #22C55E;
 
     box-shadow:
-        0 10px 30px rgba(0, 0, 0, .45);
 
-    transition: .25s;
-}
+        0 0 20px rgba(34,197,94,.30);
 
-.card:hover {
-
-    transform: translateY(-2px);
+    animation:pulseLive 2s infinite;
 
 }
 
-/* =======================================
-   MINI CHART
-======================================= */
+.offline{
 
-.chart {
+    color:#F87171;
 
-    padding: 16px;
+    background:#4B1113;
 
-}
-
-.chart-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 14px;
+    border:1px solid #EF4444;
 
 }
 
-.chart-title {
+/* =====================================================
+   GLOBAL CARD STYLE
+===================================================== */
 
-    font-size: 12px;
-
-    color: #94A3B8;
-
-}
-
-.chart-asset {
-
-    font-size: 18px;
-
-    font-weight: 700;
-
-    margin-top: 3px;
-
-}
-
-.chart-price {
-
-    color: #22C55E;
-
-    font-size: 20px;
-
-    font-weight: bold;
-
-}
-
-#miniChart {
-
-    width: 100%;
-
-    height: 120px;
-
-    border-radius: 12px;
+.card{
 
     background:
-        linear-gradient(180deg,
-            #16213A 0%,
-            #101827 100%);
 
-    border: 1px solid #23314F;
+        linear-gradient(
 
-}
+            180deg,
 
-@keyframes pulseLive {
+            rgba(31,41,66,.98),
 
-    0% {
+            rgba(15,23,42,.98)
 
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, .7);
+        );
 
-    }
+    border:1px solid #2F4264;
 
-    70% {
+    border-radius:18px;
 
-        box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
+    padding:18px;
 
-    }
+    margin-bottom:16px;
 
-    100% {
+    box-shadow:
 
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        0 12px 32px rgba(0,0,0,.45);
 
-    }
+    backdrop-filter:blur(10px);
 
-}
+    transition:
 
-.card {
+        transform .25s,
 
-    animation: slideUp .5s ease;
+        border-color .25s,
 
-}
-
-@keyframes slideUp {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-
-            translateY(18px);
-
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-
-            translateY(0);
-
-    }
+        box-shadow .25s;
 
 }
 
-.action {
+.card:hover{
 
-    animation: signalPulse 2s infinite;
+    transform:translateY(-2px);
+
+    border-color:#3B82F6;
+
+    box-shadow:
+
+        0 16px 38px rgba(0,0,0,.55);
+
+}
+
+.card span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:13px;
 
 }
 
-@keyframes signalPulse {
+.card strong{
 
-    0% {
+    display:block;
 
-        transform: scale(1);
+    margin-top:6px;
+
+    font-size:24px;
+
+    font-weight:700;
+
+    color:white;
+
+}
+
+/* =====================================================
+   BUTTONS
+===================================================== */
+
+button{
+
+    border:none;
+
+    outline:none;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+button:hover{
+
+    transform:translateY(-1px);
+
+}
+
+/* =====================================================
+   LIVE STATUS ANIMATION
+===================================================== */
+
+@keyframes pulseLive{
+
+    0%{
+
+        box-shadow:0 0 0 0 rgba(34,197,94,.55);
 
     }
 
-    50% {
+    70%{
 
-        transform: scale(1.04);
+        box-shadow:0 0 0 12px rgba(34,197,94,0);
 
     }
 
-    100% {
+    100%{
 
-        transform: scale(1);
+        box-shadow:0 0 0 0 rgba(34,197,94,0);
 
     }
 
 }
+/* =====================================================
+   LIVE MARKET CHART
+===================================================== */
+
+.chart{
+
+    padding:22px;
+
+}
+
+.chart-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.chart-title{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+}
+
+.chart-asset{
+
+    margin-top:6px;
+
+    font-size:24px;
+
+    font-weight:800;
+
+    color:white;
+
+}
+
+.chart-price{
+
+    font-size:28px;
+
+    font-weight:800;
+
+    color:#22C55E;
+
+}
+
+#miniChart{
+
+    width:100%;
+
+    height:220px;
+
+    border-radius:16px;
+
+    border:1px solid #2F4264;
+
+    background:
+
+        linear-gradient(
+
+            180deg,
+
+            #18263F,
+
+            #0F172A
+
+        );
+
+}
+
+/* =====================================================
+   SIGNAL CARD
+===================================================== */
+
+.signal-card{
+
+    text-align:center;
+
+    padding:24px;
+
+}
+
 .buy-banner{
+
+    padding:12px;
+
+    margin-bottom:20px;
+
+    border-radius:12px;
 
     font-size:18px;
 
-    font-weight:bold;
-
-    padding:10px;
-
-    border-radius:10px;
-
-    margin-bottom:15px;
-
-    text-align:center;
+    font-weight:700;
 
 }
 
 .buy-banner.call{
 
-    background:#16a34a;
+    background:#16A34A;
 
     color:white;
 
@@ -710,7 +391,7 @@ body {
 
 .buy-banner.put{
 
-    background:#dc2626;
+    background:#DC2626;
 
     color:white;
 
@@ -720,9 +401,143 @@ body {
 
     background:#374151;
 
-    color:#ddd;
+    color:#E5E7EB;
 
 }
+
+/* =====================================================
+   SIGNAL TEXT
+===================================================== */
+
+.action{
+
+    font-size:72px;
+
+    font-weight:900;
+
+    letter-spacing:6px;
+
+    text-transform:uppercase;
+
+    margin-bottom:20px;
+
+    animation:signalPulse 2s infinite;
+
+}
+
+.call{
+
+    color:#22C55E;
+
+    text-shadow:
+
+        0 0 18px rgba(34,197,94,.70);
+
+}
+
+.put{
+
+    color:#EF4444;
+
+    text-shadow:
+
+        0 0 18px rgba(239,68,68,.70);
+
+}
+
+.wait{
+
+    color:#FACC15;
+
+    text-shadow:
+
+        0 0 18px rgba(250,204,21,.70);
+
+}
+
+/* =====================================================
+   AI CONFIDENCE GAUGE
+===================================================== */
+
+.gauge{
+
+    position:relative;
+
+    width:150px;
+
+    height:150px;
+
+    margin:15px auto;
+
+}
+
+.gauge svg{
+
+    width:220px;
+
+    height:220px;
+
+    transform:rotate(-90deg);
+
+}
+
+.gauge-bg{
+
+    fill:none;
+
+    stroke:#24324A;
+
+    stroke-width:10;
+
+}
+
+.gauge-progress{
+
+    fill:none;
+
+    stroke:#22C55E;
+
+    stroke-width:10;
+
+    stroke-linecap:round;
+
+    stroke-dasharray:377;
+
+    stroke-dashoffset:377;
+
+    transition:
+
+        stroke .4s,
+
+        stroke-dashoffset .4s;
+
+}
+
+.gauge-text{
+
+    position:absolute;
+
+    inset:0;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:36px;
+
+    font-weight:700;
+
+    line-height:1;
+
+    pointer-events:none;
+
+}
+
+/* =====================================================
+   COUNTDOWN
+===================================================== */
 
 .countdown{
 
@@ -732,8 +547,750 @@ body {
 
 }
 
+.countdown span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    margin-bottom:6px;
+
+    font-size:13px;
+
+}
+
 .countdown strong{
 
-    font-size:26px;
+    font-size:34px;
+
+    font-weight:800;
+
+}
+
+/* =====================================================
+   SIGNAL ANIMATION
+===================================================== */
+
+@keyframes signalPulse{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.05);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+/* =====================================================
+   INFORMATION GRID
+===================================================== */
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:14px;
+
+    margin-top:18px;
+
+}
+
+.info-grid .card{
+
+    text-align:center;
+
+    padding:16px;
+
+}
+
+.info-grid span{
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+    text-transform:uppercase;
+
+    letter-spacing:.6px;
+
+}
+
+.info-grid strong{
+
+    margin-top:8px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+/* =====================================================
+   AI REASONING
+===================================================== */
+
+.analysis{
+
+    margin-top:20px;
+
+}
+
+.analysis h3{
+
+    font-size:18px;
+
+    margin-bottom:16px;
+
+    color:#9FC5FF;
+
+}
+
+.reason{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    padding:12px;
+
+    margin-bottom:10px;
+
+    border-radius:10px;
+
+    background:#172234;
+
+    border-left:4px solid #3B82F6;
+
+    transition:.25s;
+
+}
+
+.reason:hover{
+
+    transform:translateX(4px);
+
+    background:#1E293B;
+
+}
+
+.good{
+
+    color:#22C55E;
+
+    font-weight:bold;
+
+}
+
+.bad{
+
+    color:#EF4444;
+
+    font-weight:bold;
+
+}
+
+.warning{
+
+    color:#FACC15;
+
+    font-weight:bold;
+
+}
+
+/* =====================================================
+   SESSION STATISTICS
+===================================================== */
+
+.stats{
+
+    margin-top:20px;
+
+}
+
+.stats h3{
+
+    font-size:18px;
+
+    color:#9FC5FF;
+
+    margin-bottom:18px;
+
+}
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:14px;
+
+}
+
+.stat{
+
+    background:#162235;
+
+    border:1px solid #2F4264;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    text-align:center;
+
+    transition:.25s;
+
+}
+
+.stat:hover{
+
+    border-color:#3B82F6;
+
+    transform:translateY(-2px);
+
+}
+
+.stat span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    margin-bottom:8px;
+
+}
+
+.stat strong{
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+/* =====================================================
+   SIGNAL HISTORY
+===================================================== */
+
+.history{
+
+    margin-top:22px;
+
+}
+
+.history h3{
+
+    color:#9FC5FF;
+
+    font-size:18px;
+
+    margin-bottom:16px;
+
+}
+
+.history-item{
+
+    display:grid;
+
+    grid-template-columns:
+
+        80px
+
+        1fr
+
+        80px;
+
+    align-items:center;
+
+    padding:12px;
+
+    margin-bottom:8px;
+
+    border-radius:10px;
+
+    background:#172234;
+
+    transition:.25s;
+
+}
+
+.history-item:hover{
+
+    background:#1F2937;
+
+}
+
+.history-item span{
+
+    font-size:13px;
+
+}
+
+.call-text{
+
+    color:#22C55E;
+
+    font-weight:bold;
+
+}
+
+.put-text{
+
+    color:#EF4444;
+
+    font-weight:bold;
+
+}
+
+.wait-text{
+
+    color:#FACC15;
+
+    font-weight:bold;
+
+}
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+.footer{
+
+    margin-top:24px;
+
+    text-align:center;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+/* =====================================================
+   PHASE 2 - PART 4
+   PROFESSIONAL TERMINAL
+===================================================== */
+
+/* ==========================================
+   TERMINAL TABS
+========================================== */
+
+.tabs{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    gap:10px;
+
+    margin:18px 0;
+
+}
+
+.tab{
+
+    flex:1;
+
+    padding:12px;
+
+    text-align:center;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    background:#162235;
+
+    border:1px solid #2B3B55;
+
+    transition:.25s;
+
+}
+
+.tab:hover{
+
+    background:#1F2D44;
+
+}
+
+.tab.active{
+
+    background:#2563EB;
+
+    border-color:#3B82F6;
+
+    color:white;
+
+}
+
+/* ==========================================
+   ANALYTICS
+========================================== */
+
+.analytics-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:14px;
+
+}
+
+.analytics-card{
+
+    background:#172234;
+
+    border:1px solid #2F4264;
+
+    border-radius:14px;
+
+    padding:18px;
+
+    text-align:center;
+
+}
+
+.analytics-title{
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+    text-transform:uppercase;
+
+}
+
+.analytics-value{
+
+    margin-top:10px;
+
+    font-size:34px;
+
+    font-weight:800;
+
+}
+
+.analytics-green{
+
+    color:#22C55E;
+
+}
+
+.analytics-red{
+
+    color:#EF4444;
+
+}
+
+.analytics-yellow{
+
+    color:#FACC15;
+
+}
+
+/* ==========================================
+   ASSET SELECTOR
+========================================== */
+
+.asset-select{
+
+    width:100%;
+
+    margin-bottom:18px;
+
+    padding:12px;
+
+    border:none;
+
+    outline:none;
+
+    border-radius:12px;
+
+    background:#172234;
+
+    color:white;
+
+    border:1px solid #31435F;
+
+    font-size:14px;
+
+}
+
+.asset-select option{
+
+    background:#172234;
+
+}
+
+/* ==========================================
+   SETTINGS
+========================================== */
+
+.settings{
+
+    display:grid;
+
+    gap:14px;
+
+}
+
+.setting{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    background:#172234;
+
+}
+
+.setting span{
+
+    color:#CBD5E1;
+
+}
+
+.setting input{
+
+    accent-color:#3B82F6;
+
+}
+
+.setting select{
+
+    background:#24324A;
+
+    color:white;
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:8px 10px;
+
+}
+
+/* ==========================================
+   NOTIFICATION
+========================================== */
+
+.notification{
+
+    position:fixed;
+
+    top:20px;
+
+    right:20px;
+
+    width:300px;
+
+    padding:18px;
+
+    border-radius:14px;
+
+    background:#111827;
+
+    border-left:5px solid #22C55E;
+
+    color:white;
+
+    box-shadow:
+
+        0 15px 35px rgba(0,0,0,.45);
+
+    animation:slideNotification .4s ease;
+
+}
+
+@keyframes slideNotification{
+
+    from{
+
+        opacity:0;
+
+        transform:
+
+            translateX(60px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:
+
+            translateX(0);
+
+    }
+
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#334155;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#475569;
+
+}
+
+/* ==========================================
+   FINAL POLISH
+========================================== */
+
+.card,
+.stat,
+.analytics-card,
+.reason,
+.history-item{
+
+    transition:
+
+        transform .25s,
+
+        box-shadow .25s,
+
+        border-color .25s;
+
+}
+
+.card:hover,
+.stat:hover,
+.analytics-card:hover{
+
+    box-shadow:
+
+        0 14px 34px rgba(0,0,0,.45);
+
+}
+
+h3{
+
+    letter-spacing:.5px;
+
+}
+
+strong{
+
+    letter-spacing:.3px;
+
+}
+/* =======================================
+   Trade History Table
+======================================= */
+
+#historyTable{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+    font-size:13px;
+
+}
+
+#historyTable th{
+
+    color:#94A3B8;
+
+    text-align:left;
+
+    padding:8px;
+
+    border-bottom:1px solid #23314F;
+
+}
+
+#historyTable td{
+
+    padding:8px;
+
+    border-bottom:1px solid #1E293B;
+
+}
+
+.win{
+
+    color:#22C55E;
+
+    font-weight:bold;
+
+}
+
+.loss{
+
+    color:#EF4444;
+
+    font-weight:bold;
+
+}
+
+.draw{
+
+    color:#FACC15;
+
+    font-weight:bold;
+
+}
+
+.call{
+
+    color:#22C55E;
+
+}
+
+.put{
+
+    color:#EF4444;
+
+}
+
+.wait{
+
+    color:#FACC15;
 
 }

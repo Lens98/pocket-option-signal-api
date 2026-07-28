@@ -50,5 +50,9 @@ def trade_result(result: TradeResult):
         return {
             "status": "Trade not found"
         }
-
+    
     return trade
+@router.get("/trade/statistics")
+def trade_statistics():
+
+    return storage.statistics()

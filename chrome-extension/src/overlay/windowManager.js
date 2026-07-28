@@ -3,7 +3,7 @@
 // Window Manager
 // RC2
 // ========================================
-
+console.log("✅ windowManager.js loaded");
 import { enableResize } from "./resize";
 
 import {
@@ -14,23 +14,12 @@ import {
 export function createDashboard() {
 
     console.log("🚀 createDashboard() START");
-   
 
-    // Prevent duplicate dashboard
     if (document.getElementById("pocket-ai-dashboard")) {
         return;
     }
 
-    // Create dashboard
     const dashboard = document.createElement("div");
-    dashboard.style.position = "fixed";
-dashboard.style.top = "100px";
-dashboard.style.left = "100px";
-dashboard.style.width = "400px";
-dashboard.style.height = "300px";
-dashboard.style.background = "red";
-dashboard.style.zIndex = "9999999999";
-document.body.appendChild(dashboard);
 
     dashboard.id = "pocket-ai-dashboard";
 
@@ -87,8 +76,9 @@ document.body.appendChild(dashboard);
 
 `;
 
-    document.body.appendChild(dashboard);
+ document.documentElement.appendChild(dashboard);
 
+console.log("Dashboard parent:", dashboard.parentElement);
     console.log("✅ Dashboard Added");
 
     enableResize(dashboard);

@@ -68,7 +68,129 @@ async function loadChart(asset) {
     return history.candles;
 
 }
+// =======================================
+// Trade Statistics
+// =======================================
 
+async function loadTradeStatistics() {
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/trade/statistics"
+        );
+
+        const stats = await response.json();
+
+        document.getElementById("callCount").innerHTML =
+            stats.wins;
+
+        document.getElementById("putCount").innerHTML =
+            stats.losses;
+
+        document.getElementById("waitCount").innerHTML =
+            stats.draws;
+
+        document.getElementById("totalCount").innerHTML =
+            stats.total;
+
+    }
+    catch (error) {
+
+        console.log("Statistics Error");
+
+        console.log(error);
+
+    }
+
+}
+// =======================================
+// Live Trade History
+// =======================================
+
+async function loadTradeHistory() {
+
+    try {
+
+        const response =
+            await fetch(
+                "http://127.0.0.1:8000/trade/all"
+            );
+
+        const trades =
+            await response.json();
+
+        const body =
+            document.getElementById(
+                "historyBody"
+            );
+
+        body.innerHTML = "";
+
+        trades.slice(0,15).forEach(trade => {
+
+            const row =
+                document.createElement("tr");
+
+            let resultClass = "";
+
+            if (trade.result === "WIN")
+                resultClass = "win";
+
+            else if (trade.result === "LOSS")
+                resultClass = "loss";
+
+            else
+                resultClass = "draw";
+
+            row.innerHTML = `
+
+                <td>
+
+                    ${new Date(trade.entry_time)
+                        .toLocaleTimeString()}
+
+                </td>
+
+                <td>
+
+                    ${trade.asset}
+
+                </td>
+
+                <td class="${trade.action.toLowerCase()}">
+
+                    ${trade.action}
+
+                </td>
+
+                <td>
+
+                    ${trade.confidence.toFixed(0)}%
+
+                </td>
+
+                <td class="${resultClass}">
+
+                    ${trade.result}
+
+                </td>
+
+            `;
+
+            body.appendChild(row);
+
+        });
+
+    }
+
+    catch(error){
+
+        console.log(error);
+
+    }
+
+}
 
 async function loadSignal() {
 
@@ -942,24 +1064,31 @@ default:
     break;
 
 }   // closes switch
-
 }   // closes update()
-
-    
 
     update();
 
     countdownInterval =
         setInterval(update, 1000);
 
-}
+}   // closes startCountdown()
+
 // ========================================
 // Auto Refresh
 // ========================================
 
 loadSignal();
 
+loadTradeStatistics();
+
 startCountdown();
 
-setInterval(loadSignal, 1000);
-  // closes startCountdown()
+setInterval(() => {
+
+    loadSignal();
+
+    loadTradeStatistics();
+
+    loadTradeHistory();
+
+},1000);
