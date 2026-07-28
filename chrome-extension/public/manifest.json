@@ -29,15 +29,15 @@
         }
     ],
     "web_accessible_resources": [
-        {
-            "resources": [
-                "src/injected.js"
-            ],
-            "matches": [
-                "https://*.pocketoption.com/*"
-            ]
-        }
-    ],
+    {
+        "resources": [
+            "src/injected.js"
+        ],
+        "matches": [
+            "https://*.pocketoption.com/*"
+        ]
+    }
+],
     "action": {
         "default_popup": "src/popup/popup.html",
         "default_title": "Pocket Option AI"

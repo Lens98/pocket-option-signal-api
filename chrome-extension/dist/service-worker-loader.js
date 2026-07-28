@@ -1,1 +1,1 @@
-import './assets/background.js-D0FOIQBD.js';
+import './assets/background.js-NhUG-EYX.js';

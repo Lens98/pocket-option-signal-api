@@ -75,21 +75,25 @@ async function refresh() {
 
     try {
 
-        const signalResponse =
-            await fetch(
-                `${API_URL}/signal`
-            );
+        console.log("Fetching /signal...");
 
-        state.signal =
-            await signalResponse.json();
+const signalResponse =
+    await fetch(`${API_URL}/signal`);
 
-        const tradeResponse =
-            await fetch(
-                `${API_URL}/trade/state`
-            );
+console.log("✅ /signal OK");
 
-        const trade =
-            await tradeResponse.json();
+state.signal =
+    await signalResponse.json();
+
+console.log("Fetching /trade/state...");
+
+const tradeResponse =
+    await fetch(`${API_URL}/trade/state`);
+
+console.log("✅ /trade/state OK");
+
+const trade =
+    await tradeResponse.json();
 
         state.tradeState =
             trade.state;

@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
     "http://127.0.0.1:8000/*",
@@ -19,12 +20,15 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-DmwkUSGT.js"
+        "assets/content.js-DVbd9BT8.js"
       ],
       "matches": [
         "https://*.pocketoption.com/*"
       ],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "css": [
+        "assets/content-YaZSwduM.css"
+      ]
     }
   ],
   "web_accessible_resources": [
@@ -34,7 +38,7 @@
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-DmwkUSGT.js"
+        "assets/content.js-DVbd9BT8.js"
       ],
       "use_dynamic_url": false
     }

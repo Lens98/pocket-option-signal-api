@@ -2,7 +2,8 @@ import { Tick } from "./market/tick.js";
 import { MarketManager } from "./market/market_manager.js";
 import { sendMarket } from "./api/market_api.js";
 import { CandleHistory } from "./market/history.js";
-
+import { createDashboard } from "./overlay/windowManager";
+import "./overlay/window.css";
 console.log("✅ Content script loaded");
 
 const manager = new MarketManager();
@@ -79,3 +80,31 @@ window.addEventListener("message", async (event) => {
     );
 
 });
+
+ // ========================================
+// RC2 Dashboard Startup
+// ========================================
+
+function waitForPocketOption() {
+
+    // Wait until the trading interface exists
+    const app =
+        document.querySelector("canvas") ||
+        document.querySelector("#root") ||
+        document.querySelector(".application");
+
+    if (!app) {
+
+        requestAnimationFrame(waitForPocketOption);
+
+        return;
+
+    }
+
+    console.log("✅ Pocket Option UI ready");
+
+    createDashboard();
+
+}
+
+waitForPocketOption();

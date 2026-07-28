@@ -81,6 +81,15 @@ async function loadSignal() {
         await chrome.runtime.sendMessage({
             type: "GET_STATE"
         });
+        if (!background) {
+
+    console.error("No response from background.");
+
+    return;
+
+}
+
+const signal = background.signal;
     // 👇 STEP 3 GOES HERE
 
     if (background.connected) {
@@ -343,15 +352,6 @@ drawChart(currentCandles);
 }
 
 }
-
-// ========================================
-// Auto Refresh
-// ========================================
-
-loadSignal();
-startCountdown();
-setInterval(loadSignal, 1000);
-
 
 // ========================================
 // Signal History
@@ -945,9 +945,21 @@ default:
 
 }   // closes update()
 
-update();
+    
 
-countdownInterval =
-    setInterval(update, 1000);
+    update();
 
-}   // closes startCountdown()
+    countdownInterval =
+        setInterval(update, 1000);
+
+}
+// ========================================
+// Auto Refresh
+// ========================================
+
+loadSignal();
+
+startCountdown();
+
+setInterval(loadSignal, 1000);
+  // closes startCountdown()
