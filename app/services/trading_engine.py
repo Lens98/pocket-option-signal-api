@@ -447,19 +447,35 @@ class TradingEngine:
 
         signal.market_state = state.value
 
-        signal.can_enter = (
-        state == EntryState.ENTRY
-       )
+        if state == EntryState.ENTRY:
+
+           signal.action = signal.bias
+
+           signal.can_enter = True
+
+        else:
+
+         signal.action = "WAIT"
+
+         signal.can_enter = False
+
+        # ----------------------------------------
+        # Risk Manager Override
+        # ----------------------------------------
 
         if not risk["allowed"]:
 
-            signal.action = "WAIT"
+           signal.action = "WAIT"
 
-            signal.reasons.extend(
+           signal.market_state = EntryState.WAITING.value
 
-                risk["reasons"]
+           signal.can_enter = False
 
-        )
+           signal.reasons.extend(
+
+         risk["reasons"]
+
+         )
 
         # ----------------------------------------
         # AI Explanation
@@ -467,7 +483,7 @@ class TradingEngine:
 
         formatted = self.ai.format(
 
-            signal
+        signal
 
         )
 

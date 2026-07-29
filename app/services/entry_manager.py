@@ -6,15 +6,10 @@ from app.models.signal import Signal
 class EntryState(str, Enum):
 
     WAITING = "WAITING"
-
     ANALYZING = "ANALYZING"
-
     READY = "READY"
-
     ENTRY = "ENTRY"
-
     ACTIVE = "ACTIVE"
-
     RESULT = "RESULT"
 
 
@@ -23,10 +18,10 @@ class EntryManager:
     def determine(self, signal: Signal) -> EntryState:
 
         # ----------------------------------------
-        # No trade available
+        # No market direction
         # ----------------------------------------
 
-        if signal.action == "WAIT":
+        if signal.bias not in ["CALL", "PUT"]:
 
             return EntryState.WAITING
 
@@ -39,7 +34,7 @@ class EntryManager:
             return EntryState.WAITING
 
         # ----------------------------------------
-        # Building confidence
+        # Market is building
         # ----------------------------------------
 
         if signal.confidence < 85:
@@ -50,25 +45,12 @@ class EntryManager:
         # Good setup
         # ----------------------------------------
 
-        if (
-            signal.confidence >= 85
-            and signal.probability >= 80
-            and signal.risk != "HIGH"
-        ):
+        if signal.confidence < 92:
 
             return EntryState.READY
 
         # ----------------------------------------
-        # Enter NOW
+        # High confidence
         # ----------------------------------------
 
-        if (
-            signal.confidence >= 95
-            and signal.probability >= 90
-            and signal.risk == "LOW"
-            and signal.action in ["CALL", "PUT"]
-        ):
-
-            return EntryState.ENTRY
-
-        return EntryState.WAITING
+        return EntryState.ENTRY
