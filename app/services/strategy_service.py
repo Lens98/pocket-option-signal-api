@@ -92,27 +92,80 @@ class StrategyService:
 
         signal = Signal(
 
-            asset=market.asset,
+    # =====================================
+    # Market
+    # =====================================
 
-            timeframe=market.timeframe,
+    asset=market.asset,
 
-            action=final["action"],
+    timeframe=market.timeframe,
 
-            confidence=float(final["confidence"]),
+    session="UNKNOWN",
 
-            trend=final["trend"],
+    # =====================================
+    # Market Direction
+    # =====================================
 
-            expiration="Next Candle",
+    bias=final["action"],
 
-            entry_price=market.candles[-1].close,
+    # =====================================
+    # Current Action
+    # (EntryManager will decide this later)
+    # =====================================
 
-            timestamp=None,
+    action="WAIT",
 
-            risk="UNKNOWN",
+    # =====================================
+    # AI Confidence
+    # =====================================
 
-            reasons=final["reasons"]
+    confidence=float(final["confidence"]),
 
-          )
+    probability=0.0,
+
+    trend=final["trend"],
+
+    regime="UNKNOWN",
+
+    expiration="Next Candle",
+
+    # =====================================
+    # Price
+    # =====================================
+
+    entry_price=market.candles[-1].close,
+
+    timestamp=None,
+
+    # =====================================
+    # Risk
+    # =====================================
+
+    risk="UNKNOWN",
+
+    grade="N/A",
+
+    # =====================================
+    # AI Explanation
+    # =====================================
+
+    reasons=final["reasons"],
+
+    # =====================================
+    # Entry Manager
+    # =====================================
+
+    market_state="WAITING",
+
+    can_enter=False,
+
+    entry_window=0,
+
+    countdown=0,
+
+    trade_status="IDLE"
+
+)
 
        
         if signal.action == "WAIT":

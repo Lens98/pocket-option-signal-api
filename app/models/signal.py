@@ -11,38 +11,55 @@ class Signal(BaseModel):
     # ========================================
 
     asset: str
+
     timeframe: str
+
     session: str = "UNKNOWN"
 
     # ========================================
-    # Trade Decision
+    # Market Direction
     # ========================================
 
-    action: str
+    bias: str = "NONE"
+
+    # ========================================
+    # Current UI Action
+    # ========================================
+
+    action: str = "WAIT"
+
+    # ========================================
+    # AI Confidence
+    # ========================================
+
     confidence: float
+
     probability: float = 0.0
 
     trend: str
+
     regime: str = "UNKNOWN"
 
     expiration: str
 
     # ========================================
-    # Prices
+    # Price
     # ========================================
 
     entry_price: float
+
     timestamp: Optional[datetime] = None
 
     # ========================================
-    # Risk Management
+    # Risk
     # ========================================
 
     risk: str
+
     grade: str = "N/A"
 
     # ========================================
-    # AI Explanation
+    # AI Analysis
     # ========================================
 
     reasons: List[str] = Field(default_factory=list)
