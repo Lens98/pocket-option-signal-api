@@ -24,10 +24,24 @@ class RsiStrategy:
             return result
 
         # ----------------------------------------
+        # Strong Oversold
+        # ----------------------------------------
+
+        if rsi <= 20:
+
+            result.trend = "BULLISH"
+
+            result.bullish_score += Weights.RSI + 5
+
+            result.reasons.append(
+                "Strong RSI Oversold"
+            )
+
+        # ----------------------------------------
         # Oversold
         # ----------------------------------------
 
-        if rsi <= settings.RSI_OVERSOLD:
+        elif rsi <= settings.RSI_OVERSOLD:
 
             result.trend = "BULLISH"
 
@@ -37,13 +51,33 @@ class RsiStrategy:
                 "RSI Oversold"
             )
 
-            if rsi <= 20:
+        # ----------------------------------------
+        # Bullish Momentum
+        # ----------------------------------------
 
-                result.bullish_score += 5
+        elif 50 <= rsi < settings.RSI_OVERBOUGHT:
 
-                result.reasons.append(
-                    "Strong RSI Reversal"
-                )
+            result.trend = "BULLISH"
+
+            result.bullish_score += 5
+
+            result.reasons.append(
+                "Bullish RSI Momentum"
+            )
+
+        # ----------------------------------------
+        # Strong Overbought
+        # ----------------------------------------
+
+        elif rsi >= 80:
+
+            result.trend = "BEARISH"
+
+            result.bearish_score += Weights.RSI + 5
+
+            result.reasons.append(
+                "Strong RSI Overbought"
+            )
 
         # ----------------------------------------
         # Overbought
@@ -59,13 +93,23 @@ class RsiStrategy:
                 "RSI Overbought"
             )
 
-            if rsi >= 80:
+        # ----------------------------------------
+        # Bearish Momentum
+        # ----------------------------------------
 
-                result.bearish_score += 5
+        elif 30 < rsi < 50:
 
-                result.reasons.append(
-                    "Strong RSI Reversal"
-                )
+            result.trend = "BEARISH"
+
+            result.bearish_score += 5
+
+            result.reasons.append(
+                "Bearish RSI Momentum"
+            )
+
+        # ----------------------------------------
+        # Neutral
+        # ----------------------------------------
 
         else:
 

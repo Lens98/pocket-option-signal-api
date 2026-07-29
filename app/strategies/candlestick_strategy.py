@@ -4,15 +4,21 @@ from app.indicators.candle_patterns import CandlePatternDetector
 
 class CandlestickStrategy:
 
+    def __init__(self):
+
+        self.detector = CandlePatternDetector()
+
     def analyze(self, market):
 
-        detector = CandlePatternDetector()
+        result = StrategyResult()
 
-        patterns = detector.detect(
+        patterns = self.detector.detect(
             market.candles
         )
 
-        result = StrategyResult()
+        # ----------------------------------------
+        # No Pattern
+        # ----------------------------------------
 
         if not patterns:
 
@@ -22,22 +28,58 @@ class CandlestickStrategy:
 
             return result
 
+        # ----------------------------------------
+        # Process Patterns
+        # ----------------------------------------
+
+        strongest = 0
+
         for pattern in patterns:
 
-            result.reasons.append(
-                pattern.name
+            result.reasons.append(pattern.name)
+
+            strength = max(
+                1,
+                min(pattern.strength, 10)
+            )
+
+            strongest = max(
+                strongest,
+                strength
             )
 
             if pattern.bullish:
 
                 result.trend = "BULLISH"
 
-                result.bullish_score += pattern.strength
+                result.bullish_score += strength
 
             elif pattern.bearish:
 
                 result.trend = "BEARISH"
 
-                result.bearish_score += pattern.strength
+                result.bearish_score += strength
+
+        # ----------------------------------------
+        # Bonus for Strong Pattern
+        # ----------------------------------------
+
+        if strongest >= 8:
+
+            if result.trend == "BULLISH":
+
+                result.bullish_score += 2
+
+                result.reasons.append(
+                    "Strong Bullish Pattern"
+                )
+
+            elif result.trend == "BEARISH":
+
+                result.bearish_score += 2
+
+                result.reasons.append(
+                    "Strong Bearish Pattern"
+                )
 
         return result

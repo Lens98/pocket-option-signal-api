@@ -12,9 +12,9 @@ class MarketStructureStrategy:
         bos = data.get("bos", "NONE")
         choch = data.get("choch", "NONE")
 
-        # ---------------------------------
-        # Market Structure
-        # ---------------------------------
+        # ========================================
+        # Trend Structure
+        # ========================================
 
         if structure == "HH_HL":
 
@@ -39,83 +39,101 @@ class MarketStructureStrategy:
         else:
 
             result.reasons.append(
-                "Neutral Market Structure"
+                "Sideways Market Structure"
             )
 
-        # ---------------------------------
+        # ========================================
         # Break Of Structure
-        # ---------------------------------
+        # ========================================
 
         if bos == "BULLISH_BOS":
 
-            result.bullish_score += Weights.BOS
+            result.bullish_score += Weights.BOS + 3
 
             result.reasons.append(
                 "Bullish Break of Structure"
             )
 
-            result.bullish_score += 3
-
         elif bos == "BEARISH_BOS":
 
-            result.bearish_score += Weights.BOS
+            result.bearish_score += Weights.BOS + 3
 
             result.reasons.append(
                 "Bearish Break of Structure"
             )
 
-            result.bearish_score += 3
-
-        # ---------------------------------
+        # ========================================
         # Change Of Character
-        # ---------------------------------
+        # ========================================
 
         if choch == "BULLISH_CHOCH":
 
-            result.bullish_score += Weights.CHOCH
+            result.bullish_score += Weights.CHOCH + 2
 
             result.reasons.append(
                 "Bullish Change of Character"
             )
 
-            result.bullish_score += 2
-
         elif choch == "BEARISH_CHOCH":
 
-            result.bearish_score += Weights.CHOCH
+            result.bearish_score += Weights.CHOCH + 2
 
             result.reasons.append(
                 "Bearish Change of Character"
             )
 
-            result.bearish_score += 2
+        # ========================================
+        # Strong Confirmation
+        # ========================================
 
-        # ---------------------------------
-        # Bonus Confirmation
-        # ---------------------------------
+        bullish_confirmed = (
 
-        if (
             structure == "HH_HL"
+
             and bos == "BULLISH_BOS"
+
             and choch == "BULLISH_CHOCH"
-        ):
 
-            result.bullish_score += 5
+        )
 
-            result.reasons.append(
-                "Full Bullish Structure Confirmation"
-            )
+        bearish_confirmed = (
 
-        elif (
             structure == "LH_LL"
-            and bos == "BEARISH_BOS"
-            and choch == "BEARISH_CHOCH"
-        ):
 
-            result.bearish_score += 5
+            and bos == "BEARISH_BOS"
+
+            and choch == "BEARISH_CHOCH"
+
+        )
+
+        if bullish_confirmed:
+
+            result.bullish_score += 10
 
             result.reasons.append(
-                "Full Bearish Structure Confirmation"
+                "Strong Bullish Market Structure"
             )
+
+        elif bearish_confirmed:
+
+            result.bearish_score += 10
+
+            result.reasons.append(
+                "Strong Bearish Market Structure"
+            )
+
+        # ========================================
+        # Score Limit
+        # ========================================
+
+        result.bullish_score = min(
+            result.bullish_score,
+            30
+        )
+
+        result.bearish_score = min(
+            result.bearish_score,
+            30
+        )
 
         return result

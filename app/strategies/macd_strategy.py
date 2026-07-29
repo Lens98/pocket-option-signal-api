@@ -10,6 +10,7 @@ class MacdStrategy:
 
         macd = indicators.macd
         signal = indicators.signal_line
+        histogram = indicators.histogram
 
         # ----------------------------------------
         # MACD Not Available
@@ -24,7 +25,7 @@ class MacdStrategy:
             return result
 
         # ----------------------------------------
-        # Bullish Cross
+        # Bullish
         # ----------------------------------------
 
         if macd > signal:
@@ -34,8 +35,20 @@ class MacdStrategy:
             result.bullish_score += Weights.MACD
 
             result.reasons.append(
-                "MACD Bullish Cross"
+                "MACD Above Signal"
             )
+
+            # Histogram confirmation
+
+            if histogram is not None:
+
+                if histogram > 0:
+
+                    result.bullish_score += 3
+
+                    result.reasons.append(
+                        "Bullish Histogram"
+                    )
 
             strength = macd - signal
 
@@ -56,7 +69,7 @@ class MacdStrategy:
                 )
 
         # ----------------------------------------
-        # Bearish Cross
+        # Bearish
         # ----------------------------------------
 
         elif macd < signal:
@@ -66,8 +79,18 @@ class MacdStrategy:
             result.bearish_score += Weights.MACD
 
             result.reasons.append(
-                "MACD Bearish Cross"
+                "MACD Below Signal"
             )
+
+            if histogram is not None:
+
+                if histogram < 0:
+
+                    result.bearish_score += 3
+
+                    result.reasons.append(
+                        "Bearish Histogram"
+                    )
 
             strength = signal - macd
 
@@ -86,6 +109,10 @@ class MacdStrategy:
                 result.reasons.append(
                     "Moderate Bearish Momentum"
                 )
+
+        # ----------------------------------------
+        # Neutral
+        # ----------------------------------------
 
         else:
 

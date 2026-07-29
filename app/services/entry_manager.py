@@ -1,6 +1,7 @@
 from enum import Enum
 
 from app.models.signal import Signal
+from app.entry.entry_engine import EntryEngine
 
 
 class EntryState(str, Enum):
@@ -15,42 +16,42 @@ class EntryState(str, Enum):
 
 class EntryManager:
 
+    def __init__(self):
+
+        self.engine = EntryEngine()
+
     def determine(self, signal: Signal) -> EntryState:
 
         # ----------------------------------------
         # No market direction
         # ----------------------------------------
 
-        if signal.bias not in ["CALL", "PUT"]:
+        if signal.bias == "WAIT":
 
             return EntryState.WAITING
 
         # ----------------------------------------
-        # Low confidence
+        # Market has a direction
         # ----------------------------------------
 
         if signal.confidence < 70:
 
-            return EntryState.WAITING
-
-        # ----------------------------------------
-        # Market is building
-        # ----------------------------------------
-
-        if signal.confidence < 85:
-
             return EntryState.ANALYZING
 
         # ----------------------------------------
-        # Good setup
+        # Setup is forming
         # ----------------------------------------
 
-        if signal.confidence < 92:
+        if signal.confidence < 80:
 
             return EntryState.READY
 
         # ----------------------------------------
-        # High confidence
+        # Ask Entry Engine
         # ----------------------------------------
 
-        return EntryState.ENTRY
+        if self.engine.confirm(signal):
+
+            return EntryState.ENTRY
+
+        return EntryState.READY

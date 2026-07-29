@@ -77,3 +77,24 @@ class Signal(BaseModel):
     countdown: int = 0
 
     trade_status: str = "IDLE"
+    # ========================================
+    # Entry Confirmations
+    # ========================================
+
+    ema_confirmed: bool = False
+
+    macd_confirmed: bool = False
+
+    rsi_confirmed: bool = False
+
+    structure_confirmed: bool = False
+
+    zone_confirmed: bool = False
+
+    adx_confirmed: bool = False
+
+    atr_confirmed: bool = False
+
+    candle_confirmed: bool = False
+
+    pullback_confirmed: bool = False

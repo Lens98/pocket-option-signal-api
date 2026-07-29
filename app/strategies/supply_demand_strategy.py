@@ -8,9 +8,9 @@ class SupplyDemandStrategy:
 
         result = StrategyResult()
 
-        # ----------------------------------
+        # ========================================
         # Backward Compatibility
-        # ----------------------------------
+        # ========================================
 
         if isinstance(zone, str):
 
@@ -42,13 +42,19 @@ class SupplyDemandStrategy:
 
             return result
 
-        # ----------------------------------
-        # Future Advanced Zone Object
-        # ----------------------------------
+        # ========================================
+        # Advanced Zone Object
+        # ========================================
 
         zone_type = zone.get("type", "NONE")
         strength = zone.get("strength", 0)
         fresh = zone.get("fresh", False)
+        tested = zone.get("tested", False)
+        broken = zone.get("broken", False)
+
+        # ========================================
+        # Demand Zone
+        # ========================================
 
         if zone_type == "DEMAND":
 
@@ -84,6 +90,26 @@ class SupplyDemandStrategy:
                     "Fresh Demand Zone"
                 )
 
+            if tested:
+
+                result.bullish_score += 2
+
+                result.reasons.append(
+                    "Demand Zone Retest"
+                )
+
+            if broken:
+
+                result.bearish_score += 5
+
+                result.reasons.append(
+                    "Demand Zone Broken"
+                )
+
+        # ========================================
+        # Supply Zone
+        # ========================================
+
         elif zone_type == "SUPPLY":
 
             result.trend = "BEARISH"
@@ -118,10 +144,40 @@ class SupplyDemandStrategy:
                     "Fresh Supply Zone"
                 )
 
+            if tested:
+
+                result.bearish_score += 2
+
+                result.reasons.append(
+                    "Supply Zone Retest"
+                )
+
+            if broken:
+
+                result.bullish_score += 5
+
+                result.reasons.append(
+                    "Supply Zone Broken"
+                )
+
         else:
 
             result.reasons.append(
                 "No Supply/Demand Zone"
             )
+
+        # ========================================
+        # Score Limits
+        # ========================================
+
+        result.bullish_score = min(
+            result.bullish_score,
+            20
+        )
+
+        result.bearish_score = min(
+            result.bearish_score,
+            20
+        )
 
         return result

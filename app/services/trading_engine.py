@@ -442,8 +442,18 @@ class TradingEngine:
         # ----------------------------------------
         # Entry Manager
         # ----------------------------------------
-
+        print("========================================")
+        print("BEFORE ENTRY MANAGER")
+        print("========================================")
+        print("Bias        :", signal.bias)
+        print("Confidence  :", signal.confidence)
+        print("Probability :", signal.probability)
+        print("Risk        :", signal.risk)
+        print("Grade       :", signal.grade)
+        print("Trend       :", signal.trend)
+        print("========================================")
         state = self.entry_manager.determine(signal)
+        print("ENTRY STATE :", state)
 
         signal.market_state = state.value
 

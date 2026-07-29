@@ -106,7 +106,7 @@ class StrategyService:
     # Market Direction
     # =====================================
 
-    bias=final["action"],
+    bias=final["bias"],
 
     # =====================================
     # Current Action
@@ -165,15 +165,67 @@ class StrategyService:
 
     trade_status="IDLE"
 
-)
+   )
+         # =====================================
+        # Entry Confirmations
+        # =====================================
 
-       
+        signal.ema_confirmed = (
+            ema_result.bullish_score >
+            ema_result.bearish_score
+        )
+
+        signal.macd_confirmed = (
+            macd_result.bullish_score >
+            macd_result.bearish_score
+        )
+
+        signal.rsi_confirmed = (
+            rsi_result.bullish_score >
+            rsi_result.bearish_score
+        )
+
+        signal.structure_confirmed = (
+            market_structure_result.bullish_score >
+            market_structure_result.bearish_score
+        )
+
+        signal.zone_confirmed = (
+            zone_result.bullish_score >
+            zone_result.bearish_score
+        )
+
+        signal.adx_confirmed = (
+            adx_result.bullish_score >
+            adx_result.bearish_score
+        )
+
+        signal.atr_confirmed = (
+            atr_result.bullish_score >
+            atr_result.bearish_score
+        )
+
+        signal.candle_confirmed = (
+            candle_result.bullish_score >
+            candle_result.bearish_score
+        )
+
+        from app.entry.pullback_detector import PullbackDetector
+
+        pullback = PullbackDetector()
+
+        signal.pullback_confirmed = pullback.confirm(
+         market,
+         indicators,
+         signal.bias
+        )
+
         if signal.action == "WAIT":
 
             self.trade_state.waiting()
 
         else:
 
-          self.trade_state.ready()
+            self.trade_state.ready()
 
         return signal

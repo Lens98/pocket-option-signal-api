@@ -8,11 +8,13 @@ class AdxStrategy:
 
         result = StrategyResult()
 
-        # ----------------------------------
-        # ADX not available yet
-        # ----------------------------------
+        adx = indicators.adx
 
-        if indicators.adx is None:
+        # ========================================
+        # ADX Not Available
+        # ========================================
+
+        if adx is None:
 
             result.reasons.append(
                 "ADX Not Available"
@@ -20,34 +22,63 @@ class AdxStrategy:
 
             return result
 
-        # ----------------------------------
-        # Strong Trend
-        # ----------------------------------
+        # ========================================
+        # Very Strong Trend
+        # ========================================
 
-        if indicators.adx >= 35:
+        if adx >= 40:
 
             result.bullish_score += Weights.ADX + 5
-
             result.bearish_score += Weights.ADX + 5
 
             result.reasons.append(
-                "ADX Strong Trend"
+                "Very Strong Trend (ADX)"
             )
 
-        elif indicators.adx >= 25:
+        # ========================================
+        # Strong Trend
+        # ========================================
+
+        elif adx >= 30:
+
+            result.bullish_score += Weights.ADX + 2
+            result.bearish_score += Weights.ADX + 2
+
+            result.reasons.append(
+                "Strong Trend (ADX)"
+            )
+
+        # ========================================
+        # Moderate Trend
+        # ========================================
+
+        elif adx >= 25:
 
             result.bullish_score += Weights.ADX
-
             result.bearish_score += Weights.ADX
 
             result.reasons.append(
-                "ADX Moderate Trend"
+                "Moderate Trend (ADX)"
             )
+
+        # ========================================
+        # Weak Trend
+        # ========================================
+
+        elif adx >= 20:
+
+            result.reasons.append(
+                "Weak Trend (ADX)"
+            )
+
+        # ========================================
+        # Sideways Market
+        # ========================================
 
         else:
 
             result.reasons.append(
-                "ADX Weak Trend"
+                "Sideways Market (ADX)"
             )
 
         return result

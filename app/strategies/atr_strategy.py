@@ -10,52 +10,62 @@ class AtrStrategy:
 
         atr = indicators.atr
 
-        # ----------------------------------------
-        # ATR Not Available Yet
-        # ----------------------------------------
+        # ========================================
+        # ATR Not Available
+        # ========================================
 
         if atr is None:
 
             result.reasons.append(
-                "ATR unavailable"
+                "ATR Not Available"
             )
 
             return result
 
-        # ----------------------------------------
-        # High Volatility
-        # ----------------------------------------
+        # ========================================
+        # Very High Volatility
+        # ========================================
 
-        if atr >= 1.5:
+        if atr >= 1.50:
 
-            result.bullish_score = 20
-            result.bearish_score = 20
-
-            result.reasons.append(
-                f"ATR High ({atr:.5f})"
-            )
-
-        # ----------------------------------------
-        # Normal Volatility
-        # ----------------------------------------
-
-        elif atr >= 0.8:
-
-            result.bullish_score = Weights.ATR
-            result.bearish_score = Weights.ATR
+            result.bullish_score += Weights.ATR + 2
+            result.bearish_score += Weights.ATR + 2
 
             result.reasons.append(
-                f"ATR Normal ({atr:.5f})"
+                f"High Volatility ({atr:.5f})"
             )
 
-        # ----------------------------------------
+        # ========================================
+        # Healthy Volatility
+        # ========================================
+
+        elif atr >= 0.80:
+
+            result.bullish_score += Weights.ATR
+            result.bearish_score += Weights.ATR
+
+            result.reasons.append(
+                f"Healthy Volatility ({atr:.5f})"
+            )
+
+        # ========================================
         # Low Volatility
-        # ----------------------------------------
+        # ========================================
+
+        elif atr >= 0.40:
+
+            result.reasons.append(
+                f"Low Volatility ({atr:.5f})"
+            )
+
+        # ========================================
+        # Dead Market
+        # ========================================
 
         else:
 
             result.reasons.append(
-                f"ATR Low ({atr:.5f})"
+                f"Very Low Volatility ({atr:.5f})"
             )
 
         return result
