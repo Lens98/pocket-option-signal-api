@@ -1,0 +1,65 @@
+/* ==========================================
+   Header
+========================================== */
+
+.header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+    padding-bottom:14px;
+
+    border-bottom:1px solid #23314F;
+
+}
+
+.header h2{
+
+    font-size:26px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+
+}
+
+.version{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+
+.status{
+
+    padding:8px 18px;
+
+    border-radius:999px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+}
+
+.online{
+
+    background:#14532D;
+
+    color:#4ADE80;
+
+}
+
+.offline{
+
+    background:#4B1113;
+
+    color:#F87171;
+
+}

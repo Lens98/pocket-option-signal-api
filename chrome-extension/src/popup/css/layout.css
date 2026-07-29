@@ -1,0 +1,163 @@
+/* ==========================================
+   RESET
+========================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* ==========================================
+   BODY
+========================================== */
+
+html,
+body{
+
+    width:100%;
+
+    min-width:780px;
+
+    min-height:760px;
+
+    margin:0;
+
+    padding:0;
+
+    overflow-x:hidden;
+
+    overflow-y:auto;
+
+    font-family:"Segoe UI", Arial, sans-serif;
+
+    color:#FFFFFF;
+
+    background:
+        radial-gradient(circle at top right,#1A3B5D 0%,transparent 45%),
+        radial-gradient(circle at bottom left,#132238 0%,transparent 35%),
+        #0B1220;
+
+}
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.container{
+
+    width:100%;
+
+    padding:18px;
+
+}
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+
+.dashboard{
+
+    display:grid;
+
+    grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);
+
+    gap:20px;
+
+    align-items:start;
+
+    width:100%;
+
+}
+
+/* ==========================================
+   LEFT PANEL
+========================================== */
+
+.left-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+    min-width:0;
+
+}
+
+/* ==========================================
+   RIGHT PANEL
+========================================== */
+
+.right-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:20px;
+
+    min-width:0;
+
+}
+
+/* ==========================================
+   CARD
+========================================== */
+
+.card{
+
+    width:100%;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(28,39,61,.98),
+            rgba(15,23,42,.98)
+        );
+
+    border:1px solid #243453;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    box-shadow:
+        0 12px 30px rgba(0,0,0,.35);
+
+    overflow:hidden;
+
+}
+
+/* ==========================================
+   TITLES
+========================================== */
+
+.card-title{
+
+    color:#A8C7FA;
+
+    font-size:15px;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+    letter-spacing:.3px;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width:760px){
+
+    .dashboard{
+
+        grid-template-columns:1fr;
+
+    }
+
+}

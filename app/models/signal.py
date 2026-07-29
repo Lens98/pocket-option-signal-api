@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Signal(BaseModel):
@@ -11,9 +11,7 @@ class Signal(BaseModel):
     # ========================================
 
     asset: str
-
     timeframe: str
-
     session: str = "UNKNOWN"
 
     # ========================================
@@ -21,13 +19,10 @@ class Signal(BaseModel):
     # ========================================
 
     action: str
-
     confidence: float
-
     probability: float = 0.0
 
     trend: str
-
     regime: str = "UNKNOWN"
 
     expiration: str
@@ -37,7 +32,6 @@ class Signal(BaseModel):
     # ========================================
 
     entry_price: float
-
     timestamp: Optional[datetime] = None
 
     # ========================================
@@ -45,11 +39,24 @@ class Signal(BaseModel):
     # ========================================
 
     risk: str
-
     grade: str = "N/A"
 
     # ========================================
     # AI Explanation
     # ========================================
 
-    reasons: List[str]
+    reasons: List[str] = Field(default_factory=list)
+
+    # ========================================
+    # Entry Manager
+    # ========================================
+
+    market_state: str = "WAITING"
+
+    can_enter: bool = False
+
+    entry_window: int = 0
+
+    countdown: int = 0
+
+    trade_status: str = "IDLE"

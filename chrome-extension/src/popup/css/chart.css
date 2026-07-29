@@ -1,0 +1,243 @@
+/* ==========================================
+   LIVE MARKET CARD
+========================================== */
+
+.chart-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    width:100%;
+
+    height:430px;
+
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.chart-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    margin-bottom:16px;
+
+}
+
+.chart-left{
+
+    display:flex;
+
+    flex-direction:column;
+
+}
+
+.chart-title{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    letter-spacing:1px;
+
+    text-transform:uppercase;
+
+}
+
+.chart-asset{
+
+    margin-top:6px;
+
+    font-size:20px;
+
+    font-weight:700;
+
+    color:#FFFFFF;
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+.chart-dot{
+
+    width:10px;
+
+    height:10px;
+
+    margin-left:10px;
+
+    border-radius:50%;
+
+    background:#22C55E;
+
+    flex-shrink:0;
+
+}
+
+/* ==========================================
+   PRICE
+========================================== */
+
+.chart-price{
+
+    text-align:right;
+
+}
+
+.chart-price strong{
+
+    display:block;
+
+    color:#22C55E;
+
+    font-size:20px;
+
+    font-weight:800;
+
+}
+
+.chart-change{
+
+    margin-top:4px;
+
+    color:#22C55E;
+
+    font-size:13px;
+
+}
+
+/* ==========================================
+   CHART
+========================================== */
+
+.chart-body{
+
+    flex:1;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+}
+
+#miniChart{
+
+    width:100%;
+
+    height:235px;
+
+    display:block;
+
+    border-radius:16px;
+
+    background:#0F172A;
+
+    border:1px solid #23314F;
+
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.chart-footer{
+
+    margin-top:16px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+/* ==========================================
+   TIMEFRAMES
+========================================== */
+
+.timeframes{
+
+    display:flex;
+
+    gap:10px;
+
+}
+
+.timeframe{
+
+    padding:9px 16px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#16233A;
+
+    color:#CBD5E1;
+
+    cursor:pointer;
+
+    font-size:13px;
+
+    transition:.25s;
+
+}
+
+.timeframe:hover{
+
+    background:#2563EB;
+
+    color:#FFFFFF;
+
+}
+
+.timeframe.active{
+
+    background:#2563EB;
+
+    color:#FFFFFF;
+
+}
+
+/* ==========================================
+   LIVE
+========================================== */
+
+.live{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:8px;
+
+    color:#CBD5E1;
+
+    font-size:13px;
+
+}
+
+.live-dot{
+
+    width:10px;
+
+    height:10px;
+
+    border-radius:50%;
+
+    background:#2563EB;
+
+}

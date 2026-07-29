@@ -1,0 +1,210 @@
+/* ==========================================
+   LIVE TRADE HISTORY
+========================================== */
+
+.history-card{
+
+    width:100%;
+
+    margin-top:20px;
+
+    height:320px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    overflow:hidden;
+
+}
+
+/* ==========================================
+   TABLE WRAPPER
+========================================== */
+
+.history-card table{
+
+    width:100%;
+
+}
+
+.history-card tbody{
+
+    display:block;
+
+    height:230px;
+
+    overflow-y:auto;
+
+}
+
+.history-card thead,
+.history-card tbody tr{
+
+    display:table;
+
+    width:100%;
+
+    table-layout:fixed;
+
+}
+
+/* ==========================================
+   TABLE
+========================================== */
+
+#historyTable{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+#historyTable thead{
+
+    background:#18253D;
+
+}
+
+#historyTable th{
+
+    padding:16px;
+
+    text-align:center;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.6px;
+
+    border-bottom:1px solid #243453;
+
+}
+
+/* ==========================================
+   BODY
+========================================== */
+
+#historyTable td{
+
+    padding:15px;
+
+    text-align:center;
+
+    color:#E2E8F0;
+
+    font-size:14px;
+
+    border-bottom:1px solid #1F2B40;
+
+}
+
+#historyTable tbody tr{
+
+    transition:
+        background .25s,
+        transform .25s;
+
+}
+
+#historyTable tbody tr:nth-child(even){
+
+    background:rgba(255,255,255,.02);
+
+}
+
+#historyTable tbody tr:hover{
+
+    background:#1A2943;
+
+}
+
+/* ==========================================
+   ACTION COLORS
+========================================== */
+
+.action-call{
+
+    color:#22C55E;
+
+    font-weight:700;
+
+}
+
+.action-put{
+
+    color:#EF4444;
+
+    font-weight:700;
+
+}
+
+.action-wait{
+
+    color:#FACC15;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   RESULT COLORS
+========================================== */
+
+.result-win{
+
+    color:#22C55E;
+
+    font-weight:700;
+
+}
+
+.result-loss{
+
+    color:#EF4444;
+
+    font-weight:700;
+
+}
+
+.result-draw{
+
+    color:#FACC15;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+.history-card tbody::-webkit-scrollbar{
+
+    width:6px;
+
+}
+
+.history-card tbody::-webkit-scrollbar-thumb{
+
+    background:#243453;
+
+    border-radius:10px;
+
+}
+
+.history-card tbody::-webkit-scrollbar-track{
+
+    background:transparent;
+
+}

@@ -16,6 +16,11 @@ from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
 from app.storage.trade_storage import TradeStorage
 from app.storage.shared import trade_state
+from app.services.entry_manager import EntryManager
+from app.services.entry_manager import (
+    EntryManager,
+    EntryState,
+)
 
 class TradingEngine:
 
@@ -29,6 +34,7 @@ class TradingEngine:
         self.strategy = StrategyService()
         self.ai = AIReasonService()
         self.trade_state = trade_state
+        self.entry_manager = EntryManager()
         # NEW
         self.confidence = ConfidenceEngine()
         self.market_regime = MarketRegimeDetector()
@@ -433,6 +439,17 @@ class TradingEngine:
 
         signal.risk = risk["risk"]
         signal.grade = risk["grade"]
+        # ----------------------------------------
+        # Entry Manager
+        # ----------------------------------------
+
+        state = self.entry_manager.determine(signal)
+
+        signal.market_state = state.value
+
+        signal.can_enter = (
+        state == EntryState.ENTRY
+       )
 
         if not risk["allowed"]:
 

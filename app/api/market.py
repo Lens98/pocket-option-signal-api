@@ -97,3 +97,17 @@ def trade_state_status():
     return {
         "state": trade_state.get().value
     }
+# ========================================
+# LIVE CANDLES
+# ========================================
+
+@router.get("/candles/{asset}")
+def get_candles(asset: str):
+
+    market = market_storage.get(asset)
+
+    if market is None:
+
+        return []
+
+    return market.candles

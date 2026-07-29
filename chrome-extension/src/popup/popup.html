@@ -3,13 +3,14 @@
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-    <title>Pocket Option AI PRO</title>
+<title>Pocket Option AI PRO</title>
 
-    <link rel="stylesheet" href="popup.css">
+<link rel="stylesheet" href="./css/main.css">
 
 </head>
 
@@ -17,370 +18,407 @@
 
 <div class="container">
 
-    <!-- ========================= -->
-    <!-- Header -->
-    <!-- ========================= -->
+<!-- ====================================== -->
+<!-- HEADER -->
+<!-- ====================================== -->
 
-    <div class="header">
+<header class="header">
 
-        <div>
+    <div>
 
-            <h2>Pocket Option AI PRO</h2>
+        <h2>
 
-            <span class="version">
-                Professional Edition
-            </span>
+            Pocket Option AI PRO
+
+        </h2>
+
+        <span class="version">
+
+            Version 3.0 Professional
+
+        </span>
+
+    </div>
+
+    <div
+        id="status"
+        class="status offline">
+
+        ● Offline
+
+    </div>
+
+</header>
+
+<!-- ====================================== -->
+<!-- DASHBOARD -->
+<!-- ====================================== -->
+
+<div class="dashboard">
+
+    <!-- ============================= -->
+    <!-- LEFT PANEL -->
+    <!-- ============================= -->
+
+    <div class="left-panel">
+
+        <!-- ============================= -->
+        <!-- LIVE MARKET -->
+        <!-- ============================= -->
+
+        <div class="card chart-card">
+
+            <div class="card-title">
+
+                📈 Live Market
+
+            </div>
+
+            <div class="chart-header">
+
+    <div class="chart-left">
+
+        <div class="chart-title">
+
+            LIVE MARKET
 
         </div>
 
-        <div id="status" class="status offline">
+        <div id="chartAsset" class="chart-asset">
 
-            ● Offline
+            EURUSD OTC
+            <span class="chart-dot"></span>
 
         </div>
 
     </div>
 
-    <!-- ========================= -->
-    <!-- Live Chart -->
-    <!-- ========================= -->
+    <div class="chart-price">
 
-    <div class="chart card">
+        <strong id="chartPrice">
 
-        <div class="chart-header">
+            1.10524
 
-            <div>
+        </strong>
 
-                <div class="chart-title">
+        <div
+            id="chartChange"
+            class="chart-change">
 
-                    Live Market
-
-                </div>
-
-                <div id="chartAsset" class="chart-asset">
-
-                    EURUSD OTC
-
-                </div>
-
-            </div>
-
-            <div class="chart-price">
-
-                1.10524
-
-            </div>
+            +0.00067 (+0.06%)
 
         </div>
-
-        <canvas
-            id="miniChart"
-            width="320"
-            height="170">
-
-        </canvas>
 
     </div>
 
-    <!-- ========================= -->
-    <!-- Signal Card -->
-    <!-- ========================= -->
+</div>
 
-    <div class="signal-card card">
+<div class="chart-body">
 
-        <div
-            id="buyBanner"
-            class="buy-banner wait">
+    <canvas
+        id="miniChart"
+        width="700"
+        height="320">
 
-            WAIT FOR NEXT CANDLE
+    </canvas>
 
-        </div>
+</div>
 
-        <div
-            id="action"
-            class="action wait">
+<div class="chart-footer">
 
-            WAIT
+    <div class="timeframes">
 
-        </div>
+        <button class="timeframe active">
 
-        <div class="gauge">
+            M1
 
-            <svg width="150" height="150">
+        </button>
 
-                <circle
+        <button class="timeframe">
 
-                    cx="75"
+            M5
 
-                    cy="75"
+        </button>
 
-                    r="60"
+        <button class="timeframe">
 
-                    class="gauge-bg"
+            M15
 
-                />
+        </button>
 
-                <circle
+        <button class="timeframe">
 
-                    id="gauge"
+            H1
 
-                    cx="75"
+        </button>
 
-                    cy="75"
+    </div>
 
-                    r="60"
+    <div class="live">
 
-                    class="gauge-progress"
+        <span class="live-dot"></span>
 
-                />
+        LIVE
 
-            </svg>
+    </div>
+
+</div>
+</div>
+
+        <!-- ============================= -->
+        <!-- AI ANALYSIS -->
+        <!-- ============================= -->
+
+        <div class="card analysis-card">
+
+            <div class="card-title">
+
+                🧠 AI Analysis
+
+            </div>
 
             <div
+                id="analysis">
 
-                id="confidenceText"
-
-                class="gauge-text">
-
-                0%
+                Waiting for analysis...
 
             </div>
 
         </div>
 
-        <div class="countdown">
+    </div>
 
-            <span>
+    <!-- ============================= -->
+    <!-- RIGHT PANEL -->
+    <!-- ============================= -->
 
-                Trade Window
+    <div class="right-panel">
+    <!-- ============================= -->
+<!-- SIGNAL CENTER -->
+<!-- ============================= -->
 
-            </span>
+<div class="card signal-terminal">
 
-            <strong id="countdown">
+    <div
+        id="buyBanner"
+        class="buy-banner wait">
 
-                00:00
+        WAITING FOR SETUP
 
-            </strong>
+    </div>
+
+    <div
+        id="action"
+        class="action wait">
+
+        WAIT
+
+    </div>
+
+    <!-- ============================= -->
+    <!-- AI Confidence Gauge -->
+    <!-- ============================= -->
+
+    <div class="gauge">
+
+        <svg
+            width="180"
+            height="180">
+
+            <circle
+
+                cx="90"
+
+                cy="90"
+
+                r="72"
+
+                class="gauge-bg"
+
+            />
+
+            <circle
+
+                id="gauge"
+
+                cx="90"
+
+                cy="90"
+
+                r="72"
+
+                class="gauge-progress"
+
+            />
+
+        </svg>
+
+        <div
+
+            id="confidenceText"
+
+            class="gauge-text">
+
+            0%
 
         </div>
 
     </div>
 
-    <!-- ========================= -->
-    <!-- Information -->
-    <!-- ========================= -->
+    <!-- ============================= -->
+    <!-- Countdown -->
+    <!-- ============================= -->
+
+    <div class="countdown">
+
+        <span id="countdownLabel">
+
+            Waiting
+
+        </span>
+
+        <strong id="countdown">
+
+            00:00
+
+        </strong>
+
+        <div
+
+            id="entryMessage"
+
+            class="entry-message">
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================= -->
+<!-- TODAY'S SESSION -->
+<!-- ============================= -->
+
+<div class="card stats-card">
+
+    <div class="card-title">
+        📊 Today's Session
+    </div>
+
+    <div class="stats-grid">
+
+        <div class="stat">
+            <span>🟢 Wins</span>
+            <strong id="callCount">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>🔴 Losses</span>
+            <strong id="putCount">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>🟡 Draws</span>
+            <strong id="waitCount">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>📈 Win Rate</span>
+            <strong id="winRate">0%</strong>
+        </div>
+
+        <div class="stat">
+            <span>🎯 Total Trades</span>
+            <strong id="totalCount">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>💰 Profit</span>
+            <strong id="profitTotal">$0.00</strong>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================= -->
+<!-- END RIGHT PANEL -->
+<!-- ============================= -->
+
+</div>
+
+<!-- ============================= -->
+<!-- END DASHBOARD -->
+<!-- ============================= -->
+
+</div>
+
+<!-- ====================================== -->
+<!-- MARKET INFORMATION -->
+<!-- ====================================== -->
+
+<div class="card info-card">
+
+    <div class="card-title">
+        📋 Market Information
+    </div>
 
     <div class="info-grid">
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Trend</span>
-
-            <strong id="trend">
-
-                ---
-
-            </strong>
-
+            <strong id="trend">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Risk</span>
-
-            <strong id="risk">
-
-                ---
-
-            </strong>
-
+            <strong id="risk">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Asset</span>
-
-            <strong id="asset">
-
-                ---
-
-            </strong>
-
+            <strong id="asset">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Expiration</span>
-
-            <strong id="expiration">
-
-                ---
-
-            </strong>
-
+            <strong id="expiration">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Probability</span>
-
-            <strong id="probability">
-
-                ---
-
-            </strong>
-
+            <strong id="probability">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Grade</span>
-
-            <strong id="grade">
-
-                ---
-
-            </strong>
-
+            <strong id="grade">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Session</span>
-
-            <strong id="session">
-
-                ---
-
-            </strong>
-
+            <strong id="session">---</strong>
         </div>
 
-        <div class="card">
-
+        <div class="info-item">
             <span>Regime</span>
-
-            <strong id="regime">
-
-                ---
-
-            </strong>
-
+            <strong id="regime">---</strong>
         </div>
 
     </div>
 
-    <!-- ========================= -->
-    <!-- AI Analysis -->
-    <!-- ========================= -->
+</div>
 
-    <div class="analysis card">
+<!-- ====================================== -->
+<!-- LIVE TRADE HISTORY -->
+<!-- ====================================== -->
+<div class="card history-card">
 
-        <h3>
+    <div class="card-title">
 
-            🧠 AI Analysis
-
-        </h3>
-
-        <div id="analysis">
-
-            Waiting for analysis...
-
-        </div>
-
-    </div>
-
-    <!-- ========================= -->
-    <!-- Today's Statistics -->
-    <!-- ========================= -->
-
-    <div class="stats card">
-
-        <h3>
-
-            📊 Today's Session
-
-        </h3>
-
-        <div class="stats-grid">
-
-            <div class="stat">
-
-                <span>
-
-                    🟢 Wins
-
-                </span>
-
-                <strong id="callCount">
-
-                    0
-
-                </strong>
-
-            </div>
-
-            <div class="stat">
-
-                <span>
-
-                    🔴 PUT
-
-                </span>
-
-                <strong id="putCount">
-
-                    0
-
-                </strong>
-
-            </div>
-
-            <div class="stat">
-
-                <span>
-
-                    🟡 Draws
-
-                </span>
-
-                <strong id="waitCount">
-
-                    0
-
-                </strong>
-
-            </div>
-
-            <div class="stat">
-
-                <span>
-
-                    Total
-
-                </span>
-
-                <strong id="totalCount">
-
-                    0
-
-                </strong>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ========================= -->
-    <!-- Signal History -->
-    <!-- ========================= -->
-
-    <div class="history card">
-
-    <h3>
         📜 Live Trade History
-    </h3>
+
+    </div>
 
     <table id="historyTable">
 
@@ -410,23 +448,27 @@
 
 </div>
 
-    <!-- ========================= -->
-    <!-- Footer -->
-    <!-- ========================= -->
+<!-- ====================================== -->
+<!-- FOOTER -->
+<!-- ====================================== -->
 
-    <div class="footer">
+<footer class="footer">
+
+    <span>
 
         Last Update
 
-        <div id="updated">
+    </span>
 
-            --
+    <strong id="updated">
 
-        </div>
+        --
 
-    </div>
+    </strong>
 
-</div>
+</footer>
+
+</div> <!-- End Container -->
 
 <script type="module" src="./popup.js"></script>
 

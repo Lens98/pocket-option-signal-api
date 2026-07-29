@@ -1,0 +1,126 @@
+/* ==========================================
+   FOOTER
+========================================== */
+
+.footer{
+
+    width:100%;
+
+    margin-top:20px;
+
+    padding:18px 22px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    border-radius:18px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #18253D 0%,
+            #101827 100%
+        );
+
+    border:1px solid #243453;
+
+    box-shadow:
+        0 10px 24px rgba(0,0,0,.28);
+
+}
+
+/* ==========================================
+   LABEL
+========================================== */
+
+.footer span{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.6px;
+
+}
+
+/* ==========================================
+   VALUE
+========================================== */
+
+.footer strong{
+
+    color:#FFFFFF;
+
+    font-size:15px;
+
+    font-weight:800;
+
+    letter-spacing:.4px;
+
+}
+
+/* ==========================================
+   STATUS COLORS
+========================================== */
+
+.footer .online{
+
+    color:#22C55E;
+
+}
+
+.footer .offline{
+
+    color:#EF4444;
+
+}
+
+.footer .warning{
+
+    color:#FACC15;
+
+}
+
+/* ==========================================
+   HOVER
+========================================== */
+
+.footer:hover{
+
+    border-color:#3B82F6;
+
+    box-shadow:
+        0 12px 28px rgba(59,130,246,.15);
+
+    transition:
+        border-color .25s,
+        box-shadow .25s;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width:820px){
+
+    .footer{
+
+        flex-direction:column;
+
+        justify-content:center;
+
+        gap:8px;
+
+        text-align:center;
+
+    }
+
+}

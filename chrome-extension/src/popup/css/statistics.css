@@ -1,0 +1,174 @@
+/* ==========================================
+   TODAY'S SESSION
+========================================== */
+
+.stats-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    width:100%;
+
+    min-height:300px;
+
+}
+
+/* ==========================================
+   GRID
+========================================== */
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:14px;
+
+    margin-top:12px;
+
+}
+
+/* ==========================================
+   STAT CARD
+========================================== */
+
+.stat{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    min-height:96px;
+
+    padding:18px;
+
+    border-radius:16px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #18253D 0%,
+            #101827 100%
+        );
+
+    border:1px solid #243453;
+
+    transition:
+        transform .25s,
+        border-color .25s,
+        box-shadow .25s,
+        background .25s;
+
+}
+
+/* ==========================================
+   HOVER
+========================================== */
+
+.stat:hover{
+
+    transform:translateY(-4px);
+
+    border-color:#3B82F6;
+
+    box-shadow:
+
+        0 12px 24px rgba(59,130,246,.18);
+
+}
+
+/* ==========================================
+   LABEL
+========================================== */
+
+.stat span{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    font-weight:600;
+
+    margin-bottom:10px;
+
+    letter-spacing:.3px;
+
+}
+
+/* ==========================================
+   VALUE
+========================================== */
+
+.stat strong{
+
+    font-size:30px;
+
+    font-weight:800;
+
+    line-height:1;
+
+    color:#FFFFFF;
+
+}
+
+/* ==========================================
+   VALUE COLORS
+========================================== */
+
+#callCount{
+
+    color:#22C55E;
+
+}
+
+#putCount{
+
+    color:#EF4444;
+
+}
+
+#waitCount{
+
+    color:#FACC15;
+
+}
+
+#profitTotal{
+
+    color:#38BDF8;
+
+}
+
+#winRate{
+
+    color:#22C55E;
+
+}
+
+#totalCount{
+
+    color:#FFFFFF;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width:760px){
+
+    .stats-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+}

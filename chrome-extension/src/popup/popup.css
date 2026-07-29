@@ -1,8 +1,7 @@
-/* =====================================================
-   Pocket Option AI PRO
-   Professional Trading Terminal
-   Phase 2 - Part 1
-===================================================== */
+/* ==========================================
+   Pocket Option AI PRO v3.0
+   Professional Trading Dashboard
+========================================== */
 
 *{
 
@@ -16,47 +15,36 @@
 
 body{
 
-    width:560px;
+    width:900px;
 
-    min-height:860px;
+    min-height:760px;
 
-    overflow-x:hidden;
+    overflow:hidden;
 
-    color:#F8FAFC;
+    color:white;
 
     font-family:"Segoe UI",Arial,sans-serif;
 
     background:
-
-        radial-gradient(circle at top right,
-            #1B3358 0%,
-            transparent 45%),
-
-        radial-gradient(circle at bottom left,
-            #132238 0%,
-            transparent 35%),
-
+        radial-gradient(circle at top right,#1A3B5D 0%,transparent 45%),
+        radial-gradient(circle at bottom left,#132238 0%,transparent 35%),
         #0B1220;
 
 }
 
-/* =====================================================
-   CONTAINER
-===================================================== */
+/* ==========================================
+   Container
+========================================== */
 
 .container{
-
-    width:540px;
-
-    margin:auto;
 
     padding:18px;
 
 }
 
-/* =====================================================
-   HEADER
-===================================================== */
+/* ==========================================
+   Header
+========================================== */
 
 .header{
 
@@ -66,21 +54,19 @@ body{
 
     align-items:center;
 
-    margin-bottom:20px;
+    margin-bottom:18px;
 
-    padding-bottom:16px;
+    padding-bottom:14px;
 
-    border-bottom:1px solid #24324A;
+    border-bottom:1px solid #23314F;
 
 }
 
 .header h2{
 
-    font-size:34px;
+    font-size:26px;
 
-    font-weight:800;
-
-    line-height:1.1;
+    font-weight:700;
 
     letter-spacing:.5px;
 
@@ -88,200 +74,123 @@ body{
 
 .version{
 
-    display:block;
-
-    margin-top:4px;
-
     color:#94A3B8;
 
     font-size:13px;
 
 }
 
-/* =====================================================
-   CONNECTION STATUS
-===================================================== */
-
 .status{
 
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    min-width:120px;
-
-    padding:10px 18px;
+    padding:8px 18px;
 
     border-radius:999px;
 
     font-size:13px;
 
-    font-weight:700;
-
-    transition:.25s;
+    font-weight:bold;
 
 }
 
 .online{
 
-    color:#4ADE80;
-
     background:#14532D;
 
-    border:1px solid #22C55E;
-
-    box-shadow:
-
-        0 0 20px rgba(34,197,94,.30);
-
-    animation:pulseLive 2s infinite;
+    color:#4ADE80;
 
 }
 
 .offline{
 
-    color:#F87171;
-
     background:#4B1113;
 
-    border:1px solid #EF4444;
+    color:#F87171;
 
 }
 
-/* =====================================================
-   GLOBAL CARD STYLE
-===================================================== */
+/* ==========================================
+   Dashboard
+========================================== */
+
+.dashboard{
+
+    display:grid;
+
+    grid-template-columns:1.4fr .9fr;
+
+    gap:18px;
+
+    margin-bottom:18px;
+
+}
+
+.left-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.right-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+/* ==========================================
+   Cards
+========================================== */
 
 .card{
 
     background:
 
         linear-gradient(
-
             180deg,
-
-            rgba(31,41,66,.98),
-
+            rgba(28,39,61,.98),
             rgba(15,23,42,.98)
-
         );
 
-    border:1px solid #2F4264;
+    border:1px solid #243453;
 
     border-radius:18px;
 
     padding:18px;
 
-    margin-bottom:16px;
-
     box-shadow:
 
-        0 12px 32px rgba(0,0,0,.45);
-
-    backdrop-filter:blur(10px);
-
-    transition:
-
-        transform .25s,
-
-        border-color .25s,
-
-        box-shadow .25s;
+        0 12px 30px rgba(0,0,0,.35);
 
 }
 
-.card:hover{
-
-    transform:translateY(-2px);
-
-    border-color:#3B82F6;
-
-    box-shadow:
-
-        0 16px 38px rgba(0,0,0,.55);
-
-}
-
-.card span{
-
-    display:block;
+.card-title{
 
     color:#94A3B8;
 
-    font-size:13px;
-
-}
-
-.card strong{
-
-    display:block;
-
-    margin-top:6px;
-
-    font-size:24px;
+    font-size:14px;
 
     font-weight:700;
 
-    color:white;
+    margin-bottom:16px;
+
+    letter-spacing:.3px;
 
 }
 
-/* =====================================================
-   BUTTONS
-===================================================== */
+/* ==========================================
+   Chart
+========================================== */
 
-button{
+.chart-card{
 
-    border:none;
-
-    outline:none;
-
-    cursor:pointer;
-
-    transition:.25s;
-
-}
-
-button:hover{
-
-    transform:translateY(-1px);
-
-}
-
-/* =====================================================
-   LIVE STATUS ANIMATION
-===================================================== */
-
-@keyframes pulseLive{
-
-    0%{
-
-        box-shadow:0 0 0 0 rgba(34,197,94,.55);
-
-    }
-
-    70%{
-
-        box-shadow:0 0 0 12px rgba(34,197,94,0);
-
-    }
-
-    100%{
-
-        box-shadow:0 0 0 0 rgba(34,197,94,0);
-
-    }
-
-}
-/* =====================================================
-   LIVE MARKET CHART
-===================================================== */
-
-.chart{
-
-    padding:22px;
+    height:320px;
 
 }
 
@@ -303,31 +212,25 @@ button:hover{
 
     font-size:13px;
 
-    text-transform:uppercase;
-
-    letter-spacing:1px;
-
 }
 
 .chart-asset{
 
-    margin-top:6px;
+    margin-top:4px;
 
-    font-size:24px;
+    font-size:22px;
 
-    font-weight:800;
-
-    color:white;
+    font-weight:700;
 
 }
 
 .chart-price{
 
-    font-size:28px;
-
-    font-weight:800;
-
     color:#22C55E;
+
+    font-size:24px;
+
+    font-weight:bold;
 
 }
 
@@ -337,41 +240,48 @@ button:hover{
 
     height:220px;
 
-    border-radius:16px;
-
-    border:1px solid #2F4264;
+    border-radius:14px;
 
     background:
 
         linear-gradient(
-
             180deg,
-
-            #18263F,
-
+            #16213A,
             #0F172A
-
         );
 
-}
-
-/* =====================================================
-   SIGNAL CARD
-===================================================== */
-
-.signal-card{
-
-    text-align:center;
-
-    padding:24px;
+    border:1px solid #223553;
 
 }
+/* ==========================================
+   SIGNAL TERMINAL
+========================================== */
+
+.signal-terminal{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    min-height:520px;
+
+}
+
+/* ==========================================
+   BUY / SELL BANNER
+========================================== */
 
 .buy-banner{
 
-    padding:12px;
+    width:100%;
 
-    margin-bottom:20px;
+    text-align:center;
+
+    padding:12px;
 
     border-radius:12px;
 
@@ -379,21 +289,9 @@ button:hover{
 
     font-weight:700;
 
-}
+    margin-bottom:18px;
 
-.buy-banner.call{
-
-    background:#16A34A;
-
-    color:white;
-
-}
-
-.buy-banner.put{
-
-    background:#DC2626;
-
-    color:white;
+    transition:.35s;
 
 }
 
@@ -405,9 +303,65 @@ button:hover{
 
 }
 
-/* =====================================================
-   SIGNAL TEXT
-===================================================== */
+.buy-banner.analyzing{
+
+    background:#2563EB;
+
+    color:white;
+
+}
+
+.buy-banner.ready{
+
+    background:#F59E0B;
+
+    color:white;
+
+}
+
+.buy-banner.call{
+
+    background:#16A34A;
+
+    color:white;
+
+    box-shadow:
+
+        0 0 25px rgba(34,197,94,.45);
+
+}
+
+.buy-banner.put{
+
+    background:#DC2626;
+
+    color:white;
+
+    box-shadow:
+
+        0 0 25px rgba(239,68,68,.45);
+
+}
+
+.buy-banner.active{
+
+    background:#7C3AED;
+
+    color:white;
+
+}
+
+.buy-banner.finished{
+
+    background:#0F9D58;
+
+    color:white;
+
+}
+
+/* ==========================================
+   CALL / PUT
+========================================== */
 
 .action{
 
@@ -415,17 +369,19 @@ button:hover{
 
     font-weight:900;
 
-    letter-spacing:6px;
+    letter-spacing:4px;
 
-    text-transform:uppercase;
+    margin-top:10px;
 
     margin-bottom:20px;
 
-    animation:signalPulse 2s infinite;
+    text-transform:uppercase;
+
+    text-align:center;
 
 }
 
-.call{
+.action.call{
 
     color:#22C55E;
 
@@ -435,7 +391,7 @@ button:hover{
 
 }
 
-.put{
+.action.put{
 
     color:#EF4444;
 
@@ -445,27 +401,23 @@ button:hover{
 
 }
 
-.wait{
+.action.wait{
 
     color:#FACC15;
 
-    text-shadow:
-
-        0 0 18px rgba(250,204,21,.70);
-
 }
 
-/* =====================================================
-   AI CONFIDENCE GAUGE
-===================================================== */
+/* ==========================================
+   CONFIDENCE GAUGE
+========================================== */
 
 .gauge{
 
     position:relative;
 
-    width:150px;
+    width:180px;
 
-    height:150px;
+    height:180px;
 
     margin:15px auto;
 
@@ -473,11 +425,9 @@ button:hover{
 
 .gauge svg{
 
-    width:220px;
+    position:absolute;
 
-    height:220px;
-
-    transform:rotate(-90deg);
+    inset:0;
 
 }
 
@@ -485,9 +435,9 @@ button:hover{
 
     fill:none;
 
-    stroke:#24324A;
+    stroke:#1E293B;
 
-    stroke-width:10;
+    stroke-width:12;
 
 }
 
@@ -497,19 +447,15 @@ button:hover{
 
     stroke:#22C55E;
 
-    stroke-width:10;
+    stroke-width:12;
 
     stroke-linecap:round;
 
-    stroke-dasharray:377;
+    stroke-dasharray:452;
 
-    stroke-dashoffset:377;
+    stroke-dashoffset:452;
 
-    transition:
-
-        stroke .4s,
-
-        stroke-dashoffset .4s;
+    transition:.45s;
 
 }
 
@@ -521,45 +467,49 @@ button:hover{
 
     display:flex;
 
-    align-items:center;
-
     justify-content:center;
 
-    font-size:36px;
+    align-items:center;
 
-    font-weight:700;
+    font-size:46px;
 
-    line-height:1;
+    font-weight:800;
 
-    pointer-events:none;
-
-}
-
-/* =====================================================
-   COUNTDOWN
-===================================================== */
-
-.countdown{
-
-    margin-top:20px;
+    color:white;
 
     text-align:center;
 
 }
 
-.countdown span{
+/* ==========================================
+   COUNTDOWN
+========================================== */
 
-    display:block;
+.countdown{
 
-    color:#94A3B8;
+    display:flex;
 
-    margin-bottom:6px;
+    flex-direction:column;
 
-    font-size:13px;
+    align-items:center;
+
+    justify-content:center;
+
+    margin-top:15px;
 
 }
 
-.countdown strong{
+#countdownLabel{
+
+    color:#94A3B8;
+
+    font-size:15px;
+
+    margin-bottom:6px;
+
+}
+
+#countdown{
 
     font-size:34px;
 
@@ -567,11 +517,41 @@ button:hover{
 
 }
 
-/* =====================================================
-   SIGNAL ANIMATION
-===================================================== */
+/* ==========================================
+   ENTRY MESSAGE
+========================================== */
 
-@keyframes signalPulse{
+.entry-message{
+
+    margin-top:15px;
+
+    min-height:48px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:42px;
+
+    font-weight:900;
+
+    text-align:center;
+
+}
+
+/* ==========================================
+   ENTRY ANIMATIONS
+========================================== */
+
+.entry-message{
+
+    animation:pulseEntry 1s infinite;
+
+}
+
+@keyframes pulseEntry{
 
     0%{
 
@@ -581,7 +561,7 @@ button:hover{
 
     50%{
 
-        transform:scale(1.05);
+        transform:scale(1.08);
 
     }
 
@@ -592,143 +572,89 @@ button:hover{
     }
 
 }
-/* =====================================================
-   INFORMATION GRID
-===================================================== */
 
-.info-grid{
+/* ==========================================
+   SIGNAL GLOW
+========================================== */
 
-    display:grid;
+.signal-terminal{
 
-    grid-template-columns:repeat(4,1fr);
-
-    gap:14px;
-
-    margin-top:18px;
+    position:relative;
 
 }
 
-.info-grid .card{
+.signal-terminal::after{
 
-    text-align:center;
+    content:"";
 
-    padding:16px;
+    position:absolute;
+
+    inset:0;
+
+    border-radius:18px;
+
+    pointer-events:none;
+
+    box-shadow:
+
+        inset 0 0 40px rgba(34,197,94,.05);
+
+}
+/* ==========================================
+   AI ANALYSIS
+========================================== */
+
+.analysis-card{
+
+    min-height:220px;
 
 }
 
-.info-grid span{
-
-    color:#94A3B8;
-
-    font-size:12px;
-
-    text-transform:uppercase;
-
-    letter-spacing:.6px;
-
-}
-
-.info-grid strong{
-
-    margin-top:8px;
-
-    font-size:18px;
-
-    font-weight:700;
-
-}
-
-/* =====================================================
-   AI REASONING
-===================================================== */
-
-.analysis{
-
-    margin-top:20px;
-
-}
-
-.analysis h3{
-
-    font-size:18px;
-
-    margin-bottom:16px;
-
-    color:#9FC5FF;
-
-}
-
-.reason{
+#analysis{
 
     display:flex;
 
-    align-items:center;
+    flex-direction:column;
 
-    gap:12px;
+    gap:10px;
 
-    padding:12px;
+    font-size:14px;
 
-    margin-bottom:10px;
-
-    border-radius:10px;
-
-    background:#172234;
-
-    border-left:4px solid #3B82F6;
-
-    transition:.25s;
+    line-height:1.5;
 
 }
 
-.reason:hover{
-
-    transform:translateX(4px);
-
-    background:#1E293B;
-
-}
-
-.good{
+#analysis .good{
 
     color:#22C55E;
 
-    font-weight:bold;
+    font-weight:600;
 
 }
 
-.bad{
-
-    color:#EF4444;
-
-    font-weight:bold;
-
-}
-
-.warning{
+#analysis .warning{
 
     color:#FACC15;
 
-    font-weight:bold;
+    font-weight:600;
 
 }
 
-/* =====================================================
-   SESSION STATISTICS
-===================================================== */
+#analysis .bad{
 
-.stats{
+    color:#EF4444;
 
-    margin-top:20px;
+    font-weight:600;
 
 }
 
-.stats h3{
+/* ==========================================
+   TODAY'S SESSION
+========================================== */
 
-    font-size:18px;
+.stats-card{
 
-    color:#9FC5FF;
-
-    margin-bottom:18px;
+    min-height:180px;
 
 }
 
@@ -738,19 +664,19 @@ button:hover{
 
     grid-template-columns:repeat(2,1fr);
 
-    gap:14px;
+    gap:12px;
 
 }
 
 .stat{
 
-    background:#162235;
+    background:#182235;
 
-    border:1px solid #2F4264;
+    border:1px solid #23314F;
 
-    border-radius:14px;
+    border-radius:12px;
 
-    padding:18px;
+    padding:15px;
 
     text-align:center;
 
@@ -760,9 +686,9 @@ button:hover{
 
 .stat:hover{
 
-    border-color:#3B82F6;
+    transform:translateY(-3px);
 
-    transform:translateY(-2px);
+    background:#22304B;
 
 }
 
@@ -786,277 +712,121 @@ button:hover{
 
 }
 
-/* =====================================================
-   SIGNAL HISTORY
-===================================================== */
+/* ==========================================
+   MARKET INFORMATION
+========================================== */
 
-.history{
+.info-card{
 
-    margin-top:22px;
-
-}
-
-.history h3{
-
-    color:#9FC5FF;
-
-    font-size:18px;
-
-    margin-bottom:16px;
+    margin-top:18px;
 
 }
 
-.history-item{
+.info-grid{
 
     display:grid;
 
-    grid-template-columns:
+    grid-template-columns:repeat(8,1fr);
 
-        80px
-
-        1fr
-
-        80px;
-
-    align-items:center;
-
-    padding:12px;
-
-    margin-bottom:8px;
-
-    border-radius:10px;
-
-    background:#172234;
-
-    transition:.25s;
+    gap:12px;
 
 }
 
-.history-item:hover{
+.info-item{
 
-    background:#1F2937;
+    background:#16213A;
 
-}
-
-.history-item span{
-
-    font-size:13px;
-
-}
-
-.call-text{
-
-    color:#22C55E;
-
-    font-weight:bold;
-
-}
-
-.put-text{
-
-    color:#EF4444;
-
-    font-weight:bold;
-
-}
-
-.wait-text{
-
-    color:#FACC15;
-
-    font-weight:bold;
-
-}
-
-/* =====================================================
-   FOOTER
-===================================================== */
-
-.footer{
-
-    margin-top:24px;
-
-    text-align:center;
-
-    color:#94A3B8;
-
-    font-size:13px;
-
-}
-/* =====================================================
-   PHASE 2 - PART 4
-   PROFESSIONAL TERMINAL
-===================================================== */
-
-/* ==========================================
-   TERMINAL TABS
-========================================== */
-
-.tabs{
-
-    display:flex;
-
-    justify-content:space-between;
-
-    gap:10px;
-
-    margin:18px 0;
-
-}
-
-.tab{
-
-    flex:1;
-
-    padding:12px;
-
-    text-align:center;
+    border:1px solid #243553;
 
     border-radius:12px;
 
-    cursor:pointer;
-
-    font-size:13px;
-
-    font-weight:700;
-
-    background:#162235;
-
-    border:1px solid #2B3B55;
-
-    transition:.25s;
-
-}
-
-.tab:hover{
-
-    background:#1F2D44;
-
-}
-
-.tab.active{
-
-    background:#2563EB;
-
-    border-color:#3B82F6;
-
-    color:white;
-
-}
-
-/* ==========================================
-   ANALYTICS
-========================================== */
-
-.analytics-grid{
-
-    display:grid;
-
-    grid-template-columns:repeat(2,1fr);
-
-    gap:14px;
-
-}
-
-.analytics-card{
-
-    background:#172234;
-
-    border:1px solid #2F4264;
-
-    border-radius:14px;
-
-    padding:18px;
+    padding:14px;
 
     text-align:center;
 
 }
 
-.analytics-title{
+.info-item span{
+
+    display:block;
 
     color:#94A3B8;
 
     font-size:12px;
 
-    text-transform:uppercase;
+    margin-bottom:8px;
 
 }
 
-.analytics-value{
+.info-item strong{
 
-    margin-top:10px;
+    font-size:15px;
 
-    font-size:34px;
-
-    font-weight:800;
-
-}
-
-.analytics-green{
-
-    color:#22C55E;
-
-}
-
-.analytics-red{
-
-    color:#EF4444;
-
-}
-
-.analytics-yellow{
-
-    color:#FACC15;
+    font-weight:700;
 
 }
 
 /* ==========================================
-   ASSET SELECTOR
+   HISTORY
 ========================================== */
 
-.asset-select{
+.history-card{
+
+    margin-top:18px;
+
+}
+
+#historyTable{
 
     width:100%;
 
-    margin-bottom:18px;
-
-    padding:12px;
-
-    border:none;
-
-    outline:none;
-
-    border-radius:12px;
-
-    background:#172234;
-
-    color:white;
-
-    border:1px solid #31435F;
-
-    font-size:14px;
+    border-collapse:collapse;
 
 }
 
-.asset-select option{
+#historyTable th{
 
-    background:#172234;
+    background:#16213A;
+
+    color:#CBD5E1;
+
+    font-size:13px;
+
+    padding:12px;
+
+    border-bottom:1px solid #243553;
+
+    text-align:left;
+
+}
+
+#historyTable td{
+
+    padding:12px;
+
+    border-bottom:1px solid #1E293B;
+
+    font-size:13px;
+
+}
+
+#historyTable tbody tr{
+
+    transition:.25s;
+
+}
+
+#historyTable tbody tr:hover{
+
+    background:#182235;
 
 }
 
 /* ==========================================
-   SETTINGS
+   FOOTER
 ========================================== */
 
-.settings{
-
-    display:grid;
-
-    gap:14px;
-
-}
-
-.setting{
+.footer{
 
     display:flex;
 
@@ -1064,81 +834,41 @@ button:hover{
 
     align-items:center;
 
-    padding:14px;
+    margin-top:18px;
 
-    border-radius:12px;
+    padding-top:14px;
 
-    background:#172234;
+    border-top:1px solid #23314F;
 
-}
+    color:#94A3B8;
 
-.setting span{
-
-    color:#CBD5E1;
+    font-size:13px;
 
 }
 
-.setting input{
-
-    accent-color:#3B82F6;
-
-}
-
-.setting select{
-
-    background:#24324A;
+.footer strong{
 
     color:white;
-
-    border:none;
-
-    border-radius:8px;
-
-    padding:8px 10px;
 
 }
 
 /* ==========================================
-   NOTIFICATION
+   GLOBAL ANIMATIONS
 ========================================== */
 
-.notification{
+.card{
 
-    position:fixed;
-
-    top:20px;
-
-    right:20px;
-
-    width:300px;
-
-    padding:18px;
-
-    border-radius:14px;
-
-    background:#111827;
-
-    border-left:5px solid #22C55E;
-
-    color:white;
-
-    box-shadow:
-
-        0 15px 35px rgba(0,0,0,.45);
-
-    animation:slideNotification .4s ease;
+    animation:fadeUp .45s ease;
 
 }
 
-@keyframes slideNotification{
+@keyframes fadeUp{
 
     from{
 
         opacity:0;
 
-        transform:
-
-            translateX(60px);
+        transform:translateY(12px);
 
     }
 
@@ -1146,21 +876,53 @@ button:hover{
 
         opacity:1;
 
-        transform:
+        transform:translateY(0);
 
-            translateX(0);
+    }
+
+}
+
+.action{
+
+    animation:signalPulse 2s infinite;
+
+}
+
+@keyframes signalPulse{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.03);
+
+    }
+
+    100%{
+
+        transform:scale(1);
 
     }
 
 }
 
 /* ==========================================
-   SCROLLBAR
+   CUSTOM SCROLLBAR
 ========================================== */
 
 ::-webkit-scrollbar{
 
     width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111827;
 
 }
 
@@ -1175,122 +937,5 @@ button:hover{
 ::-webkit-scrollbar-thumb:hover{
 
     background:#475569;
-
-}
-
-/* ==========================================
-   FINAL POLISH
-========================================== */
-
-.card,
-.stat,
-.analytics-card,
-.reason,
-.history-item{
-
-    transition:
-
-        transform .25s,
-
-        box-shadow .25s,
-
-        border-color .25s;
-
-}
-
-.card:hover,
-.stat:hover,
-.analytics-card:hover{
-
-    box-shadow:
-
-        0 14px 34px rgba(0,0,0,.45);
-
-}
-
-h3{
-
-    letter-spacing:.5px;
-
-}
-
-strong{
-
-    letter-spacing:.3px;
-
-}
-/* =======================================
-   Trade History Table
-======================================= */
-
-#historyTable{
-
-    width:100%;
-
-    border-collapse:collapse;
-
-    font-size:13px;
-
-}
-
-#historyTable th{
-
-    color:#94A3B8;
-
-    text-align:left;
-
-    padding:8px;
-
-    border-bottom:1px solid #23314F;
-
-}
-
-#historyTable td{
-
-    padding:8px;
-
-    border-bottom:1px solid #1E293B;
-
-}
-
-.win{
-
-    color:#22C55E;
-
-    font-weight:bold;
-
-}
-
-.loss{
-
-    color:#EF4444;
-
-    font-weight:bold;
-
-}
-
-.draw{
-
-    color:#FACC15;
-
-    font-weight:bold;
-
-}
-
-.call{
-
-    color:#22C55E;
-
-}
-
-.put{
-
-    color:#EF4444;
-
-}
-
-.wait{
-
-    color:#FACC15;
 
 }

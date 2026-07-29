@@ -12,15 +12,11 @@ class TrendAnalyzer:
         candles = market.candles
 
         if len(candles) < 2:
-
             return "UNKNOWN"
 
         try:
-
             indicator = self.indicators.calculate(market)
-
         except Exception:
-
             return "UNKNOWN"
 
         print("----------------------------------------")
@@ -40,36 +36,35 @@ class TrendAnalyzer:
 
             print("EMA20 :", indicator.ema20)
 
-        if indicator.ema20 is not None:
+            if indicator.ema20 is not None:
 
-          if last > indicator.ema20 and last > first:
+                if last > indicator.ema20 and last > first:
 
-            print("Trend : BULLISH")
-            return "BULLISH"
+                    print("Trend : BULLISH")
+                    return "BULLISH"
 
-          if last < indicator.ema20 and last < first:
+                if last < indicator.ema20 and last < first:
 
-            print("Trend : BEARISH")
-            return "BEARISH"
+                    print("Trend : BEARISH")
+                    return "BEARISH"
 
-          # Fallback when EMA20 isn't available yet
-          if last > first:
+            if last > first:
 
-            print("Trend : BULLISH (price action)")
-            return "BULLISH"
+                print("Trend : BULLISH (price action)")
+                return "BULLISH"
 
-        if last < first:
+            if last < first:
 
-          print("Trend : BEARISH (price action)")
-          return "BEARISH"
+                print("Trend : BEARISH (price action)")
+                return "BEARISH"
 
-          print("Trend : SIDEWAYS")
-          return "SIDEWAYS"
+            print("Trend : SIDEWAYS")
+            return "SIDEWAYS"
 
-         # ========================================
-         # STANDARD MODE
-         # EMA20 vs EMA50
-         # ========================================
+        # ========================================
+        # STANDARD MODE
+        # EMA20 vs EMA50
+        # ========================================
 
         elif indicator.mode == "STANDARD":
 
@@ -77,13 +72,9 @@ class TrendAnalyzer:
             print("EMA50 :", indicator.ema50)
 
             if (
-
                 indicator.ema20 is not None
-
                 and
-
                 indicator.ema50 is not None
-
             ):
 
                 if indicator.ema20 > indicator.ema50:
@@ -111,21 +102,15 @@ class TrendAnalyzer:
             print("ADX   :", indicator.adx)
 
             if (
-
                 indicator.ema20 is not None
-
                 and
-
                 indicator.ema50 is not None
-
             ):
 
                 if indicator.ema20 > indicator.ema50:
-
                     return "BULLISH"
 
                 if indicator.ema20 < indicator.ema50:
-
                     return "BEARISH"
 
             return "SIDEWAYS"
@@ -140,53 +125,34 @@ class TrendAnalyzer:
         print("EMA200 :", indicator.ema200)
 
         if (
-
             indicator.ema20 is not None
-
             and
-
             indicator.ema50 is not None
-
             and
-
             indicator.ema200 is not None
-
         ):
 
             if (
-
                 indicator.ema20
-
                 >
-
                 indicator.ema50
-
                 >
-
                 indicator.ema200
-
             ):
 
                 print("Trend : BULLISH")
                 return "BULLISH"
 
             if (
-
                 indicator.ema20
-
                 <
-
                 indicator.ema50
-
                 <
-
                 indicator.ema200
-
             ):
 
                 print("Trend : BEARISH")
                 return "BEARISH"
 
         print("Trend : SIDEWAYS")
-
         return "SIDEWAYS"

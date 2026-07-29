@@ -1,0 +1,240 @@
+/* ==========================================
+   AI ANALYSIS CARD
+========================================== */
+
+.analysis-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    width:100%;
+
+    min-height:200px;
+
+}
+
+/* ==========================================
+   ANALYSIS CONTAINER
+========================================== */
+
+#analysis{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+    flex:1;
+
+    overflow-y:auto;
+
+    padding-right:4px;
+
+}
+
+/* ==========================================
+   ANALYSIS ROW
+========================================== */
+
+.reason{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:14px;
+
+    width:100%;
+
+    padding:12px 16px;
+
+    border-radius:12px;
+
+    background:#111C31;
+
+    border:1px solid #243453;
+
+    transition:
+        background .25s,
+        border-color .25s,
+        transform .25s,
+        box-shadow .25s;
+
+}
+
+.reason:hover{
+
+    background:#18253D;
+
+    border-color:#3B82F6;
+
+    transform:translateX(3px);
+
+    box-shadow:
+        0 8px 18px rgba(59,130,246,.15);
+
+}
+
+/* ==========================================
+   ICON
+========================================== */
+
+.reason span{
+
+    width:26px;
+
+    flex-shrink:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:18px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   TEXT
+========================================== */
+
+.reason div{
+
+    flex:1;
+
+    color:#E5E7EB;
+
+    font-size:14px;
+
+    line-height:1.5;
+
+}
+
+/* ==========================================
+   STATUS COLORS
+========================================== */
+
+.good{
+
+    color:#22C55E;
+
+}
+
+.warning{
+
+    color:#FACC15;
+
+}
+
+.bad{
+
+    color:#EF4444;
+
+}
+
+/* ==========================================
+   WAITING MESSAGE
+========================================== */
+
+.waiting{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    min-height:150px;
+
+    color:#94A3B8;
+
+    font-size:15px;
+
+    font-style:italic;
+
+}
+
+/* ==========================================
+   AI GRADE
+========================================== */
+
+.analysis-grade{
+
+    margin-top:14px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:14px 16px;
+
+    border-radius:14px;
+
+    background:#131F35;
+
+    border:1px solid #2D4B78;
+
+}
+
+.analysis-grade span{
+
+    color:#A78BFA;
+
+    font-size:15px;
+
+    font-weight:700;
+
+}
+
+.analysis-grade strong{
+
+    padding:6px 14px;
+
+    border-radius:20px;
+
+    background:#3B82F6;
+
+    color:#FFFFFF;
+
+    font-size:14px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   SCROLLBAR
+========================================== */
+
+#analysis::-webkit-scrollbar{
+
+    width:6px;
+
+}
+
+#analysis::-webkit-scrollbar-track{
+
+    background:transparent;
+
+}
+
+#analysis::-webkit-scrollbar-thumb{
+
+    background:#243453;
+
+    border-radius:10px;
+
+}
+
+#analysis::-webkit-scrollbar-thumb:hover{
+
+    background:#3B82F6;
+
+}
