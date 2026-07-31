@@ -41,7 +41,100 @@ export function startCountdown(getMarketState) {
         const marketState =
             getMarketState();
 
-        // Countdown state logic will go here.
+        // =====================================
+// Countdown State Machine
+// =====================================
+
+if (marketState === "WAITING") {
+
+    banner.innerHTML = "🟡 WAITING FOR SETUP";
+    action.innerHTML = "WAIT";
+
+    entryMessage.innerHTML =
+        "Waiting for a valid trade setup.";
+
+}
+
+else if (marketState === "READY") {
+
+    banner.innerHTML = "🟢 PREPARING ENTRY";
+
+    action.innerHTML = "READY";
+
+    entryMessage.innerHTML =
+        `Wait ${remaining} seconds for the candle to close.`;
+
+}
+
+else if (marketState === "WAITING_FOR_CANDLE_CLOSE") {
+
+    banner.innerHTML = "⏳ WAITING FOR CANDLE CLOSE";
+
+    action.innerHTML = "WAIT";
+
+    entryMessage.innerHTML =
+        `Current candle ends in ${remaining} sec.`;
+
+}
+
+else if (marketState === "ENTRY") {
+
+    if (remaining <= 3 && remaining > 0) {
+
+        banner.innerHTML = "🟢 GET READY";
+
+        action.innerHTML = `ENTRY IN ${remaining}`;
+
+        entryMessage.innerHTML =
+            `Prepare to enter in ${remaining} second(s).`;
+
+    }
+
+    else if (remaining === 60) {
+
+        banner.innerHTML = "🚀 ENTER NOW";
+
+        action.innerHTML = "🚀 ENTER NOW";
+
+        entryMessage.innerHTML =
+            "New candle opened. Enter now.";
+
+    }
+
+    else {
+
+        banner.innerHTML = "❌ ENTRY WINDOW MISSED";
+
+        action.innerHTML = "MISSED";
+
+        entryMessage.innerHTML =
+            "Wait for the next trade setup.";
+
+    }
+
+}
+
+else if (marketState === "ACTIVE") {
+
+    banner.innerHTML = "🟢 TRADE ACTIVE";
+
+    action.innerHTML = "ACTIVE";
+
+    entryMessage.innerHTML =
+        "Trade is currently running.";
+
+}
+
+else if (marketState === "RESULT") {
+
+    banner.innerHTML = "🏁 TRADE COMPLETE";
+
+    action.innerHTML = "RESULT";
+
+    entryMessage.innerHTML =
+        "Waiting for the next setup.";
+
+}
 
     }
 

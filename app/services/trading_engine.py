@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from app.entry.entry_engine import EntryEngine
 from app.models.market import MarketData
 from app.models.signal import Signal
 from app.services.confidence_engine import ConfidenceEngine
@@ -15,6 +15,7 @@ from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
 from app.storage.trade_storage import TradeStorage
+from app.services.signal_lock import SignalLock
 from app.storage.shared import trade_state
 from app.services.entry_manager import EntryManager
 from app.services.entry_manager import (
@@ -35,12 +36,14 @@ class TradingEngine:
         self.ai = AIReasonService()
         self.trade_state = trade_state
         self.entry_manager = EntryManager()
+        self.entry_engine = EntryEngine()
         # NEW
         self.confidence = ConfidenceEngine()
         self.market_regime = MarketRegimeDetector()
         # NEW
         self.probability = ProbabilityEngine()
         self.session = SessionDetector()
+        self.signal_lock = SignalLock()
         # ----------------------------------------
         # Risk
         # ----------------------------------------
@@ -250,6 +253,7 @@ class TradingEngine:
             try:
 
                 indicator_result = self.indicators.calculate(market)
+
                 regime = self.market_regime.detect(indicator_result)
 
                 print()
@@ -324,16 +328,29 @@ class TradingEngine:
         # =====================================================
 
         # ----------------------------------------
-        # Strategy Engine
-        # ----------------------------------------  
+        # Analyze Market
+        # ----------------------------------------
 
         signal = self.strategy.analyze(
-
-            market=market,
-
-            indicators=indicator_result
-
+            market,
+            indicator_result
         )
+
+        # ----------------------------------------
+        # Keep Locked Direction
+        # ----------------------------------------
+
+        if self.signal_lock.is_locked():
+
+            locked = self.signal_lock.current()
+
+            if locked is not None:
+
+                print("----------------------------------------")
+                print("🔒 KEEPING LOCKED DIRECTION")
+                print("----------------------------------------")
+
+                signal.bias = locked.bias
         # ----------------------------------------
         # Save Market Regime
         # ----------------------------------------
@@ -452,23 +469,106 @@ class TradingEngine:
         print("Grade       :", signal.grade)
         print("Trend       :", signal.trend)
         print("========================================")
+        
         state = self.entry_manager.determine(signal)
+
         print("ENTRY STATE :", state)
 
         signal.market_state = state.value
+        # ----------------------------------------
+        # Lock Signal
+        # ----------------------------------------
 
-        if state == EntryState.ENTRY:
+        if (
+           state == EntryState.WAITING_FOR_CANDLE_CLOSE
+           and not self.signal_lock.is_locked()
+         ):
 
-           signal.action = signal.bias
+            self.signal_lock.lock(signal)
+        # ----------------------------------------
+        # Entry Engine Confirmation
+        # ----------------------------------------
 
-           signal.can_enter = True
+        entry_confirmed = self.entry_engine.confirm(signal)
 
-        else:
+        if entry_confirmed:
+            state = EntryState.ENTRY
+            signal.market_state = EntryState.ENTRY.value
+
+            print("----------------------------------------")
+            print("ENTRY ENGINE PROMOTED SIGNAL TO ENTRY")
+            print("----------------------------------------")
+
+        # ----------------------------------------
+        # Default
+        # ----------------------------------------
+
+        signal.action = "WAIT"
+        signal.can_enter = False
+
+         # ----------------------------------------
+         # Waiting
+        # ----------------------------------------
+
+        if state == EntryState.WAITING:
+
+              signal.action = "WAIT"
+
+        # ----------------------------------------
+         # Analyzing
+        # ----------------------------------------
+
+        elif state == EntryState.ANALYZING:
 
          signal.action = "WAIT"
 
+         # ----------------------------------------
+         # Ready
+          # ----------------------------------------
+
+        elif state == EntryState.READY:
+
+         signal.action = signal.bias
          signal.can_enter = False
 
+        elif state == EntryState.WAITING_FOR_CANDLE_CLOSE:
+
+         signal.action = signal.bias
+         signal.can_enter = False
+
+        elif state == EntryState.ENTRY:
+
+         signal.action = "ENTER NOW"
+         signal.can_enter = True
+
+          #----------------------------------------
+          # Active
+          # ----------------------------------------
+
+        elif state == EntryState.ACTIVE:
+
+         signal.action = signal.bias
+         signal.can_enter = False
+
+         # ----------------------------------------
+          # Result
+         # ----------------------------------------
+
+        elif state == EntryState.RESULT:
+
+           signal.action = signal.bias
+           signal.can_enter = False
+
+        print()
+        print("========================================")
+        print("SIGNAL FLOW")
+        print("========================================")
+        print("Bias      :", signal.bias)
+        print("State     :", signal.market_state)
+        print("Action    :", signal.action)
+        print("Can Enter :", signal.can_enter)
+        print("========================================")
+        print()
         # ----------------------------------------
         # Risk Manager Override
         # ----------------------------------------
@@ -497,18 +597,12 @@ class TradingEngine:
 
         )
 
-                # ----------------------------------------
+        # ----------------------------------------
         # Save Trade
         # ----------------------------------------
 
-        if signal.action in [
-
-            "CALL",
-
-            "PUT"
-
-        ]:
-
+        if signal.can_enter:
+           
             try:
 
                 from uuid import uuid4
@@ -563,11 +657,7 @@ class TradingEngine:
 
                 )
 
-                self.trade_storage.add(
-
-                    trade
-
-                )
+                self.trade_storage.add(trade)
 
                 print("----------------------------------------")
                 print("Trade Logged")

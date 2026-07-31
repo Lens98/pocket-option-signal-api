@@ -166,59 +166,142 @@ class StrategyService:
     trade_status="IDLE"
 
    )
-         # =====================================
-        # Entry Confirmations
+                  # =====================================
+        # Entry Confirmations (Bias Aware)
         # =====================================
 
-        signal.ema_confirmed = (
-            ema_result.bullish_score >
-            ema_result.bearish_score
-        )
+        if signal.bias == "CALL":
 
-        signal.macd_confirmed = (
-            macd_result.bullish_score >
-            macd_result.bearish_score
-        )
+            signal.ema_confirmed = (
+                ema_result.bullish_score >
+                ema_result.bearish_score
+            )
 
-        signal.rsi_confirmed = (
-            rsi_result.bullish_score >
-            rsi_result.bearish_score
-        )
+            signal.macd_confirmed = (
+                macd_result.bullish_score >
+                macd_result.bearish_score
+            )
 
-        signal.structure_confirmed = (
-            market_structure_result.bullish_score >
-            market_structure_result.bearish_score
-        )
+            signal.rsi_confirmed = (
+                rsi_result.bullish_score >
+                rsi_result.bearish_score
+            )
 
-        signal.zone_confirmed = (
-            zone_result.bullish_score >
-            zone_result.bearish_score
-        )
+            signal.structure_confirmed = (
+                market_structure_result.bullish_score >
+                market_structure_result.bearish_score
+            )
 
-        signal.adx_confirmed = (
-            adx_result.bullish_score >
-            adx_result.bearish_score
-        )
+            signal.zone_confirmed = (
+                zone_result.bullish_score >
+                zone_result.bearish_score
+            )
 
-        signal.atr_confirmed = (
-            atr_result.bullish_score >
-            atr_result.bearish_score
-        )
+            # ADX and ATR measure strength, not direction.
+            # Keep them true whenever they contribute any score.
 
-        signal.candle_confirmed = (
-            candle_result.bullish_score >
-            candle_result.bearish_score
-        )
+            signal.adx_confirmed = (
+                adx_result.bullish_score > 0 or
+                adx_result.bearish_score > 0
+            )
+
+            signal.atr_confirmed = (
+                atr_result.bullish_score > 0 or
+                atr_result.bearish_score > 0
+            )
+
+            signal.candle_confirmed = (
+                candle_result.bullish_score >
+                candle_result.bearish_score
+            )
+
+        elif signal.bias == "PUT":
+
+            signal.ema_confirmed = (
+                ema_result.bearish_score >
+                ema_result.bullish_score
+            )
+
+            signal.macd_confirmed = (
+                macd_result.bearish_score >
+                macd_result.bullish_score
+            )
+
+            signal.rsi_confirmed = (
+                rsi_result.bearish_score >
+                rsi_result.bullish_score
+            )
+
+            signal.structure_confirmed = (
+                market_structure_result.bearish_score >
+                market_structure_result.bullish_score
+            )
+
+            signal.zone_confirmed = (
+                zone_result.bearish_score >
+                zone_result.bullish_score
+            )
+
+            signal.adx_confirmed = (
+                adx_result.bullish_score > 0 or
+                adx_result.bearish_score > 0
+            )
+
+            signal.atr_confirmed = (
+                atr_result.bullish_score > 0 or
+                atr_result.bearish_score > 0
+            )
+
+            signal.candle_confirmed = (
+                candle_result.bearish_score >
+                candle_result.bullish_score
+            )
+
+        else:
+
+            signal.ema_confirmed = False
+            signal.macd_confirmed = False
+            signal.rsi_confirmed = False
+            signal.structure_confirmed = False
+            signal.zone_confirmed = False
+            signal.adx_confirmed = False
+            signal.atr_confirmed = False
+            signal.candle_confirmed = False
+
+        # =====================================
+        # Pullback Detector
+        # =====================================
 
         from app.entry.pullback_detector import PullbackDetector
 
         pullback = PullbackDetector()
 
         signal.pullback_confirmed = pullback.confirm(
-         market,
-         indicators,
-         signal.bias
+            market,
+            indicators,
+            signal.bias
         )
+
+        # =====================================
+        # Debug
+        # =====================================
+
+        print()
+        print("========================================")
+        print("ENTRY CONFIRMATIONS")
+        print("========================================")
+        print("Bias       :", signal.bias)
+        print("EMA        :", signal.ema_confirmed)
+        print("MACD       :", signal.macd_confirmed)
+        print("RSI        :", signal.rsi_confirmed)
+        print("Structure  :", signal.structure_confirmed)
+        print("Zone       :", signal.zone_confirmed)
+        print("ADX        :", signal.adx_confirmed)
+        print("ATR        :", signal.atr_confirmed)
+        print("Candle     :", signal.candle_confirmed)
+        print("Pullback   :", signal.pullback_confirmed)
+        print("========================================")
+        print()
 
         if signal.action == "WAIT":
 

@@ -66,7 +66,7 @@ async function refreshDashboard() {
     // Everything below is UI only
     try {
 
-        window.marketState = signal.action ?? "WAITING";
+        window.marketState = signal.market_state ?? "WAITING";
 
         updateSignal(signal);
 

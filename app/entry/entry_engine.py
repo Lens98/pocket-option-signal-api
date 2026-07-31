@@ -20,8 +20,12 @@ class EntryEngine:
 
         if signal.bias not in ["CALL", "PUT"]:
 
-            print("❌ No market bias")
-            return False
+           signal.can_enter = False
+           signal.reason = "NO_MARKET_BIAS"
+           signal.instruction = "No trade. Wait for a clear market direction."
+
+           print("❌ No market bias")
+           return False
 
         # ----------------------------------------
         # Build Entry Score
@@ -61,17 +65,28 @@ class EntryEngine:
 
         if signal.probability < 60:
 
-            print("❌ Probability too low")
-            return False
+           signal.can_enter = False
+           signal.reason = "LOW_PROBABILITY"
+           signal.instruction = (
+           "Probability is too low. Wait for a stronger setup."
+           )
 
+           print("❌ Probability too low")
+           return False
         # ----------------------------------------
         # Risk Check
         # ----------------------------------------
 
         if signal.risk == "HIGH":
 
-            print("❌ High Risk")
-            return False
+           signal.can_enter = False
+           signal.reason = "HIGH_RISK"
+           signal.instruction = (
+           "Risk is too high. Do not enter."
+        )
+
+           print("❌ High Risk")
+           return False
 
         # ----------------------------------------
         # Final Decision
@@ -79,8 +94,28 @@ class EntryEngine:
 
         if score >= 75 and signal.pullback_confirmed:
 
-            print("✅ ENTRY CONFIRMED")
-            return True
+           signal.can_enter = True
+           signal.reason = "ENTRY_CONFIRMED"
+           signal.instruction = "✅ ENTER NOW"
+
+           print("✅ ENTRY CONFIRMED")
+           return True
+
+        signal.can_enter = False
+
+        if not signal.pullback_confirmed:
+
+            signal.reason = "WAITING_PULLBACK"
+            signal.instruction = (
+                "Wait for a pullback before entering."
+            )
+
+        else:
+
+            signal.reason = "MORE_CONFIRMATIONS"
+            signal.instruction = (
+                "Wait for more confirmations."
+            )
 
         print("🟡 Waiting for more confirmations")
         return False

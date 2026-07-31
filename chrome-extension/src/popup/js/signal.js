@@ -4,20 +4,107 @@ export function updateSignal(signal) {
 
     updateBanner(signal);
 
+    updateInstruction(signal);
+
+    updateConfirmations(signal);
+
     updateAnalysis(signal);
 
 }
 
 function updateAction(signal) {
 
-    const action =
-        document.getElementById("action");
+    const action = document.getElementById("action");
 
-    action.innerHTML =
-        signal.action;
+    if (!action) return;
 
-    action.className =
-        `action ${signal.action.toLowerCase()}`;
+    // Only show ENTER NOW when the backend says ENTRY
+    if (
+        signal.market_state === "ENTRY" &&
+        signal.can_enter
+    ) {
+
+        action.innerHTML = "🚀 ENTER NOW";
+        action.className = "action entry";
+
+        return;
+
+    }
+
+    // Otherwise show the current instruction
+    const actionText = signal.action || signal.bias || "WAIT";
+
+action.innerHTML = actionText;
+
+action.className =
+    `action ${actionText.toLowerCase().replace(/\s+/g, "-")}`;
+
+}
+function updateConfirmations(signal) {
+
+    const confirmations = [
+
+        ["emaStatus", signal.ema_confirmed, "EMA"],
+
+        ["macdStatus", signal.macd_confirmed, "MACD"],
+
+        ["rsiStatus", signal.rsi_confirmed, "RSI"],
+
+        ["structureStatus", signal.structure_confirmed, "Structure"],
+
+        ["zoneStatus", signal.zone_confirmed, "Zone"],
+
+        ["adxStatus", signal.adx_confirmed, "ADX"],
+
+        ["atrStatus", signal.atr_confirmed, "ATR"],
+
+        ["candleStatus", signal.candle_confirmed, "Candle"],
+
+        ["pullbackStatus", signal.pullback_confirmed, "Pullback"]
+
+    ];
+
+    confirmations.forEach(([id, value, label]) => {
+
+        const element = document.getElementById(id);
+
+        if (!element) return;
+
+        if (value) {
+
+            element.innerHTML = `✅ ${label}`;
+
+            element.className = "confirmation success";
+
+        }
+
+        else {
+
+            element.innerHTML = `❌ ${label}`;
+
+            element.className = "confirmation fail";
+
+        }
+
+    });
+
+}
+
+function updateInstruction(signal) {
+
+    const instruction =
+        document.getElementById("instruction");
+
+    const reason =
+        document.getElementById("reason");
+
+    if (!instruction || !reason) return;
+
+    instruction.innerHTML =
+        signal.instruction || "Waiting for signal...";
+
+    reason.innerHTML =
+        signal.reason || "--";
 
 }
 
@@ -27,14 +114,27 @@ function updateBanner(signal) {
 
     if (!banner) return;
 
-    if (signal.action === "CALL") {
+    // Highest priority
+    if (
+        signal.market_state === "ENTRY" &&
+        signal.can_enter
+    ) {
+
+        banner.innerHTML = `🚀 ENTER NOW (${signal.bias})`;
+        banner.className = "buy-banner entry";
+
+        return;
+
+    }
+
+    if (signal.bias === "CALL") {
 
         banner.innerHTML = "🟢 BUY CALL";
         banner.className = "buy-banner call";
 
     }
 
-    else if (signal.action === "PUT") {
+    else if (signal.bias === "PUT") {
 
         banner.innerHTML = "🔴 BUY PUT";
         banner.className = "buy-banner put";
@@ -43,7 +143,7 @@ function updateBanner(signal) {
 
     else {
 
-        banner.innerHTML = "🟡 WAIT";
+        banner.innerHTML = `🟡 ${signal.market_state}`;
         banner.className = "buy-banner wait";
 
     }

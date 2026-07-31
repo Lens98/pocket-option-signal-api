@@ -5,14 +5,14 @@ class ScoringStrategy:
 
     def calculate(self, results):
 
-        bullish_score = 0.0
-        bearish_score = 0.0
+        bullish_score = 0
+        bearish_score = 0
 
         bullish_reasons = []
         bearish_reasons = []
 
         # ========================================
-        # Collect Scores
+        # Collect Results
         # ========================================
 
         for result in results:
@@ -36,23 +36,38 @@ class ScoringStrategy:
         bearish_score = min(bearish_score, 100)
 
         # ========================================
-        # Calculate Trend
+        # Difference
         # ========================================
 
-        if bullish_score > bearish_score:
+        difference = bullish_score - bearish_score
 
+        # ========================================
+        # Market Bias
+        # ========================================
+
+        if difference >= 18:
+
+            bias = "CALL"
             trend = "BULLISH"
+            reasons = bullish_reasons
 
-        elif bearish_score > bullish_score:
+        elif difference <= -8:
 
+            bias = "PUT"
             trend = "BEARISH"
+            reasons = bearish_reasons
 
         else:
 
+            bias = "WAIT"
             trend = "SIDEWAYS"
+            reasons = (
+                bullish_reasons +
+                bearish_reasons
+            )
 
         # ========================================
-        # Winning Score
+        # Confidence
         # ========================================
 
         winning_score = max(
@@ -60,29 +75,23 @@ class ScoringStrategy:
             bearish_score
         )
 
-        difference = abs(
-            bullish_score -
-            bearish_score
+        confidence = round(
+
+            (
+                winning_score * 0.70
+            ) +
+
+            (
+                abs(difference) * 0.30
+            ),
+
+            2
+
         )
 
-        # ========================================
-        # Confidence
-        # ========================================
-
         confidence = min(
-
-            100,
-
-            round(
-
-                (winning_score * 0.7) +
-
-                (difference * 0.3),
-
-                2
-
-            )
-
+            confidence,
+            100
         )
 
         # ========================================
@@ -93,7 +102,7 @@ class ScoringStrategy:
 
         if total == 0:
 
-            probability = 0.0
+            probability = 50.0
 
         else:
 
@@ -106,48 +115,6 @@ class ScoringStrategy:
             )
 
         # ========================================
-        # Market Bias
-        # ========================================
-
-        bias = "WAIT"
-
-        reasons = []
-
-        if (
-
-            trend == "BULLISH"
-
-            and bullish_score >= 70
-
-            and difference >= 15
-
-        ):
-
-            bias = "CALL"
-
-            reasons = bullish_reasons
-
-        elif (
-
-            trend == "BEARISH"
-
-            and bearish_score >= 70
-
-            and difference >= 15
-
-        ):
-
-            bias = "PUT"
-
-            reasons = bearish_reasons
-
-        else:
-
-            bias = "WAIT"
-
-            reasons = bullish_reasons + bearish_reasons
-
-        # ========================================
         # Debug
         # ========================================
 
@@ -158,7 +125,6 @@ class ScoringStrategy:
         print("Bullish Score :", bullish_score)
         print("Bearish Score :", bearish_score)
         print("Difference    :", difference)
-        print("Trend         :", trend)
         print("Bias          :", bias)
         print("Confidence    :", confidence)
         print("Probability   :", probability)
@@ -171,6 +137,8 @@ class ScoringStrategy:
 
             "action": bias,
 
+            "trend": trend,
+
             "confidence": confidence,
 
             "probability": probability,
@@ -178,10 +146,6 @@ class ScoringStrategy:
             "bullish_score": bullish_score,
 
             "bearish_score": bearish_score,
-
-            "difference": difference,
-
-            "trend": trend,
 
             "reasons": reasons
 

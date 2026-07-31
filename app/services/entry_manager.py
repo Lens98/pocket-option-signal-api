@@ -9,6 +9,7 @@ class EntryState(str, Enum):
     WAITING = "WAITING"
     ANALYZING = "ANALYZING"
     READY = "READY"
+    WAITING_FOR_CANDLE_CLOSE = "WAITING_FOR_CANDLE_CLOSE"
     ENTRY = "ENTRY"
     ACTIVE = "ACTIVE"
     RESULT = "RESULT"
@@ -26,32 +27,39 @@ class EntryManager:
         # No market direction
         # ----------------------------------------
 
-        if signal.bias == "WAIT":
-
+        if signal.bias not in ["CALL", "PUT"]:
             return EntryState.WAITING
 
         # ----------------------------------------
-        # Market has a direction
+        # Weak setup
         # ----------------------------------------
 
-        if signal.confidence < 70:
-
+        if signal.confidence < 60:
             return EntryState.ANALYZING
 
         # ----------------------------------------
-        # Setup is forming
+        # Setup almost ready
         # ----------------------------------------
 
-        if signal.confidence < 80:
-
+        if signal.confidence < 75:
             return EntryState.READY
 
         # ----------------------------------------
-        # Ask Entry Engine
+        # Wait for candle close
+        # ----------------------------------------
+
+        if not signal.pullback_confirmed:
+            return EntryState.WAITING_FOR_CANDLE_CLOSE
+
+        # ----------------------------------------
+        # Confirm entry with Entry Engine
         # ----------------------------------------
 
         if self.engine.confirm(signal):
-
             return EntryState.ENTRY
 
-        return EntryState.READY
+        # ----------------------------------------
+        # Still waiting
+        # ----------------------------------------
+
+        return EntryState.WAITING_FOR_CANDLE_CLOSE

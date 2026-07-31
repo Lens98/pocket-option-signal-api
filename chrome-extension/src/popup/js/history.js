@@ -19,34 +19,38 @@ export async function loadTradeHistory() {
 
         trades.forEach(trade => {
 
-            const row =
-                document.createElement("tr");
+           const row = document.createElement("tr");
 
-            row.innerHTML = `
+const time = trade.entry_time
+    ? new Date(trade.entry_time).toLocaleTimeString()
+    : "--";
 
-                <td>${trade.time}</td>
+const result = trade.result ?? "--";
 
-                <td>${trade.asset}</td>
+const resultClass = result === "--"
+    ? "pending"
+    : result.toLowerCase();
 
-                <td class="action-${trade.action.toLowerCase()}">
+const action = trade.action ?? "WAIT";
 
-                    ${trade.action}
+row.innerHTML = `
+    <td>${time}</td>
 
-                </td>
+    <td>${trade.asset}</td>
 
-                <td>${trade.confidence}%</td>
+    <td class="action-${action.toLowerCase()}">
+        ${action}
+    </td>
 
-                <td class="result-${trade.result.toLowerCase()}">
+    <td>${trade.confidence}%</td>
 
-                    ${trade.result}
-
-                </td>
-
-            `;
+    <td class="result-${resultClass}">
+        ${result}
+    </td>
+`;
 
             body.appendChild(row);
-
-        });
+ });
 
     }
 

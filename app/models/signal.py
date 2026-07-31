@@ -9,6 +9,8 @@ class Signal(BaseModel):
     # ========================================
     # Market Information
     # ========================================
+    instruction: str = ""
+    reason: str = ""
 
     asset: str
 

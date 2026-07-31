@@ -1,4 +1,4 @@
-from app.models.strategy_result import StrategyResult
+from app.strategies.strategy_result import StrategyResult
 from app.models.indicator import IndicatorResult
 
 
@@ -6,32 +6,38 @@ class EmaStrategy:
 
     def analyze(self, indicators: IndicatorResult) -> StrategyResult:
 
-        result = StrategyResult(
-            bullish_score=0,
-            bearish_score=0,
-            trend="SIDEWAYS",
-            reasons=[]
-        )
+        result = StrategyResult()
 
         # ========================================
-        # STARTUP MODE
-        # EMA20 only
+        # STARTUP MODE (EMA20 Only)
         # ========================================
 
         if indicators.mode == "STARTUP":
 
             if indicators.ema20 is None:
 
-                result.reasons.append("EMA20 Not Available")
+                result.reasons.append(
+                    "EMA20 Not Available"
+                )
+
                 return result
 
-            result.reasons.append("EMA20 Available")
+            # We can't compare EMA20 to EMA50 yet.
+            # Give a small bullish score because the
+            # Trend Analyzer already confirmed direction.
+
+            result.trend = "BULLISH"
+
+            result.bullish_score = 15
+
+            result.reasons.append(
+                "EMA20 Trend"
+            )
 
             return result
 
         # ========================================
-        # STANDARD / ADVANCED / FULL
-        # EMA20 vs EMA50
+        # Need EMA20 + EMA50
         # ========================================
 
         if (
@@ -39,48 +45,48 @@ class EmaStrategy:
             or indicators.ema50 is None
         ):
 
-            result.reasons.append("EMA Data Missing")
+            result.reasons.append(
+                "EMA Data Missing"
+            )
+
             return result
 
-        # ----------------------------------------
-        # Bullish Alignment
-        # ----------------------------------------
+        # ========================================
+        # EMA20 Above EMA50
+        # ========================================
 
         if indicators.ema20 > indicators.ema50:
 
-            result.bullish_score = 25
             result.trend = "BULLISH"
+
+            result.bullish_score = 25
 
             result.reasons.append(
                 "EMA20 Above EMA50"
             )
 
-        # ----------------------------------------
-        # Bearish Alignment
-        # ----------------------------------------
+        # ========================================
+        # EMA20 Below EMA50
+        # ========================================
 
         elif indicators.ema20 < indicators.ema50:
 
-            result.bearish_score = 25
             result.trend = "BEARISH"
+
+            result.bearish_score = 25
 
             result.reasons.append(
                 "EMA20 Below EMA50"
             )
 
-        # ----------------------------------------
-        # Sideways
-        # ----------------------------------------
-
         else:
 
             result.reasons.append(
-                "EMA20 Equals EMA50"
+                "EMA Flat"
             )
 
         # ========================================
         # FULL MODE
-        # EMA20 > EMA50 > EMA200
         # ========================================
 
         if (
