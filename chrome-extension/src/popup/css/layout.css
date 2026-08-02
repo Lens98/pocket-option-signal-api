@@ -15,28 +15,22 @@
 html,
 body{
 
-    width:100%;
-
-    min-width:780px;
-
-    min-height:760px;
+    width:800px;
+    height:900px;
 
     margin:0;
-
     padding:0;
 
-    overflow-x:hidden;
+    overflow:hidden;
 
-    overflow-y:auto;
-
-    font-family:"Segoe UI", Arial, sans-serif;
-
-    color:#FFFFFF;
+    font-family:"Segoe UI",Arial,sans-serif;
 
     background:
         radial-gradient(circle at top right,#1A3B5D 0%,transparent 45%),
         radial-gradient(circle at bottom left,#132238 0%,transparent 35%),
         #0B1220;
+
+    color:#FFFFFF;
 
 }
 
@@ -47,8 +41,24 @@ body{
 .container{
 
     width:100%;
+    height:100%;
 
-    padding:18px;
+    padding:8px;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.header{
+
+    height:60px;
 
 }
 
@@ -56,49 +66,170 @@ body{
    DASHBOARD
 ========================================== */
 
-.dashboard{
+.dashboard-v4{
+
+    flex:1;
 
     display:grid;
 
-    grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);
+    width:100%;
+    height:100%;
 
-    gap:20px;
+    grid-template-rows:
 
-    align-items:start;
+        44%
+        28%
+        28%;
+
+    gap:6px;
+
+}
+/* ==========================================
+   ROWS
+========================================== */
+.top-row,
+.middle-row,
+.bottom-row{
+
+    display:grid;
 
     width:100%;
 
+    gap:8px;
+
+    align-items:stretch;
+
+    min-width:0;
+    min-height:0;
+
 }
 
 /* ==========================================
-   LEFT PANEL
+   TOP ROW
 ========================================== */
 
-.left-panel{
+.top-row{
+
+    grid-template-columns:
+
+        2.2fr
+        1.5fr
+        .9fr
+        1.3fr;
+
+}
+
+/* ==========================================
+   MIDDLE ROW
+========================================== */
+
+.middle-row{
+
+    grid-template-columns:
+
+        1.7fr
+        1.4fr
+        1fr;
+
+}
+
+/* ==========================================
+   BOTTOM ROW
+========================================== */
+
+.bottom-row{
+
+    display:grid;
+
+    grid-template-columns:
+
+       2.3fr
+        1fr
+
+}
+
+/* ==========================================
+   RIGHT COLUMN
+========================================== */
+
+.right-column{
 
     display:flex;
 
     flex-direction:column;
 
-    gap:20px;
+    gap:8px;
+
+    flex:1;
 
     min-width:0;
 
+    min-height:0;
+
 }
 
-/* ==========================================
-   RIGHT PANEL
-========================================== */
+.session-panel{
 
-.right-panel{
+    display:flex;
+
+    flex:1;
+
+    min-height:0;
+
+}
+
+.footer-panel{
+
+    display:flex;
+
+    flex:0 0 95px;
+
+}
+.history-card,
+.stats-card,
+.footer-card{
 
     display:flex;
 
     flex-direction:column;
 
-    gap:20px;
+    width:100%;
+    height:100%;
+
+}
+.history-table-container{
+
+    flex:1;
+
+}
+.stats-grid{
+
+  display:grid;
+
+}
+
+/* ==========================================
+   PANELS
+========================================== */
+
+.live-market-panel,
+.signal-panel,
+.countdown-panel,
+.instruction-panel,
+.market-panel,
+.analysis-panel,
+.confirmation-panel,
+.history-panel,
+.session-panel,
+.footer-panel{
+
+    display:flex;
+
+    width:100%;
+    height:100%;
 
     min-width:0;
+    min-height:0;
 
 }
 
@@ -108,7 +239,13 @@ body{
 
 .card{
 
+    display:flex;
+    flex-direction:column;
     width:100%;
+    height:100%;
+
+    min-width:0;
+    min-height:0;
 
     background:
         linear-gradient(
@@ -119,45 +256,28 @@ body{
 
     border:1px solid #243453;
 
-    border-radius:18px;
+    border-radius:16px;
 
-    padding:20px;
-
-    box-shadow:
-        0 12px 30px rgba(0,0,0,.35);
+    padding:10px;
 
     overflow:hidden;
 
 }
 
 /* ==========================================
-   TITLES
+   CARD TITLE
 ========================================== */
 
 .card-title{
 
     color:#A8C7FA;
 
-    font-size:15px;
+    font-size:13px;
 
     font-weight:700;
 
-    margin-bottom:18px;
+    margin-bottom:8px;
 
-    letter-spacing:.3px;
-
-}
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width:760px){
-
-    .dashboard{
-
-        grid-template-columns:1fr;
-
-    }
+    flex-shrink:0;
 
 }

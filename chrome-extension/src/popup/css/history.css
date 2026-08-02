@@ -1,51 +1,38 @@
 /* ==========================================
-   LIVE TRADE HISTORY
+   LIVE TRADE HISTORY CARD
 ========================================== */
 
 .history-card{
 
-    width:100%;
-
-    margin-top:20px;
-
-    height:320px;
-
     display:flex;
 
     flex-direction:column;
+
+    width:100%;
+
+    height:100%;
 
     overflow:hidden;
 
 }
 
 /* ==========================================
-   TABLE WRAPPER
+   TABLE CONTAINER
 ========================================== */
 
-.history-card table{
+.history-table-container{
 
-    width:100%;
-
-}
-
-.history-card tbody{
-
-    display:block;
-
-    height:230px;
+    flex:1;
 
     overflow-y:auto;
 
-}
+    overflow-x:hidden;
 
-.history-card thead,
-.history-card tbody tr{
+    border:1px solid #243453;
 
-    display:table;
+    border-radius:8px;
 
-    width:100%;
-
-    table-layout:fixed;
+    background:#101827;
 
 }
 
@@ -59,6 +46,8 @@
 
     border-collapse:collapse;
 
+    table-layout:fixed;
+
 }
 
 /* ==========================================
@@ -67,73 +56,73 @@
 
 #historyTable thead{
 
+    position:sticky;
+
+    top:0;
+
     background:#18253D;
+
+    z-index:2;
 
 }
 
 #historyTable th{
 
-    padding:16px;
+    padding:6px;
 
-    text-align:center;
-
-    color:#94A3B8;
-
-    font-size:13px;
+    font-size:10px;
 
     font-weight:700;
 
+    color:#A8C7FA;
+
     text-transform:uppercase;
 
-    letter-spacing:.6px;
-
     border-bottom:1px solid #243453;
+
+    text-align:center;
 
 }
 
 /* ==========================================
-   BODY
+   ROWS
 ========================================== */
 
 #historyTable td{
 
-    padding:15px;
+    padding:6px 4px;
 
-    text-align:center;
+    font-size:10px;
 
     color:#E2E8F0;
 
-    font-size:14px;
+    text-align:center;
 
-    border-bottom:1px solid #1F2B40;
+    border-bottom:1px solid rgba(36,52,83,.45);
 
-}
+    white-space:nowrap;
 
-#historyTable tbody tr{
+    overflow:hidden;
 
-    transition:
-        background .25s,
-        transform .25s;
+    text-overflow:ellipsis;
 
 }
 
-#historyTable tbody tr:nth-child(even){
-
-    background:rgba(255,255,255,.02);
-
-}
+/* ==========================================
+   ROW HOVER
+========================================== */
 
 #historyTable tbody tr:hover{
 
-    background:#1A2943;
+    background:#18253D;
 
 }
 
 /* ==========================================
-   ACTION COLORS
+   RESULTS
 ========================================== */
 
-.action-call{
+.win{
 
     color:#22C55E;
 
@@ -141,7 +130,7 @@
 
 }
 
-.action-put{
+.loss{
 
     color:#EF4444;
 
@@ -149,7 +138,7 @@
 
 }
 
-.action-wait{
+.wait{
 
     color:#FACC15;
 
@@ -158,10 +147,10 @@
 }
 
 /* ==========================================
-   RESULT COLORS
+   SIGNAL COLORS
 ========================================== */
 
-.result-win{
+.call{
 
     color:#22C55E;
 
@@ -169,17 +158,9 @@
 
 }
 
-.result-loss{
+.put{
 
     color:#EF4444;
-
-    font-weight:700;
-
-}
-
-.result-draw{
-
-    color:#FACC15;
 
     font-weight:700;
 
@@ -189,13 +170,13 @@
    SCROLLBAR
 ========================================== */
 
-.history-card tbody::-webkit-scrollbar{
+.history-table-container::-webkit-scrollbar{
 
-    width:6px;
+    width:4px;
 
 }
 
-.history-card tbody::-webkit-scrollbar-thumb{
+.history-table-container::-webkit-scrollbar-thumb{
 
     background:#243453;
 
@@ -203,7 +184,7 @@
 
 }
 
-.history-card tbody::-webkit-scrollbar-track{
+.history-table-container::-webkit-scrollbar-track{
 
     background:transparent;
 

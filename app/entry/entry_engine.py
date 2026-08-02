@@ -1,121 +1,148 @@
 from app.models.signal import Signal
+from app.services.entry_manager import EntryState
 
 
 class EntryEngine:
 
-    def confirm(self, signal: Signal) -> bool:
+    def confirm(self, signal: Signal, state: EntryState) -> bool:
 
         print("----------------------------------------")
         print("ENTRY ENGINE")
         print("----------------------------------------")
+        print("State       :", state.value)
         print("Bias        :", signal.bias)
         print("Confidence  :", signal.confidence)
         print("Probability :", signal.probability)
         print("Risk        :", signal.risk)
         print("----------------------------------------")
 
-        # ----------------------------------------
-        # No market direction
-        # ----------------------------------------
-
-        if signal.bias not in ["CALL", "PUT"]:
-
-           signal.can_enter = False
-           signal.reason = "NO_MARKET_BIAS"
-           signal.instruction = "No trade. Wait for a clear market direction."
-
-           print("❌ No market bias")
-           return False
-
-        # ----------------------------------------
-        # Build Entry Score
-        # ----------------------------------------
-
-        score = 0
-
-        if signal.ema_confirmed:
-            score += 20
-
-        if signal.macd_confirmed:
-            score += 20
-
-        if signal.rsi_confirmed:
-            score += 10
-
-        if signal.structure_confirmed:
-            score += 15
-
-        if signal.zone_confirmed:
-            score += 10
-
-        if signal.adx_confirmed:
-            score += 10
-
-        if signal.atr_confirmed:
-            score += 5
-
-        if signal.candle_confirmed:
-            score += 5
-
-        print("Entry Score :", score, "/100")
-
-        # ----------------------------------------
-        # Probability Check
-        # ----------------------------------------
-
-        if signal.probability < 60:
-
-           signal.can_enter = False
-           signal.reason = "LOW_PROBABILITY"
-           signal.instruction = (
-           "Probability is too low. Wait for a stronger setup."
-           )
-
-           print("❌ Probability too low")
-           return False
-        # ----------------------------------------
-        # Risk Check
-        # ----------------------------------------
-
-        if signal.risk == "HIGH":
-
-           signal.can_enter = False
-           signal.reason = "HIGH_RISK"
-           signal.instruction = (
-           "Risk is too high. Do not enter."
-        )
-
-           print("❌ High Risk")
-           return False
-
-        # ----------------------------------------
-        # Final Decision
-        # ----------------------------------------
-
-        if score >= 75 and signal.pullback_confirmed:
-
-           signal.can_enter = True
-           signal.reason = "ENTRY_CONFIRMED"
-           signal.instruction = "✅ ENTER NOW"
-
-           print("✅ ENTRY CONFIRMED")
-           return True
+        # Default values
 
         signal.can_enter = False
+        signal.action = "WAIT"
+        signal.trade_status = state.value
+        signal.entry_window = 0
+        signal.countdown = 0
 
-        if not signal.pullback_confirmed:
+        # ==========================================
+        # WAITING
+        # ==========================================
+
+        if state == EntryState.WAITING:
+
+            signal.reason = "NO_MARKET_BIAS"
+            signal.instruction = (
+                "No trade. Waiting for a clear market direction."
+            )
+
+            print("❌ WAITING")
+            return False
+
+        # ==========================================
+        # ANALYZING
+        # ==========================================
+
+        if state == EntryState.ANALYZING:
+
+            signal.reason = "LOW_PROBABILITY"
+            signal.instruction = (
+                "Analyzing market. Waiting for stronger confirmation."
+            )
+
+            print("🟡 ANALYZING")
+            return False
+
+        # ==========================================
+        # READY
+        # ==========================================
+
+        if state == EntryState.READY:
 
             signal.reason = "WAITING_PULLBACK"
             signal.instruction = (
-                "Wait for a pullback before entering."
+                "Setup detected. Waiting for a pullback."
             )
 
-        else:
+            print("🟡 READY")
+            return False
 
-            signal.reason = "MORE_CONFIRMATIONS"
+        # ==========================================
+        # WAITING FOR CANDLE CLOSE
+        # ==========================================
+
+        if state == EntryState.WAITING_FOR_CANDLE_CLOSE:
+
+            signal.reason = "WAITING_CANDLE_CLOSE"
             signal.instruction = (
-                "Wait for more confirmations."
+                "Wait for the current candle to close."
             )
 
-        print("🟡 Waiting for more confirmations")
+            print("🟡 WAITING FOR CANDLE CLOSE")
+            return False
+
+        # ==========================================
+        # ENTRY
+        # ==========================================
+
+        if state == EntryState.ENTRY:
+
+            signal.can_enter = True
+            signal.action = signal.bias
+            signal.trade_status = "ENTRY"
+
+            signal.reason = "ENTRY_CONFIRMED"
+            signal.instruction = (
+                f"ENTER {signal.bias} NOW"
+            )
+
+            signal.entry_window = 5
+
+            print("✅ ENTRY CONFIRMED")
+            return True
+
+        # ==========================================
+        # ACTIVE
+        # ==========================================
+
+        if state == EntryState.ACTIVE:
+
+            signal.can_enter = False
+            signal.action = signal.bias
+            signal.trade_status = "ACTIVE"
+
+            signal.reason = "TRADE_ACTIVE"
+            signal.instruction = (
+                "Trade is currently active."
+            )
+
+            print("🔵 TRADE ACTIVE")
+            return False
+
+        # ==========================================
+        # RESULT
+        # ==========================================
+
+        if state == EntryState.RESULT:
+
+            signal.can_enter = False
+            signal.action = signal.bias
+            signal.trade_status = "RESULT"
+
+            signal.reason = "TRADE_FINISHED"
+            signal.instruction = (
+                "Trade completed."
+            )
+
+            print("🏁 TRADE FINISHED")
+            return False
+
+        # ==========================================
+        # Unknown State
+        # ==========================================
+
+        signal.reason = "UNKNOWN_STATE"
+        signal.instruction = "Waiting..."
+
+        print("❓ UNKNOWN STATE")
+
         return False

@@ -1,0 +1,201 @@
+/* ==========================================
+   COUNTDOWN CARD
+========================================== */
+
+.countdown-card{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    height:100%;
+
+    overflow:hidden;
+
+}
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.countdown{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    gap:8px;
+
+    width:100%;
+
+    height:100%;
+
+}
+
+/* ==========================================
+   TITLE
+========================================== */
+
+#countdownLabel{
+
+    font-size:10px;
+
+    font-weight:500;
+
+    color:#94A3B8;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+}
+
+/* ==========================================
+   TIMER
+========================================== */
+
+#countdown{
+
+    font-size:20px;
+
+    font-weight:500;
+
+    line-height:1;
+
+    color:#FFFFFF;
+
+    letter-spacing:2px;
+
+    text-shadow:
+
+        0 0 12px rgba(255,255,255,.10);
+
+    transition:all .3s ease;
+
+}
+
+/* ==========================================
+   MESSAGE
+========================================== */
+
+.entry-message{
+
+    font-size:10px;
+
+    line-height:1.4;
+
+    color:#CBD5E1;
+
+    font-weight:500;
+
+    max-width:150px;
+
+    min-height:25px;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-align:center;
+
+}
+
+/* ==========================================
+   WARNING STATE
+========================================== */
+
+.countdown.warning #countdown{
+
+    color:#FACC15;
+
+    text-shadow:
+
+        0 0 16px rgba(250,204,21,.40);
+
+}
+
+/* ==========================================
+   READY STATE
+========================================== */
+
+.countdown.ready #countdown{
+
+    color:#22C55E;
+
+    text-shadow:
+
+        0 0 18px rgba(34,197,94,.45);
+
+}
+
+/* ==========================================
+   EXPIRED STATE
+========================================== */
+
+.countdown.expired #countdown{
+
+    color:#EF4444;
+
+    text-shadow:
+
+        0 0 18px rgba(239,68,68,.45);
+
+}
+
+/* ==========================================
+   CARD HOVER
+========================================== */
+
+.countdown-card:hover #countdown{
+
+    transform:scale(1.04);
+
+}
+
+.countdown-card:hover .entry-message{
+
+    color:#FFFFFF;
+
+}
+
+/* ==========================================
+   PULSE
+========================================== */
+
+@keyframes countdownPulse{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.05);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+.countdown.ready #countdown{
+
+    animation:countdownPulse 1s infinite;
+
+}

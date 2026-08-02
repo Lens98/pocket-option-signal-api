@@ -1,14 +1,40 @@
 /* ==========================================
-   FOOTER
+   FOOTER CARD
 ========================================== */
 
-.footer{
+.footer-card{
+
+    display:flex;
+
+    flex-direction:column;
 
     width:100%;
 
-    margin-top:20px;
+    height:100%;
 
-    padding:18px 22px;
+}
+
+/* ==========================================
+   CONTENT
+========================================== */
+
+.footer-content{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    flex:1;
+
+}
+
+/* ==========================================
+   ROW
+========================================== */
+
+.footer-row{
 
     display:flex;
 
@@ -16,19 +42,18 @@
 
     align-items:center;
 
-    border-radius:18px;
+    padding:8px 10px;
+
+    border-radius:8px;
 
     background:
         linear-gradient(
             180deg,
-            #18253D 0%,
-            #101827 100%
+            #18253D,
+            #101827
         );
 
     border:1px solid #243453;
-
-    box-shadow:
-        0 10px 24px rgba(0,0,0,.28);
 
 }
 
@@ -36,17 +61,17 @@
    LABEL
 ========================================== */
 
-.footer span{
+.footer-row span{
 
     color:#94A3B8;
 
-    font-size:13px;
+    font-size:10px;
 
     font-weight:700;
 
     text-transform:uppercase;
 
-    letter-spacing:.6px;
+    letter-spacing:.5px;
 
 }
 
@@ -54,15 +79,13 @@
    VALUE
 ========================================== */
 
-.footer strong{
+.footer-row strong{
 
     color:#FFFFFF;
 
-    font-size:15px;
+    font-size:11px;
 
-    font-weight:800;
-
-    letter-spacing:.4px;
+    font-weight:700;
 
 }
 
@@ -70,19 +93,19 @@
    STATUS COLORS
 ========================================== */
 
-.footer .online{
+#statusText.online{
 
     color:#22C55E;
 
 }
 
-.footer .offline{
+#statusText.offline{
 
     color:#EF4444;
 
 }
 
-.footer .warning{
+#statusText.warning{
 
     color:#FACC15;
 
@@ -92,35 +115,10 @@
    HOVER
 ========================================== */
 
-.footer:hover{
+.footer-row:hover{
 
     border-color:#3B82F6;
 
-    box-shadow:
-        0 12px 28px rgba(59,130,246,.15);
-
-    transition:
-        border-color .25s,
-        box-shadow .25s;
-
-}
-
-/* ==========================================
-   RESPONSIVE
-========================================== */
-
-@media (max-width:820px){
-
-    .footer{
-
-        flex-direction:column;
-
-        justify-content:center;
-
-        gap:8px;
-
-        text-align:center;
-
-    }
+    transition:.2s;
 
 }

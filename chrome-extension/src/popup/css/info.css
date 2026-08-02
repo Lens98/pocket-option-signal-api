@@ -1,12 +1,16 @@
 /* ==========================================
-   MARKET INFORMATION
+   MARKET INFORMATION CARD
 ========================================== */
 
 .info-card{
 
+    display:flex;
+
+    flex-direction:column;
+
     width:100%;
 
-    margin-top:20px;
+    height:100%;
 
 }
 
@@ -20,14 +24,14 @@
 
     grid-template-columns:repeat(4,1fr);
 
-    gap:18px;
+    gap:8px;
 
-    margin-top:14px;
+    margin-top:8px;
 
 }
 
 /* ==========================================
-   INFO CARD
+   INFO BOX
 ========================================== */
 
 .info-item{
@@ -42,26 +46,22 @@
 
     text-align:center;
 
-    min-height:95px;
+    min-height:58px;
 
-    padding:18px;
+    padding:8px;
 
-    border-radius:16px;
+    border-radius:10px;
 
     background:
         linear-gradient(
             180deg,
-            #18253D 0%,
-            #101827 100%
+            #18253D,
+            #101827
         );
 
     border:1px solid #243453;
 
-    transition:
-        transform .25s,
-        border-color .25s,
-        box-shadow .25s,
-        background .25s;
+    transition:.25s ease;
 
 }
 
@@ -71,12 +71,13 @@
 
 .info-item:hover{
 
-    transform:translateY(-4px);
+    transform:translateY(-1px);
 
-    border-color:#3B82F6;
+    border-color:#31568A;
 
     box-shadow:
-        0 12px 24px rgba(59,130,246,.18);
+
+        0 4px 10px rgba(49,86,138,.15);
 
 }
 
@@ -88,15 +89,15 @@
 
     color:#94A3B8;
 
-    font-size:12px;
+    font-size:9px;
 
     font-weight:700;
 
     text-transform:uppercase;
 
-    letter-spacing:.6px;
+    letter-spacing:.8px;
 
-    margin-bottom:10px;
+    margin-bottom:4px;
 
 }
 
@@ -108,18 +109,20 @@
 
     color:#FFFFFF;
 
-    font-size:18px;
+    font-size:14px;
 
-    font-weight:800;
+    font-weight:700;
 
-    line-height:1.2;
+    line-height:1.15;
 
     word-break:break-word;
+
+    transition:.25s;
 
 }
 
 /* ==========================================
-   VALUE COLORS
+   TREND
 ========================================== */
 
 #trend.BULLISH{
@@ -140,6 +143,10 @@
 
 }
 
+/* ==========================================
+   RISK
+========================================== */
+
 #risk.LOW{
 
     color:#22C55E;
@@ -158,27 +165,62 @@
 
 }
 
+/* ==========================================
+   GRADE
+========================================== */
+
 #grade{
 
     color:#38BDF8;
 
 }
 
+/* ==========================================
+   PROBABILITY
+========================================== */
+
 #probability{
 
     color:#FFFFFF;
 
 }
+
 /* ==========================================
-   RESPONSIVE
+   SESSION
 ========================================== */
 
-@media (max-width:760px){
+#session{
 
-    .info-grid{
+    color:#A78BFA;
 
-        grid-template-columns:repeat(2,1fr);
+}
 
-    }
+/* ==========================================
+   REGIME
+========================================== */
+
+#regime{
+
+    color:#F59E0B;
+
+}
+
+/* ==========================================
+   ASSET
+========================================== */
+
+#asset{
+
+    color:#E2E8F0;
+
+}
+
+/* ==========================================
+   EXPIRATION
+========================================== */
+
+#expiration{
+
+    color:#22C55E;
 
 }

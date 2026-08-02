@@ -2,6 +2,9 @@
 @import "./header.css";
 @import "./chart.css";
 @import "./signal.css";
+@import "./countdown.css";
+@import "./instruction.css";
+@import "./confirmations.css";
 @import "./analysis.css";
 @import "./statistics.css";
 @import "./history.css";

@@ -11,8 +11,7 @@ content="width=device-width, initial-scale=1.0">
 <title>Pocket Option AI PRO</title>
 
 
-  <script type="module" crossorigin src="/assets/popup.html-BMB3R7Tb.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/popup-CU6UN-bZ.css">
+  <link rel="stylesheet" crossorigin href="/assets/popup-BKvTAFvS.css">
 </head>
 
 <body>
@@ -52,136 +51,86 @@ content="width=device-width, initial-scale=1.0">
 </header>
 
 <!-- ====================================== -->
-<!-- DASHBOARD -->
+<!-- DASHBOARD V4 -->
 <!-- ====================================== -->
 
-<div class="dashboard">
+<div class="dashboard-v4">
 
-    <!-- ============================= -->
-    <!-- LEFT PANEL -->
-    <!-- ============================= -->
+    <!-- ================================= -->
+    <!-- TOP ROW -->
+    <!-- ================================= -->
 
-    <div class="left-panel">
+    <div class="top-row">
 
-        <!-- ============================= -->
-        <!-- LIVE MARKET -->
-        <!-- ============================= -->
+        <div class="live-market-panel">
+          <div class="card chart-card">
 
-        <div class="card chart-card">
+    <!-- =============================== -->
+    <!-- TITLE -->
+    <!-- =============================== -->
 
-            <div class="card-title">
+    <div class="market-title">
 
-                📈 Live Market
+        <div class="card-title">
 
-            </div>
-
-            <div class="chart-header">
-
-    <div class="chart-left">
-
-        <div class="chart-title">
-
-            LIVE MARKET
+            📈 Live Market
 
         </div>
 
-        <div id="chartAsset" class="chart-asset">
+        <div class="market-live-badge">
 
-            EURUSD OTC
-            <span class="chart-dot"></span>
+            <span class="live-dot"></span>
+
+            LIVE
 
         </div>
 
     </div>
 
-    <div class="chart-price">
+    <!-- =============================== -->
+    <!-- HEADER -->
+    <!-- =============================== -->
 
-        <strong id="chartPrice">
+    <div class="market-header">
 
-            1.10524
+        <!-- LEFT -->
 
-        </strong>
+        <div class="market-left">
 
-        <div
-            id="chartChange"
-            class="chart-change">
+            <div
+                id="chartAsset"
+                class="market-asset">
 
-            +0.00067 (+0.06%)
-
-        </div>
-
-    </div>
-
-</div>
-
-<div class="chart-body">
-
-    <canvas
-        id="miniChart"
-        width="700"
-        height="320">
-
-    </canvas>
-
-</div>
-
-<div class="chart-footer">
-
-    <div class="timeframes">
-
-        <button class="timeframe active">
-
-            M1
-
-        </button>
-
-        <button class="timeframe">
-
-            M5
-
-        </button>
-
-        <button class="timeframe">
-
-            M15
-
-        </button>
-
-        <button class="timeframe">
-
-            H1
-
-        </button>
-
-    </div>
-
-    <div class="live">
-
-        <span class="live-dot"></span>
-
-        LIVE
-
-    </div>
-
-</div>
-</div>
-
-        <!-- ============================= -->
-        <!-- AI ANALYSIS -->
-        <!-- ============================= -->
-
-        <div class="card analysis-card">
-
-            <div class="card-title">
-
-                🧠 AI Analysis
+                EUR/USD OTC
 
             </div>
 
             <div
-                id="analysis">
+                class="market-type">
 
-                Waiting for analysis...
+                OTC Market
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+
+        <div class="market-right">
+
+            <div
+                id="chartPrice"
+                class="market-price">
+
+                1.10524
+
+            </div>
+
+            <div
+                id="chartChange"
+                class="market-change">
+
+                +0.00067 (+0.06%)
 
             </div>
 
@@ -189,92 +138,153 @@ content="width=device-width, initial-scale=1.0">
 
     </div>
 
-    <!-- ============================= -->
-    <!-- RIGHT PANEL -->
-    <!-- ============================= -->
+    <!-- =============================== -->
+    <!-- CHART -->
+    <!-- =============================== -->
 
-    <div class="right-panel">
-    <!-- ============================= -->
-<!-- SIGNAL CENTER -->
-<!-- ============================= -->
+    <div class="market-chart">
 
-<div class="card signal-terminal">
+        <canvas
+            id="miniChart"
+            width="700"
+            height="320">
 
-    <div
-        id="buyBanner"
-        class="buy-banner wait">
-
-        WAITING FOR SETUP
+        </canvas>
 
     </div>
 
-    <div
-        id="action"
-        class="action wait">
+    <!-- =============================== -->
+    <!-- FOOTER -->
+    <!-- =============================== -->
 
-        WAIT
+    <div class="market-footer">
 
-    </div>
+        <div class="timeframes">
 
-    <!-- ============================= -->
-    <!-- AI Confidence Gauge -->
-    <!-- ============================= -->
+            <button class="timeframe active">
 
-    <div class="gauge">
+                M1
 
-        <svg
-            width="180"
-            height="180">
+            </button>
 
-            <circle
+            <button class="timeframe">
 
-                cx="90"
+                M5
 
-                cy="90"
+            </button>
 
-                r="72"
+            <button class="timeframe">
 
-                class="gauge-bg"
+                M15
 
-            />
+            </button>
 
-            <circle
+            <button class="timeframe">
 
-                id="gauge"
+                H1
 
-                cx="90"
+            </button>
 
-                cy="90"
+        </div>
 
-                r="72"
+        <div class="market-live">
 
-                class="gauge-progress"
+            <span class="live-dot"></span>
 
-            />
-
-        </svg>
-
-        <div
-
-            id="confidenceText"
-
-            class="gauge-text">
-
-            0%
+            LIVE
 
         </div>
 
     </div>
 
-    <!-- ============================= -->
-    <!-- Countdown -->
-    <!-- ============================= -->
+</div>
+</div>
 
-    <div class="countdown">
+
+       <div class="signal-panel">
+
+    <div class="card signal-card">
+
+        <!-- ====================================== -->
+        <!-- STATUS BANNER -->
+        <!-- ====================================== -->
+
+        <div
+            id="buyBanner"
+            class="buy-banner wait">
+
+            🟡 ANALYZING
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- MAIN SIGNAL -->
+        <!-- ====================================== -->
+
+        <div
+            id="action"
+            class="action wait">
+
+            WAIT
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- CONFIDENCE GAUGE -->
+        <!-- ====================================== -->
+
+        <div class="gauge">
+
+            <svg width="180" height="180">
+
+                <circle
+                    cx="90"
+                    cy="90"
+                    r="72"
+                    class="gauge-bg"/>
+
+                <circle
+                    id="gauge"
+                    cx="90"
+                    cy="90"
+                    r="72"
+                    class="gauge-progress"/>
+
+            </svg>
+
+            <div
+                id="confidenceText"
+                class="gauge-text">
+
+                0%
+
+            </div>
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- BIAS -->
+        <!-- ====================================== -->
+
+        <div
+            id="biasBadge"
+            class="bias-badge">
+
+            BIAS : WAIT
+
+        </div>
+
+    </div>
+
+</div>
+
+    <div class="countdown-panel">
+     <div class="card countdown-card">
+       <div class="countdown">
 
         <span id="countdownLabel">
 
-            Waiting
+            ⏳ Time Remaining
 
         </span>
 
@@ -285,193 +295,555 @@ content="width=device-width, initial-scale=1.0">
         </strong>
 
         <div
-
             id="entryMessage"
-
             class="entry-message">
 
+            Waiting for next setup...
+
         </div>
 
     </div>
 
 </div>
+</div>
 
-<!-- ============================= -->
-<!-- TODAY'S SESSION -->
-<!-- ============================= -->
 
-<div class="card stats-card">
+      <div class="instruction-panel">
 
-    <div class="card-title">
-        📊 Today's Session
+    <div class="card instruction-card">
+
+        <!-- ====================================== -->
+        <!-- TITLE -->
+        <!-- ====================================== -->
+
+        <div class="card-title">
+
+            🤖 AI Instruction
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- MAIN INSTRUCTION -->
+        <!-- ====================================== -->
+
+        <div
+            id="instruction"
+            class="instruction">
+
+            Waiting for signal...
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- DESCRIPTION -->
+        <!-- ====================================== -->
+
+        <div
+            id="instructionDescription"
+            class="instruction-description">
+
+            The AI is analyzing the market.
+            Please wait for a valid setup.
+
+        </div>
+
+        <!-- ====================================== -->
+        <!-- REASON -->
+        <!-- ====================================== -->
+
+        <div
+            id="reason"
+            class="reason">
+
+            --
+
+        </div>
+
     </div>
+</div> 
+</div>
 
-    <div class="stats-grid">
+    <!-- ================================= -->
+    <!-- MIDDLE ROW -->
+    <!-- ================================= -->
 
-        <div class="stat">
-            <span>🟢 Wins</span>
-            <strong id="callCount">0</strong>
+    <div class="middle-row">
+
+       <div class="market-panel">
+
+    <div class="card info-card">
+
+        <!-- ====================================== -->
+        <!-- TITLE -->
+        <!-- ====================================== -->
+
+        <div class="card-title">
+
+            📋 Market Information
+
         </div>
 
-        <div class="stat">
-            <span>🔴 Losses</span>
-            <strong id="putCount">0</strong>
-        </div>
+        <!-- ====================================== -->
+        <!-- GRID -->
+        <!-- ====================================== -->
 
-        <div class="stat">
-            <span>🟡 Draws</span>
-            <strong id="waitCount">0</strong>
-        </div>
+        <div class="info-grid">
 
-        <div class="stat">
-            <span>📈 Win Rate</span>
-            <strong id="winRate">0%</strong>
-        </div>
+            <div class="info-item">
 
-        <div class="stat">
-            <span>🎯 Total Trades</span>
-            <strong id="totalCount">0</strong>
-        </div>
+                <span>📈 Trend
 
-        <div class="stat">
-            <span>💰 Profit</span>
-            <strong id="profitTotal">$0.00</strong>
+                </span>
+
+                <strong id="trend">
+
+                    SIDEWAYS
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Risk</span>
+
+                <strong id="risk">
+
+                    LOW
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Asset</span>
+
+                <strong id="asset">
+
+                    EUR/USD
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Expiration</span>
+
+                <strong id="expiration">
+
+                    Next Candle
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Probability</span>
+
+                <strong id="probability">
+
+                    82%
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Grade</span>
+
+                <strong id="grade">
+
+                    A+
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Session</span>
+
+                <strong id="session">
+
+                    London
+
+                </strong>
+
+            </div>
+
+            <div class="info-item">
+
+                <span>Regime</span>
+
+                <strong id="regime">
+
+                    Trending
+
+                </strong>
+
+            </div>
+
         </div>
 
     </div>
 
 </div>
+<div class="analysis-panel">
 
-<!-- ============================= -->
-<!-- END RIGHT PANEL -->
-<!-- ============================= -->
+    <div class="card analysis-card">
 
-</div>
+        <div class="card-title">
 
-<!-- ============================= -->
-<!-- END DASHBOARD -->
-<!-- ============================= -->
+            🧠 AI Analysis
 
-</div>
+        </div>
 
-<!-- ====================================== -->
-<!-- MARKET INFORMATION -->
-<!-- ====================================== -->
+        <div
+            id="analysis"
+            class="analysis-container">
 
-<div class="card info-card">
+            <div class="analysis-group">
 
-    <div class="card-title">
-        📋 Market Information
+                <div class="analysis-group-title">
+
+                    📈 Trend
+
+                </div>
+
+                <div
+                    id="trendAnalysis"
+                    class="analysis-items">
+
+                </div>
+
+            </div>
+
+            <div class="analysis-group">
+
+                <div class="analysis-group-title">
+
+                    ⚡ Momentum
+
+                </div>
+
+                <div
+                    id="momentumAnalysis"
+                    class="analysis-items">
+
+                </div>
+
+            </div>
+
+            <div class="analysis-group">
+
+                <div class="analysis-group-title">
+
+                    🏗 Structure
+
+                </div>
+
+                <div
+                    id="structureAnalysis"
+                    class="analysis-items">
+
+                </div>
+
+            </div>
+
+            <div class="analysis-group">
+
+                <div class="analysis-group-title">
+
+                    📊 Volatility
+
+                </div>
+
+                <div
+                    id="volatilityAnalysis"
+                    class="analysis-items">
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+     </div>
+
+<div class="confirmation-panel">
+
+    <div class="card confirmations-card">
+        <div class="card-title">
+
+            ✅ AI Confirmations
+
+        </div>
+
+        <div class="confirmations-grid">
+
+            <div id="emaStatus" class="confirmation">
+                EMA
+            </div>
+
+            <div id="macdStatus" class="confirmation">
+                MACD
+            </div>
+
+            <div id="rsiStatus" class="confirmation">
+                RSI
+            </div>
+
+            <div id="structureStatus" class="confirmation">
+              🏗 Structure
+            </div>
+
+            <div id="zoneStatus" class="confirmation">
+                Zone
+            </div>
+
+            <div id="adxStatus" class="confirmation">
+                ADX
+            </div>
+
+            <div id="atrStatus" class="confirmation">
+                ATR
+            </div>
+
+            <div id="candleStatus" class="confirmation">
+                Candle
+            </div>
+
+            <div id="pullbackStatus" class="confirmation">
+                Pullback
+            </div>
+
+        </div>
+         </div>
+          </div>
+
+
+    <!-- ================================= -->
+<!-- BOTTOM ROW -->
+<!-- ================================= -->
+
+<div class="bottom-row">
+
+    <!-- ============================== -->
+    <!-- HISTORY -->
+    <!-- ============================== -->
+
+    <div class="history-panel">
+
+        <div class="card history-card">
+
+            <div class="card-title">
+
+                📜 Live Trade History
+
+            </div>
+
+            <div class="history-table-container">
+
+                <table id="historyTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Time</th>
+                            <th>Asset</th>
+                            <th>Signal</th>
+                            <th>Conf.</th>
+                            <th>Result</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="historyBody">
+
+                        <!-- Filled by JavaScript -->
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="info-grid">
+    <!-- ============================== -->
+    <!-- RIGHT COLUMN -->
+    <!-- ============================== -->
 
-        <div class="info-item">
-            <span>Trend</span>
-            <strong id="trend">---</strong>
+    <div class="right-column">
+
+        <!-- ========================== -->
+        <!-- TODAY'S SESSION -->
+        <!-- ========================== -->
+
+        <div class="session-panel">
+
+            <div class="card stats-card">
+
+                <div class="card-title">
+
+                    📊 Today's Session
+
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat">
+
+                        <span>🟢 Wins</span>
+
+                        <strong id="callCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <span>🔴 Losses</span>
+
+                        <strong id="putCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <span>🟡 Draws</span>
+
+                        <strong id="waitCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <span>📈 Win Rate</span>
+
+                        <strong id="winRate">
+
+                            0%
+
+                        </strong>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <span>🎯 Total Trades</span>
+
+                        <strong id="totalCount">
+
+                            0
+
+                        </strong>
+
+                    </div>
+
+                    <div class="stat">
+
+                        <span>💰 Profit</span>
+
+                        <strong id="profitTotal">
+
+                            $0.00
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
-        <div class="info-item">
-            <span>Risk</span>
-            <strong id="risk">---</strong>
-        </div>
+        <!-- ========================== -->
+        <!-- LAST UPDATE -->
+        <!-- ========================== -->
 
-        <div class="info-item">
-            <span>Asset</span>
-            <strong id="asset">---</strong>
-        </div>
+        <div class="footer-panel">
 
-        <div class="info-item">
-            <span>Expiration</span>
-            <strong id="expiration">---</strong>
-        </div>
+            <div class="card footer-card">
 
-        <div class="info-item">
-            <span>Probability</span>
-            <strong id="probability">---</strong>
-        </div>
+                <div class="card-title">
 
-        <div class="info-item">
-            <span>Grade</span>
-            <strong id="grade">---</strong>
-        </div>
+                    🕒 Last Update
 
-        <div class="info-item">
-            <span>Session</span>
-            <strong id="session">---</strong>
-        </div>
+                </div>
 
-        <div class="info-item">
-            <span>Regime</span>
-            <strong id="regime">---</strong>
+                <div class="footer-content">
+
+                    <div class="footer-row">
+
+                        <span>Status</span>
+
+                        <strong id="statusText">
+
+                            Offline
+
+                        </strong>
+
+                    </div>
+
+                    <div class="footer-row">
+
+                        <span>Updated</span>
+
+                        <strong id="updated">
+
+                            --
+
+                        </strong>
+
+                    </div>
+
+                    <div class="footer-row">
+
+                        <span>Version</span>
+
+                        <strong>
+
+                            v3.0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
 
     </div>
 
-</div>
+</div> <!-- bottom-row -->
 
-<!-- ====================================== -->
-<!-- LIVE TRADE HISTORY -->
-<!-- ====================================== -->
-<div class="card history-card">
+</div> <!-- dashboard-v4 -->
 
-    <div class="card-title">
-
-        📜 Live Trade History
-
-    </div>
-
-    <table id="historyTable">
-
-        <thead>
-
-            <tr>
-
-                <th>Time</th>
-
-                <th>Asset</th>
-
-                <th>Action</th>
-
-                <th>Conf</th>
-
-                <th>Result</th>
-
-            </tr>
-
-        </thead>
-
-        <tbody id="historyBody">
-
-        </tbody>
-
-    </table>
-
-</div>
-
-<!-- ====================================== -->
-<!-- FOOTER -->
-<!-- ====================================== -->
-
-<footer class="footer">
-
-    <span>
-
-        Last Update
-
-    </span>
-
-    <strong id="updated">
-
-        --
-
-    </strong>
-
-</footer>
-
-</div> <!-- End Container -->
-
-
+</div> <!-- container -->
 </body>
 
 </html>

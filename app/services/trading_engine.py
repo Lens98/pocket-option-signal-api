@@ -17,6 +17,7 @@ from app.services.session_detector import SessionDetector
 from app.storage.trade_storage import TradeStorage
 from app.services.signal_lock import SignalLock
 from app.storage.shared import trade_state
+from app.services.presentation_builder import PresentationBuilder
 from app.services.entry_manager import EntryManager
 from app.services.entry_manager import (
     EntryManager,
@@ -47,7 +48,7 @@ class TradingEngine:
         # ----------------------------------------
         # Risk
         # ----------------------------------------
-
+        self.presentation = PresentationBuilder()   # ⭐ NEW
         self.risk = RiskManager()
 
         # ----------------------------------------
@@ -337,7 +338,7 @@ class TradingEngine:
         )
 
         # ----------------------------------------
-        # Keep Locked Direction
+        # Signal Lock
         # ----------------------------------------
 
         if self.signal_lock.is_locked():
@@ -347,10 +348,16 @@ class TradingEngine:
             if locked is not None:
 
                 print("----------------------------------------")
-                print("🔒 KEEPING LOCKED DIRECTION")
+                print("🔒 SIGNAL IS LOCKED")
+                print("----------------------------------------")
+                print("Current Bias :", signal.bias)
+                print("Locked Bias  :", locked.bias)
+                print("Locked State :", locked.market_state)
                 print("----------------------------------------")
 
-                signal.bias = locked.bias
+                # Keep only the workflow state.
+                # Never overwrite the newly analyzed bias.
+                signal.market_state = locked.market_state
         # ----------------------------------------
         # Save Market Regime
         # ----------------------------------------
@@ -472,9 +479,15 @@ class TradingEngine:
         
         state = self.entry_manager.determine(signal)
 
-        print("ENTRY STATE :", state)
+        self.entry_engine.confirm(signal,state)
 
         signal.market_state = state.value
+
+        signal = self.presentation.build(signal)
+        
+        print("ENTRY STATE :", state)
+
+        
         # ----------------------------------------
         # Lock Signal
         # ----------------------------------------
@@ -485,81 +498,6 @@ class TradingEngine:
          ):
 
             self.signal_lock.lock(signal)
-        # ----------------------------------------
-        # Entry Engine Confirmation
-        # ----------------------------------------
-
-        entry_confirmed = self.entry_engine.confirm(signal)
-
-        if entry_confirmed:
-            state = EntryState.ENTRY
-            signal.market_state = EntryState.ENTRY.value
-
-            print("----------------------------------------")
-            print("ENTRY ENGINE PROMOTED SIGNAL TO ENTRY")
-            print("----------------------------------------")
-
-        # ----------------------------------------
-        # Default
-        # ----------------------------------------
-
-        signal.action = "WAIT"
-        signal.can_enter = False
-
-         # ----------------------------------------
-         # Waiting
-        # ----------------------------------------
-
-        if state == EntryState.WAITING:
-
-              signal.action = "WAIT"
-
-        # ----------------------------------------
-         # Analyzing
-        # ----------------------------------------
-
-        elif state == EntryState.ANALYZING:
-
-         signal.action = "WAIT"
-
-         # ----------------------------------------
-         # Ready
-          # ----------------------------------------
-
-        elif state == EntryState.READY:
-
-         signal.action = signal.bias
-         signal.can_enter = False
-
-        elif state == EntryState.WAITING_FOR_CANDLE_CLOSE:
-
-         signal.action = signal.bias
-         signal.can_enter = False
-
-        elif state == EntryState.ENTRY:
-
-         signal.action = "ENTER NOW"
-         signal.can_enter = True
-
-          #----------------------------------------
-          # Active
-          # ----------------------------------------
-
-        elif state == EntryState.ACTIVE:
-
-         signal.action = signal.bias
-         signal.can_enter = False
-
-         # ----------------------------------------
-          # Result
-         # ----------------------------------------
-
-        elif state == EntryState.RESULT:
-
-           signal.action = signal.bias
-           signal.can_enter = False
-
-        print()
         print("========================================")
         print("SIGNAL FLOW")
         print("========================================")

@@ -1,8 +1,8 @@
 /* ==========================================
-   TODAY'S SESSION
+   AI CONFIRMATIONS CARD
 ========================================== */
 
-.stats-card{
+.confirmations-card{
 
     display:flex;
 
@@ -20,11 +20,11 @@
    GRID
 ========================================== */
 
-.stats-grid{
+.confirmations-grid{
 
     display:grid;
 
-    grid-template-columns:repeat(2,1fr);
+    grid-template-columns:repeat(3,1fr);
 
     gap:6px;
 
@@ -33,41 +33,44 @@
 }
 
 /* ==========================================
-   STAT BOX
+   BOX
 ========================================== */
 
-.stat{
+.confirmation{
 
     display:flex;
-
-    flex-direction:column;
 
     justify-content:center;
 
     align-items:center;
 
-    text-align:center;
-
-    min-height:48px;
+    min-height:42px;
 
     padding:6px;
 
     border-radius:8px;
 
-    background:
-        linear-gradient(
-            180deg,
-            #18253D,
-            #101827
-        );
+    background:#18253D;
 
     border:1px solid #243453;
 
-    transition:.20s ease;
+    font-size:11px;
+
+    font-weight:700;
+
+    text-align:center;
+
+    line-height:1.2;
+
+    transition:.20s;
 
 }
 
-.stat:hover{
+/* ==========================================
+   HOVER
+========================================== */
+
+.confirmation:hover{
 
     border-color:#31568A;
 
@@ -76,77 +79,43 @@
 }
 
 /* ==========================================
-   LABEL
+   SUCCESS
 ========================================== */
 
-.stat span{
+.confirmation.success{
 
-    font-size:8px;
+    background:#123E24;
 
-    font-weight:700;
-
-    color:#94A3B8;
-
-    margin-bottom:3px;
-
-    text-transform:uppercase;
-
-    letter-spacing:.5px;
-
-}
-
-/* ==========================================
-   VALUE
-========================================== */
-
-.stat strong{
-
-    font-size:16px;
-
-    font-weight:800;
-
-    line-height:1;
-
-    color:#FFFFFF;
-
-}
-
-/* ==========================================
-   COLORS
-========================================== */
-
-#callCount{
+    border-color:#22C55E;
 
     color:#22C55E;
 
 }
 
-#putCount{
+/* ==========================================
+   FAIL
+========================================== */
+
+.confirmation.fail{
+
+    background:#4B1010;
+
+    border-color:#EF4444;
 
     color:#EF4444;
 
 }
 
-#waitCount{
+/* ==========================================
+   WAITING
+========================================== */
+
+.confirmation.wait{
+
+    background:#3B3B15;
+
+    border-color:#FACC15;
 
     color:#FACC15;
-
-}
-
-#profitTotal{
-
-    color:#38BDF8;
-
-}
-
-#winRate{
-
-    color:#22C55E;
-
-}
-
-#totalCount{
-
-    color:#FFFFFF;
 
 }

@@ -1,11 +1,9 @@
 from enum import Enum
 
 from app.models.signal import Signal
-from app.entry.entry_engine import EntryEngine
 
 
-class EntryState(str, Enum):
-
+class EntryState(Enum):
     WAITING = "WAITING"
     ANALYZING = "ANALYZING"
     READY = "READY"
@@ -17,49 +15,70 @@ class EntryState(str, Enum):
 
 class EntryManager:
 
-    def __init__(self):
-
-        self.engine = EntryEngine()
-
     def determine(self, signal: Signal) -> EntryState:
 
+        print()
+        print("========================================")
+        print("ENTRY MANAGER")
+        print("========================================")
+        print("Bias        :", signal.bias)
+        print("Confidence  :", signal.confidence)
+        print("Probability :", signal.probability)
+        print("Risk        :", signal.risk)
+        print("Grade       :", signal.grade)
+        print("Trend       :", signal.trend)
+        print("========================================")
+
         # ----------------------------------------
-        # No market direction
+        # No valid market direction
         # ----------------------------------------
 
         if signal.bias not in ["CALL", "PUT"]:
+
+            print("❌ No market bias")
             return EntryState.WAITING
 
         # ----------------------------------------
-        # Weak setup
+        # High Risk
         # ----------------------------------------
 
-        if signal.confidence < 60:
+        if signal.risk == "HIGH":
+
+            print("❌ High Risk")
+            return EntryState.WAITING
+
+        # ----------------------------------------
+        # Low Confidence
+        # ----------------------------------------
+
+        if signal.confidence < 70:
+
+            print("🟡 Confidence too low")
             return EntryState.ANALYZING
 
         # ----------------------------------------
-        # Setup almost ready
+        # Low Probability
         # ----------------------------------------
 
-        if signal.confidence < 75:
-            return EntryState.READY
+        if signal.probability < 60:
+
+            print("🟡 Probability too low")
+            return EntryState.ANALYZING
 
         # ----------------------------------------
-        # Wait for candle close
+        # Waiting for Pullback
         # ----------------------------------------
 
         if not signal.pullback_confirmed:
-            return EntryState.WAITING_FOR_CANDLE_CLOSE
+
+            print("🟡 Waiting for Pullback")
+            return EntryState.READY
 
         # ----------------------------------------
-        # Confirm entry with Entry Engine
+        # Enough confirmations
+        # Wait for candle close
         # ----------------------------------------
 
-        if self.engine.confirm(signal):
-            return EntryState.ENTRY
-
-        # ----------------------------------------
-        # Still waiting
-        # ----------------------------------------
+        print("✅ Waiting for Candle Close")
 
         return EntryState.WAITING_FOR_CANDLE_CLOSE
