@@ -1,16 +1,19 @@
+/* ==========================================
+   UPDATE SIGNAL CARD
+========================================== */
+
 export function updateSignal(signal) {
 
     updateAction(signal);
-
-    updateBanner(signal);
-
-    updateInstruction(signal);
-
-    updateConfirmations(signal);
-
-    updateAnalysis(signal);
+    updateConfidence(signal);
+    updateInfo(signal);
+    updateStatus(signal);
 
 }
+
+/* ==========================================
+   ACTION
+========================================== */
 
 function updateAction(signal) {
 
@@ -18,192 +21,132 @@ function updateAction(signal) {
 
     if (!action) return;
 
-    // Only show ENTER NOW when the backend says ENTRY
-    if (
-        signal.market_state === "ENTRY" &&
-        signal.can_enter
-    ) {
+    const value = (signal.action || "WAIT").toUpperCase();
 
-        action.innerHTML = "🚀 ENTER NOW";
-        action.className = "action entry";
+    action.textContent = value;
 
-        return;
+    action.className = "signal-action";
 
-    }
+    switch (value) {
 
-    // Otherwise show the current instruction
-    const actionText = signal.action || signal.bias || "WAIT";
+        case "CALL":
+            action.classList.add("call");
+            break;
 
-action.innerHTML = actionText;
+        case "PUT":
+            action.classList.add("put");
+            break;
 
-action.className =
-    `action ${actionText.toLowerCase().replace(/\s+/g, "-")}`;
-
-}
-function updateConfirmations(signal) {
-
-    const confirmations = [
-
-        ["emaStatus", signal.ema_confirmed, "EMA"],
-
-        ["macdStatus", signal.macd_confirmed, "MACD"],
-
-        ["rsiStatus", signal.rsi_confirmed, "RSI"],
-
-        ["structureStatus", signal.structure_confirmed, "Structure"],
-
-        ["zoneStatus", signal.zone_confirmed, "Zone"],
-
-        ["adxStatus", signal.adx_confirmed, "ADX"],
-
-        ["atrStatus", signal.atr_confirmed, "ATR"],
-
-        ["candleStatus", signal.candle_confirmed, "Candle"],
-
-        ["pullbackStatus", signal.pullback_confirmed, "Pullback"]
-
-    ];
-
-    confirmations.forEach(([id, value, label]) => {
-
-        const element = document.getElementById(id);
-
-        if (!element) return;
-
-        if (value) {
-
-            element.innerHTML = `✅ ${label}`;
-
-            element.className = "confirmation success";
-
-        }
-
-        else {
-
-            element.innerHTML = `❌ ${label}`;
-
-            element.className = "confirmation fail";
-
-        }
-
-    });
-
-}
-
-function updateInstruction(signal) {
-
-    const instruction =
-        document.getElementById("instruction");
-
-    const reason =
-        document.getElementById("reason");
-
-    if (!instruction || !reason) return;
-
-    instruction.innerHTML =
-        signal.instruction || "Waiting for signal...";
-
-    reason.innerHTML =
-        signal.reason || "--";
-
-}
-
-function updateBanner(signal) {
-
-    const banner = document.getElementById("buyBanner");
-
-    if (!banner) return;
-
-    // Highest priority
-    if (
-        signal.market_state === "ENTRY" &&
-        signal.can_enter
-    ) {
-
-        banner.innerHTML = `🚀 ENTER NOW (${signal.bias})`;
-        banner.className = "buy-banner entry";
-
-        return;
-
-    }
-
-    if (signal.bias === "CALL") {
-
-        banner.innerHTML = "🟢 BUY CALL";
-        banner.className = "buy-banner call";
-
-    }
-
-    else if (signal.bias === "PUT") {
-
-        banner.innerHTML = "🔴 BUY PUT";
-        banner.className = "buy-banner put";
-
-    }
-
-    else {
-
-        banner.innerHTML = `🟡 ${signal.market_state}`;
-        banner.className = "buy-banner wait";
+        case "WAIT":
+        default:
+            action.classList.add("wait");
+            break;
 
     }
 
 }
-function updateAnalysis(signal) {
 
-    const analysis = document.getElementById("analysis");
+/* ==========================================
+   CONFIDENCE
+========================================== */
 
-    if (!analysis) return;
+function updateConfidence(signal) {
 
-    if (!signal.reasons || signal.reasons.length === 0) {
+    const confidence = document.getElementById("confidence");
 
-        analysis.innerHTML = `
-            <div class="reason waiting">
-                ⏳ Waiting for enough market data...
-            </div>
-        `;
+    if (!confidence) return;
 
-        return;
+    confidence.textContent = `${Math.round(signal.confidence ?? 0)}%`;
+
+}
+
+/* ==========================================
+   SIGNAL INFO
+========================================== */
+
+function updateInfo(signal) {
+
+    const trend = document.getElementById("trend");
+    const risk = document.getElementById("risk");
+    const expiration = document.getElementById("expiration");
+
+    if (trend)
+        trend.textContent = signal.trend ?? "--";
+
+    if (risk)
+        risk.textContent = signal.risk ?? "--";
+
+    if (expiration)
+        expiration.textContent = signal.expiration ?? "--";
+
+}
+
+/* ==========================================
+   STATUS
+========================================== */
+
+function updateStatus(signal) {
+
+    const status = document.getElementById("signalStatus");
+
+    if (!status) return;
+
+    if (signal.reason && signal.reason.trim() !== "") {
+
+        status.textContent = signal.reason;
+
+    } else {
+
+        status.textContent = signal.market_state || "Waiting...";
 
     }
 
-    analysis.innerHTML = signal.reasons.map(reason => `
-
-        <div class="reason">
-
-            <span class="good">✔</span>
-
-            <div>${reason}</div>
-
-        </div>
-
-    `).join("");
-
 }
+
+
 /* ==========================================
    CONNECTION STATUS
 ========================================== */
 
 export function updateConnectionStatus(online) {
 
-    const status = document.getElementById("status");
+    const header = document.getElementById("status");
 
-    if (!status) return;
+    const footer = document.getElementById("statusText");
+
+    const updated = document.getElementById("updated");
+    const engine = document.getElementById("engineStatus");
+
+    if (!header || !footer) return;
 
     if (online) {
 
-        status.innerHTML = "🟢 Online";
+        // Header
+        header.innerHTML = "🟢 Online";
+        header.className = "status online";
 
-        status.className = "status online";
+        // Footer
+        footer.textContent = "🟢 Connected";
+        footer.className = "online";
 
+        // Last updated time
+        if (updated) {
+            updated.textContent = new Date().toLocaleTimeString();
+        }
+        if (engine) {
+
+           engine.textContent = "Running";
+
+           }
+
+    } else {
+
+        // Header
+        header.innerHTML = "🔴 Offline";
+        header.className = "status offline";
+
+        // Footer
+        footer.textContent = "🔴 Disconnected";
+        footer.className = "offline";
     }
-
-    else {
-
-        status.innerHTML = "🔴 Offline";
-
-        status.className = "status offline";
-
-    }
-
 }

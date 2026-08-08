@@ -1,50 +1,32 @@
 /* ==========================================
-   FOOTER CARD
+   FOOTER
 ========================================== */
 
-.footer-card{
+.footer-panel{
 
     display:flex;
-
-    flex-direction:column;
-
-    width:100%;
-
-    height:100%;
-
-}
-
-/* ==========================================
-   CONTENT
-========================================== */
-
-.footer-content{
-
-    display:flex;
-
-    flex-direction:column;
-
-    gap:8px;
-
-    flex:1;
-
-}
-
-/* ==========================================
-   ROW
-========================================== */
-
-.footer-row{
-
-    display:flex;
-
-    justify-content:space-between;
 
     align-items:center;
 
-    padding:8px 10px;
+}
 
-    border-radius:8px;
+/* ==========================================
+   STATUS BAR
+========================================== */
+
+.footer-status-bar{
+
+    display:grid;
+
+    grid-template-columns:
+        repeat(4,1fr);
+
+    align-items:center;
+
+    width:100%;
+    height:100%;
+
+    padding:0 16px;
 
     background:
         linear-gradient(
@@ -55,19 +37,39 @@
 
     border:1px solid #243453;
 
+    border-radius:14px;
+
+}
+
+/* ==========================================
+   ITEM
+========================================== */
+
+.footer-item{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    min-width:0;
+
 }
 
 /* ==========================================
    LABEL
 ========================================== */
 
-.footer-row span{
+.footer-label{
+
+    font-size:11px;
+
+    font-weight:600;
 
     color:#94A3B8;
-
-    font-size:10px;
-
-    font-weight:700;
 
     text-transform:uppercase;
 
@@ -79,13 +81,15 @@
    VALUE
 ========================================== */
 
-.footer-row strong{
+.footer-item strong{
+
+    font-size:12px;
+
+    font-weight:700;
 
     color:#FFFFFF;
 
-    font-size:11px;
-
-    font-weight:700;
+    white-space:nowrap;
 
 }
 
@@ -112,13 +116,41 @@
 }
 
 /* ==========================================
+   ENGINE STATUS
+========================================== */
+
+#engineStatus{
+
+    color:#38BDF8;
+
+}
+
+/* ==========================================
    HOVER
 ========================================== */
 
-.footer-row:hover{
+.footer-status-bar:hover{
 
-    border-color:#3B82F6;
+    border-color:#31568A;
 
-    transition:.2s;
+    transition:.25s;
+
+}
+
+/* ==========================================
+   RESPONSIVE
+========================================== */
+
+@media (max-width:700px){
+
+    .footer-status-bar{
+
+        grid-template-columns:1fr 1fr;
+
+        row-gap:8px;
+
+        padding:12px;
+
+    }
 
 }

@@ -139,3 +139,28 @@ class LearningStorage:
     def atr_stats(self):
 
         return self.repository.atr_stats()
+        # ========================================
+    # Save Pattern
+    # ========================================
+
+    def save_pattern(self, pattern, result):
+
+        return self.repository.save_pattern(
+
+            pattern,
+
+            result
+
+        )
+
+    # ========================================
+    # Pattern Statistics
+    # ========================================
+
+    def pattern_stats(self, pattern):
+
+        return self.repository.pattern_stats(
+
+            pattern
+
+        )

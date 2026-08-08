@@ -2,7 +2,11 @@
    MARKET INFORMATION
 ========================================== */
 
-export function updateMarket(signal){
+export function updateMarket(signal) {
+
+    // ======================================
+    // Dashboard
+    // ======================================
 
     set("asset", signal.asset);
 
@@ -34,15 +38,46 @@ export function updateMarket(signal){
         Number(signal.entry_price ?? 0).toFixed(5)
     );
 
-    set("chartChange", signal.trend);
+    const chartChange =
+        document.getElementById("chartChange");
+
+    if (chartChange) {
+
+        chartChange.textContent =
+            `${signal.trend} • ${signal.session}`;
+
+        chartChange.className = "market-change";
+
+        if (signal.trend === "BULLISH") {
+
+            chartChange.classList.add("bullish");
+
+        }
+
+        else if (signal.trend === "BEARISH") {
+
+            chartChange.classList.add("bearish");
+
+        }
+
+        else {
+
+            chartChange.classList.add("neutral");
+
+        }
+
+    }
 
 }
+/* ==========================================
+   HELPER
+========================================== */
 
-function set(id, value){
+function set(id, value) {
 
     const element = document.getElementById(id);
 
-    if(!element) return;
+    if (!element) return;
 
     element.textContent = value ?? "---";
 
@@ -66,7 +101,7 @@ function set(id, value){
 
     const upper = String(value ?? "").toUpperCase();
 
-    if(colorValues.includes(upper)){
+    if (colorValues.includes(upper)) {
 
         element.classList.add(upper);
 

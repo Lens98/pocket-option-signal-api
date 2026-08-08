@@ -1,171 +1,22 @@
 /* ==========================================
-   SIGNAL CENTER CARD
+   AI SIGNAL CARD
 ========================================== */
 
 .signal-card{
 
     display:flex;
-
     flex-direction:column;
 
-    align-items:center;
-
-    justify-content:flex-start;
-
     width:100%;
-
     height:100%;
 
-    overflow:hidden;
-
-}
-
-/* ==========================================
-   STATUS BANNER
-========================================== */
-
-.buy-banner{
-
-    width:100%;
-
-    height:26px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    border-radius:8px;
-
-    font-size:12px;
-
-    font-weight:700;
-
-    margin-bottom:8px;
-
-}
-
-.buy-banner.wait{
-    background:#3D4A5E;
-    color:#FACC15;
-}
-
-.buy-banner.analyzing{
-    background:#1D4ED8;
-    color:#FFF;
-}
-
-.buy-banner.ready{
-    background:#F59E0B;
-    color:#FFF;
-}
-
-.buy-banner.call{
-    background:#16A34A;
-    color:#FFF;
-}
-
-.buy-banner.put{
-    background:#DC2626;
-    color:#FFF;
 }
 
 /* ==========================================
    ACTION
 ========================================== */
 
-.action{
-
-    font-size:34px;
-
-    font-weight:800;
-
-    line-height:1;
-
-    margin-bottom:8px;
-
-    text-transform:uppercase;
-
-}
-
-.action.wait{
-
-    color:#FFD21F;
-
-}
-
-.action.call{
-
-    color:#22C55E;
-
-}
-
-.action.put{
-
-    color:#EF4444;
-
-}
-
-/* ==========================================
-   GAUGE
-========================================== */
-
-.gauge{
-
-    position:relative;
-
-    width:95px;
-
-    height:95px;
-
-    margin-bottom:8px;
-
-}
-
-.gauge svg{
-
-    width:95px;
-
-    height:95px;
-
-}
-
-.gauge-bg{
-
-    fill:none;
-
-    stroke:#1B2740;
-
-    stroke-width:8;
-
-}
-
-.gauge-progress{
-
-    fill:none;
-
-    stroke:#FACC15;
-
-    stroke-width:8;
-
-    stroke-linecap:round;
-
-    stroke-dasharray:452;
-
-    stroke-dashoffset:452;
-
-    transform:rotate(-90deg);
-
-    transform-origin:center;
-
-}
-
-.gauge-text{
-
-    position:absolute;
-
-    inset:0;
+.signal-action{
 
     display:flex;
 
@@ -173,9 +24,35 @@
 
     align-items:center;
 
-    font-size:22px;
+    margin-top:4px;
+
+    font-size:40px;
 
     font-weight:800;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+    line-height:1;
+
+}
+
+.signal-action.call{
+
+    color:#22C55E;
+
+}
+
+.signal-action.put{
+
+    color:#EF4444;
+
+}
+
+.signal-action.wait{
+
+    color:#FACC15;
 
 }
 
@@ -183,60 +60,136 @@
    CONFIDENCE
 ========================================== */
 
+.signal-confidence{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    margin:8px 0;
+
+}
+
+.confidence-value{
+
+    font-size:25px;
+
+    font-weight:800;
+
+    line-height:1;
+
+    color:#FFFFFF;
+
+}
+
 .confidence-label{
 
-    margin:2px 0 8px;
+    margin-top:5px;
 
-    font-size:10px;
+    font-size:8px;
 
     color:#94A3B8;
 
     text-transform:uppercase;
 
+    letter-spacing:1px;
+
 }
 
 /* ==========================================
-   BIAS
+   SIGNAL INFO
 ========================================== */
 
-.bias-badge{
+.signal-info{
 
-    margin-top:auto;
+    display:flex;
 
-    padding:5px 10px;
+    flex-direction:column;
 
-    border-radius:8px;
+    gap:8px;
 
-    border:1px solid #243453;
+}
+
+.signal-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:8px 10px;
+
+    border-radius:10px;
 
     background:#101827;
 
-    font-size:11px;
+    border:1px solid #243453;
+
+}
+
+.signal-row span{
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+}
+
+.signal-row strong{
+
+    font-size:13px;
 
     font-weight:700;
+
+}
+
+/* ==========================================
+   COLORS
+========================================== */
+
+#trend{
 
     color:#22C55E;
 
 }
 
+#risk{
+
+    color:#FACC15;
+
+}
+
+#expiration{
+
+    color:#38BDF8;
+
+}
+
 /* ==========================================
-   STATES
+   STATUS
 ========================================== */
 
-.signal-card.call .gauge-progress{
+.signal-status{
 
-    stroke:#22C55E;
+    margin-top:auto;
 
-}
+    padding:12px;
 
-.signal-card.put .gauge-progress{
+    border-radius:10px;
 
-    stroke:#EF4444;
+    background:#18253D;
 
-}
+    border:1px solid #243453;
 
-.signal-card.wait .gauge-progress{
+    text-align:center;
 
-    stroke:#FACC15;
+    color:#CBD5E1;
+
+    font-size:12px;
+
+    line-height:1.4;
 
 }

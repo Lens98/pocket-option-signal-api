@@ -1,38 +1,60 @@
 /* ==========================================
-   LIVE TRADE HISTORY CARD
+   TRADE HISTORY CARD
 ========================================== */
 
 .history-card{
 
     display:flex;
-
     flex-direction:column;
-
-    width:100%;
 
     height:100%;
 
-    overflow:hidden;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.history-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:10px;
+
+}
+
+.history-count{
+
+    font-size:12px;
+
+    color:#94A3B8;
+
+    font-weight:600;
 
 }
 
 /* ==========================================
    TABLE CONTAINER
-========================================== */
-
+============================================*/
 .history-table-container{
 
-    flex:1;
+    flex: 1;
 
-    overflow-y:auto;
+    min-height: 0;
 
-    overflow-x:hidden;
+    height: 100%;
 
-    border:1px solid #243453;
+    overflow-y: auto;
 
-    border-radius:8px;
+    border: 1px solid #243453;
 
-    background:#101827;
+    border-radius: 14px;
+
+    background: #101827;
 
 }
 
@@ -60,17 +82,19 @@
 
     top:0;
 
-    background:#18253D;
-
     z-index:2;
+
+    background:#18253D;
 
 }
 
 #historyTable th{
 
-    padding:6px;
+    padding:12px 8px;
 
-    font-size:10px;
+    text-align:center;
+
+    font-size:11px;
 
     font-weight:700;
 
@@ -80,8 +104,6 @@
 
     border-bottom:1px solid #243453;
 
-    text-align:center;
-
 }
 
 /* ==========================================
@@ -90,15 +112,15 @@
 
 #historyTable td{
 
-    padding:6px 4px;
-
-    font-size:10px;
-
-    color:#E2E8F0;
+    padding:10px 8px;
 
     text-align:center;
 
-    border-bottom:1px solid rgba(36,52,83,.45);
+    font-size:12px;
+
+    color:#E2E8F0;
+
+    border-bottom:1px solid rgba(36,52,83,.35);
 
     white-space:nowrap;
 
@@ -115,34 +137,6 @@
 #historyTable tbody tr:hover{
 
     background:#18253D;
-
-}
-
-/* ==========================================
-   RESULTS
-========================================== */
-
-.win{
-
-    color:#22C55E;
-
-    font-weight:700;
-
-}
-
-.loss{
-
-    color:#EF4444;
-
-    font-weight:700;
-
-}
-
-.wait{
-
-    color:#FACC15;
-
-    font-weight:700;
 
 }
 
@@ -166,13 +160,61 @@
 
 }
 
+.wait{
+
+    color:#FACC15;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   RESULTS
+========================================== */
+
+.win{
+
+    color:#22C55E;
+
+    font-weight:700;
+
+}
+
+.loss{
+
+    color:#EF4444;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   PROFIT
+========================================== */
+
+.profit-positive{
+
+    color:#22C55E;
+
+    font-weight:700;
+
+}
+
+.profit-negative{
+
+    color:#EF4444;
+
+    font-weight:700;
+
+}
+
 /* ==========================================
    SCROLLBAR
 ========================================== */
 
 .history-table-container::-webkit-scrollbar{
 
-    width:4px;
+    width:6px;
 
 }
 

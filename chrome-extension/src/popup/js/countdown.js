@@ -20,7 +20,7 @@ export function startCountdown(getMarketState) {
         document.getElementById("countdown");
 
     const banner =
-        document.getElementById("buyBanner");
+    document.getElementById("countdownLabel");
 
     const action =
         document.getElementById("action");
@@ -36,111 +36,113 @@ export function startCountdown(getMarketState) {
             60 - now.getSeconds();
 
         timer.innerHTML =
-            `00:${String(remaining).padStart(2,"0")}`;
+            `00:${String(remaining).padStart(2, "0")}`;
 
         const marketState =
             getMarketState();
 
         // =====================================
-// Countdown State Machine
-// =====================================
+        // Countdown State Machine
+        // =====================================
 
-if (marketState === "WAITING") {
+        if (marketState === "WAITING") {
 
-    banner.innerHTML = "🟡 WAITING FOR SETUP";
-    action.innerHTML = "WAIT";
+            banner.innerHTML = "🟡 WAITING FOR SETUP";
 
-    entryMessage.innerHTML =
-        "Waiting for a valid trade setup.";
+            action.innerHTML = "WAIT";
 
-}
+            entryMessage.innerHTML =
+                "Waiting for a valid trade setup.";
 
-else if (marketState === "READY") {
+        }
 
-    banner.innerHTML = "🟢 PREPARING ENTRY";
+        else if (marketState === "READY") {
 
-    action.innerHTML = "READY";
+            banner.innerHTML = "🟢 PREPARING ENTRY";
 
-    entryMessage.innerHTML =
-        `Wait ${remaining} seconds for the candle to close.`;
+            action.innerHTML = "READY";
 
-}
+            entryMessage.innerHTML =
+                `Wait ${remaining} seconds for the candle to close.`;
 
-else if (marketState === "WAITING_FOR_CANDLE_CLOSE") {
+        }
 
-    banner.innerHTML = "⏳ WAITING FOR CANDLE CLOSE";
+        else if (marketState === "WAITING_FOR_CANDLE_CLOSE") {
 
-    action.innerHTML = "WAIT";
+            banner.innerHTML = "⏳ WAITING FOR CANDLE CLOSE";
 
-    entryMessage.innerHTML =
-        `Current candle ends in ${remaining} sec.`;
+            action.innerHTML = "WAIT";
 
-}
+            entryMessage.innerHTML =
+                `Current candle ends in ${remaining} sec.`;
 
-else if (marketState === "ENTRY") {
+        }
 
-    if (remaining <= 3 && remaining > 0) {
+        else if (marketState === "ENTRY") {
 
-        banner.innerHTML = "🟢 GET READY";
+            if (remaining <= 3 && remaining > 0) {
 
-        action.innerHTML = `ENTRY IN ${remaining}`;
+                banner.innerHTML = "🟢 GET READY";
 
-        entryMessage.innerHTML =
-            `Prepare to enter in ${remaining} second(s).`;
+                action.innerHTML =
+                    `ENTRY IN ${remaining}`;
 
-    }
+                entryMessage.innerHTML =
+                    `Prepare to enter in ${remaining} second(s).`;
 
-    else if (remaining === 60) {
+            }
 
-        banner.innerHTML = "🚀 ENTER NOW";
+            else if (remaining === 60) {
 
-        action.innerHTML = "🚀 ENTER NOW";
+                banner.innerHTML = "🚀 ENTER NOW";
 
-        entryMessage.innerHTML =
-            "New candle opened. Enter now.";
+                action.innerHTML = "🚀 ENTER NOW";
 
-    }
+                entryMessage.innerHTML =
+                    "New candle opened. Enter now.";
 
-    else {
+            }
 
-        banner.innerHTML = "❌ ENTRY WINDOW MISSED";
+            else {
 
-        action.innerHTML = "MISSED";
+                banner.innerHTML = "❌ ENTRY WINDOW MISSED";
 
-        entryMessage.innerHTML =
-            "Wait for the next trade setup.";
+                action.innerHTML = "MISSED";
 
-    }
+                entryMessage.innerHTML =
+                    "Wait for the next trade setup.";
 
-}
+            }
 
-else if (marketState === "ACTIVE") {
+        }
 
-    banner.innerHTML = "🟢 TRADE ACTIVE";
+        else if (marketState === "ACTIVE") {
 
-    action.innerHTML = "ACTIVE";
+            banner.innerHTML = "🟢 TRADE ACTIVE";
 
-    entryMessage.innerHTML =
-        "Trade is currently running.";
+            action.innerHTML = "ACTIVE";
 
-}
+            entryMessage.innerHTML =
+                "Trade is currently running.";
 
-else if (marketState === "RESULT") {
+        }
 
-    banner.innerHTML = "🏁 TRADE COMPLETE";
+        else if (marketState === "RESULT") {
 
-    action.innerHTML = "RESULT";
+            banner.innerHTML = "🏁 TRADE COMPLETE";
 
-    entryMessage.innerHTML =
-        "Waiting for the next setup.";
+            action.innerHTML = "RESULT";
 
-}
+            entryMessage.innerHTML =
+                "Waiting for the next setup.";
+
+        }
 
     }
 
     update();
 
     countdownInterval =
-        setInterval(update,1000);
+        setInterval(update, 1000);
 
 }

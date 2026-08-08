@@ -5,50 +5,70 @@
 .countdown-card{
 
     display:flex;
+    flex-direction:column;
 
-    justify-content:center;
+    justify-content:space-between;
 
     align-items:center;
 
+    width:100%;
     height:100%;
 
-    overflow:hidden;
+    padding:18px;
 
 }
 
 /* ==========================================
-   CONTAINER
+   TIMER
 ========================================== */
 
-.countdown{
+.countdown-display{
 
     display:flex;
 
-    flex-direction:column;
-
     justify-content:center;
 
     align-items:center;
 
-    text-align:center;
+    flex:1;
 
-    gap:8px;
-
-    width:100%;
-
-    height:100%;
+    width:50%;
 
 }
 
 /* ==========================================
-   TITLE
+   TIME
 ========================================== */
 
-#countdownLabel{
+#countdown{
 
-    font-size:10px;
+    font-size:30px;
 
-    font-weight:500;
+    font-weight:800;
+
+    line-height:1;
+
+    letter-spacing:1px;
+
+    color:#FFFFFF;
+
+    transition:.3s;
+
+}
+
+/* ==========================================
+   LABEL
+========================================== */
+
+.countdown-label{
+
+    margin:10px 0;
+
+    text-align:center;
+
+    font-size:8px;
+
+    font-weight:600;
 
     color:#94A3B8;
 
@@ -59,34 +79,22 @@
 }
 
 /* ==========================================
-   TIMER
+   STATUS
 ========================================== */
 
-#countdown{
+.countdown-message{
 
-    font-size:20px;
+    width:100%;
 
-    font-weight:500;
+    padding:10px;
 
-    line-height:1;
+    border-radius:10px;
 
-    color:#FFFFFF;
+    background:#101827;
 
-    letter-spacing:2px;
+    border:1px solid #243453;
 
-    text-shadow:
-
-        0 0 12px rgba(255,255,255,.10);
-
-    transition:all .3s ease;
-
-}
-
-/* ==========================================
-   MESSAGE
-========================================== */
-
-.entry-message{
+    text-align:center;
 
     font-size:10px;
 
@@ -94,108 +102,36 @@
 
     color:#CBD5E1;
 
-    font-weight:500;
-
-    max-width:150px;
-
-    min-height:25px;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    text-align:center;
-
 }
 
 /* ==========================================
-   WARNING STATE
+   STATES
 ========================================== */
 
-.countdown.warning #countdown{
-
-    color:#FACC15;
-
-    text-shadow:
-
-        0 0 16px rgba(250,204,21,.40);
-
-}
-
-/* ==========================================
-   READY STATE
-========================================== */
-
-.countdown.ready #countdown{
+.countdown-ready #countdown{
 
     color:#22C55E;
 
-    text-shadow:
+}
 
-        0 0 18px rgba(34,197,94,.45);
+.countdown-warning #countdown{
+
+    color:#FACC15;
 
 }
 
-/* ==========================================
-   EXPIRED STATE
-========================================== */
-
-.countdown.expired #countdown{
+.countdown-expired #countdown{
 
     color:#EF4444;
 
-    text-shadow:
-
-        0 0 18px rgba(239,68,68,.45);
-
 }
 
 /* ==========================================
-   CARD HOVER
+   HOVER
 ========================================== */
 
 .countdown-card:hover #countdown{
 
-    transform:scale(1.04);
-
-}
-
-.countdown-card:hover .entry-message{
-
-    color:#FFFFFF;
-
-}
-
-/* ==========================================
-   PULSE
-========================================== */
-
-@keyframes countdownPulse{
-
-    0%{
-
-        transform:scale(1);
-
-    }
-
-    50%{
-
-        transform:scale(1.05);
-
-    }
-
-    100%{
-
-        transform:scale(1);
-
-    }
-
-}
-
-.countdown.ready #countdown{
-
-    animation:countdownPulse 1s infinite;
+    transform:scale(1.03);
 
 }

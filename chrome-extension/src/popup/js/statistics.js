@@ -10,43 +10,40 @@ export async function loadTradeStatistics() {
         const stats =
             await response.json();
 
-        document.getElementById(
-            "callCount"
-        ).innerHTML =
-            stats.wins;
+        const winRate =
+            document.getElementById("winRate");
 
-        document.getElementById(
-            "putCount"
-        ).innerHTML =
-            stats.losses;
+        const wins =
+            document.getElementById("wins");
 
-        document.getElementById(
-            "waitCount"
-        ).innerHTML =
-            stats.draws;
+        const losses =
+            document.getElementById("losses");
 
-        document.getElementById(
-            "totalCount"
-        ).innerHTML =
-            stats.total;
+        const profit =
+            document.getElementById("profit");
 
-        if (document.getElementById("winRate")) {
+        const accuracy =
+            document.getElementById("accuracy");
 
-            document.getElementById(
-                "winRate"
-            ).innerHTML =
-                `${stats.win_rate}%`;
+        if (winRate)
+            winRate.innerHTML = `${stats.win_rate}%`;
 
-        }
+        if (wins)
+            wins.innerHTML = stats.wins;
 
-        if (document.getElementById("profitTotal")) {
+        if (losses)
+            losses.innerHTML = stats.losses;
 
-            document.getElementById(
-                "profitTotal"
-            ).innerHTML =
-                "Coming Soon";
+        if (profit)
+    profit.innerHTML = `$${stats.profit ?? 0}`;
 
-        }
+        if (accuracy)
+            accuracy.innerHTML =
+                stats.win_rate >= 80
+                    ? "High"
+                    : stats.win_rate >= 60
+                    ? "Medium"
+                    : "Low";
 
     }
 

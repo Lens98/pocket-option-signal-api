@@ -65,6 +65,33 @@ class Signal(BaseModel):
     # ========================================
 
     reasons: List[str] = Field(default_factory=list)
+        # ========================================
+    # AI Analysis Display Data
+    # ========================================
+
+    ema_status: str = "--"
+    ema_strength: str = "--"
+
+    rsi_status: str = "--"
+    rsi_strength: str = "--"
+
+    macd_status: str = "--"
+    macd_strength: str = "--"
+
+    volume_status: str = "--"
+    volume_strength: str = "--"
+
+    structure_status: str = "--"
+    structure_strength: str = "--"
+
+    volatility_status: str = "--"
+    volatility_strength: str = "--"
+
+    support_status: str = "--"
+    support_strength: str = "--"
+
+    liquidity_status: str = "--"
+    liquidity_strength: str = "--"
 
     # ========================================
     # Entry Manager
@@ -100,3 +127,25 @@ class Signal(BaseModel):
     candle_confirmed: bool = False
 
     pullback_confirmed: bool = False
+    # ========================================
+    # Signal Agreement
+    # ========================================
+
+    agreement_score: float = 0.0
+
+    confirmation_count: int = 0
+
+    confirmation_total: int = 8
+    # ========================================
+    # AI Confidence
+   # ========================================
+
+    confidence: float
+
+    probability: float = 0.0
+
+    pattern: str = ""
+
+    trend: str
+
+    regime: str = "UNKNOWN"

@@ -1,11 +1,37 @@
-from app.storage.learning_storage import LearningStorage
+from app.services.ai_learning_engine import AILearningEngine
 
 
 class IndicatorOptimizer:
 
     def __init__(self):
 
-        self.learning = LearningStorage()
+         self.ai = AILearningEngine()
+
+    # ========================================
+    # Print Report
+    # ========================================
+
+    def print_report(self):
+
+        report = self.analyze()
+
+        print()
+        print("========================================")
+        print("INDICATOR OPTIMIZER")
+        print("========================================")
+
+        for name, stats in report.items():
+
+            print(
+                f"{name:5} | "
+                f"Trades: {stats['trades']:4} | "
+                f"Wins: {stats['wins']:4} | "
+                f"Losses: {stats['losses']:4} | "
+                f"Win%: {stats['win_rate']:6} | "
+                f"{stats['recommendation']}"
+            )
+
+        print("========================================")   
 
     # ========================================
     # Analyze Indicator
@@ -13,71 +39,24 @@ class IndicatorOptimizer:
 
     def analyze(self):
 
-        stats = self.learning.overall_stats()
-
-        if not stats:
-
-            return None
-
-        total = stats["total"] or 0
-        wins = stats["wins"] or 0
-
-        if total == 0:
-
-            return None
-
-        win_rate = round(
-
-            (wins / total) * 100,
-
-            2
-
-        )
-
-        indicators = {
-
-            "EMA": 15,
-            "RSI": 15,
-            "MACD": 20,
-            "ADX": 20,
-            "ATR": 10
-
-        }
+        indicators = self.ai.indicator_report()
 
         report = {}
 
-        for indicator, weight in indicators.items():
+        for name, stats in indicators.items():
 
-            recommendation = "KEEP"
+            report[name] = {
 
-            new_weight = weight
+                "trades": stats["total"],
 
-            if win_rate >= 70:
+                "wins": stats["wins"],
 
-                recommendation = "INCREASE"
+                "losses": stats["losses"],
 
-                new_weight += 2
+                "win_rate": stats["win_rate"],
 
-            elif win_rate <= 50:
-
-                recommendation = "DECREASE"
-
-                new_weight -= 2
-
-            report[indicator] = {
-
-                "current": weight,
-
-                "recommended": new_weight,
-
-                "recommendation": recommendation
+                "recommendation": stats["recommendation"]
 
             }
 
-        return {
-
-            "win_rate": win_rate,
-
-            "report": report
-
-        }
+        return report

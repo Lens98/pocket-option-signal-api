@@ -77,30 +77,39 @@ async function refresh() {
 
         console.log("Fetching /signal...");
 
-const signalResponse =
-    await fetch(`${API_URL}/signal`);
+        const signalResponse =
+            await fetch(`${API_URL}/signal`);
 
-console.log("✅ /signal OK");
+        console.log("✅ /signal OK");
 
-state.signal =
-    await signalResponse.json();
+        state.signal =
+            await signalResponse.json();
 
-console.log("Fetching /trade/state...");
+        console.log("Fetching /trade/state...");
 
-const tradeResponse =
-    await fetch(`${API_URL}/trade/state`);
+        const tradeResponse =
+            await fetch(`${API_URL}/trade/state`);
 
-console.log("✅ /trade/state OK");
+        console.log("✅ /trade/state OK");
 
-const trade =
-    await tradeResponse.json();
+        const trade =
+            await tradeResponse.json();
 
         state.tradeState =
             trade.state;
+        // ========================================
+       // Load Trade History
+      // ========================================
+
+       const historyResponse =
+           await fetch(`${API_URL}/trade/all`);
+
+state.history =
+    await historyResponse.json();
 
         state.connected = true;
         console.log("✅ Connected to API");
-console.log(state);
+        console.log(state);
 
         state.lastUpdate =
             new Date().toISOString();
@@ -109,48 +118,10 @@ console.log(state);
             state.signal &&
             !state.signal.status
         ) {
-          const signalKey =
-`${state.signal.asset}-${state.signal.action}-${state.tradeState}-${state.lastUpdate}`;
-            if (
-    signalKey ===
-    state.lastSignalKey
-) {
-
-    await saveState();
-
-    return;
-
-            }
-            state.lastSignalKey =
-    signalKey;
-
-            state.history.unshift({
-
-                asset:
-                    state.signal.asset,
-
-                action:
-                    state.signal.action,
-
-                confidence:
-                    state.signal.confidence,
-
-                time:
-    new Date().toISOString()
-
-            });
-
-            if (
-                state.history.length > 100
-            ) {
-
-                state.history.pop();
-
-            }
-
+           
             if (
                 state.stats[
-                    state.signal.action
+                state.signal.action
                 ] !== undefined
             ) {
 
@@ -167,18 +138,18 @@ console.log(state);
     }
 
     
-catch (err) {
+    catch (err) {
 
-    state.connected = false;
+        state.connected = false;
 
-    await saveState();
+        await saveState();
 
-    console.error("❌ Background refresh failed");
+        console.error("❌ Background refresh failed");
+        console.error("Error message:", err.message);
+        console.error("API URL:", API_URL);
+        console.error(err);
 
-    console.error(err);
-
-}
-
+    }
 }
 
 // ========================================

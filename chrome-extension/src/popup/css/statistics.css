@@ -1,18 +1,95 @@
 /* ==========================================
-   TODAY'S SESSION
+   TODAY'S SESSION CARD
 ========================================== */
 
-.stats-card{
+.session-card{
 
     display:flex;
-
     flex-direction:column;
-
-    width:100%;
 
     height:100%;
 
+}
+
+/* ==========================================
+   OVERVIEW
+========================================== */
+
+.session-overview{
+
+    margin-bottom:10px;
+
+}
+
+.session-rate{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:16px;
+
+}
+
+.session-rate span{
+
+    font-size:13px;
+
+    font-weight:600;
+
+    color:#94A3B8;
+
+}
+
+.session-rate strong{
+
+    font-size:34px;
+
+    font-weight:800;
+
+    color:#22C55E;
+
+}
+
+/* ==========================================
+   PROGRESS BAR
+========================================== */
+
+.session-progress{
+
+    width:100%;
+
+    height:10px;
+
+    margin-bottom:18px;
+
+    background:#101827;
+
+    border:1px solid #243453;
+
+    border-radius:999px;
+
     overflow:hidden;
+
+}
+
+.progress-fill{
+
+    height:100%;
+
+    width:0%;
+
+    border-radius:999px;
+
+    background:linear-gradient(
+        90deg,
+        #22C55E,
+        #38BDF8
+    );
+
+    transition:width .4s ease;
 
 }
 
@@ -20,23 +97,23 @@
    GRID
 ========================================== */
 
-.stats-grid{
+.session-grid{
 
     display:grid;
 
     grid-template-columns:repeat(2,1fr);
 
-    gap:6px;
+    gap:14px;
 
-    margin-top:6px;
+    margin-top:4px;
 
 }
 
 /* ==========================================
-   STAT BOX
+   ITEM
 ========================================== */
 
-.stat{
+.stat-box{
 
     display:flex;
 
@@ -46,32 +123,28 @@
 
     align-items:center;
 
-    text-align:center;
+    padding:18px;
 
-    min-height:48px;
+    border-radius:14px;
 
-    padding:6px;
-
-    border-radius:8px;
-
-    background:
-        linear-gradient(
-            180deg,
-            #18253D,
-            #101827
-        );
+    background:#101827;
 
     border:1px solid #243453;
 
-    transition:.20s ease;
+    transition:
+        transform .25s,
+        border-color .25s,
+        box-shadow .25s;
 
 }
 
-.stat:hover{
+.stat-box:hover{
 
     border-color:#31568A;
 
-    transform:translateY(-1px);
+    transform:translateY(-3px);
+
+    box-shadow:0 0 12px rgba(56,189,248,.18);
 
 }
 
@@ -79,19 +152,17 @@
    LABEL
 ========================================== */
 
-.stat span{
+.stat-box span{
 
-    font-size:8px;
-
-    font-weight:700;
+    font-size:11px;
 
     color:#94A3B8;
 
-    margin-bottom:3px;
-
     text-transform:uppercase;
 
-    letter-spacing:.5px;
+    letter-spacing:.8px;
+
+    margin-bottom:8px;
 
 }
 
@@ -99,15 +170,13 @@
    VALUE
 ========================================== */
 
-.stat strong{
+.stat-box strong{
 
-    font-size:16px;
+    font-size:24px;
 
     font-weight:800;
 
     line-height:1;
-
-    color:#FFFFFF;
 
 }
 
@@ -139,14 +208,14 @@
 
 }
 
-#winRate{
-
-    color:#22C55E;
-
-}
-
 #totalCount{
 
     color:#FFFFFF;
+
+}
+
+#averageConfidence{
+
+    color:#A78BFA;
 
 }

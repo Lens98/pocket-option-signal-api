@@ -5,11 +5,12 @@ from app.models.trade_learning import TradeLearning
 from app.storage.learning_storage import LearningStorage
 from app.services.win_loss_tracker import WinLossTracker
 from app.storage.trade_storage import TradeStorage
+from app.database.pattern_metadata_repository import PatternMetadataRepository
+from app.services.pattern_learning import PatternLearning
 from app.storage.shared import (
     market_storage,
     trade_storage,
 )
-
 
 class TradeMonitor:
 
@@ -20,6 +21,8 @@ class TradeMonitor:
         self.trade_storage = trade_storage
         self.tracker = WinLossTracker()
         self.learning = LearningStorage()
+        self.pattern_metadata = PatternMetadataRepository()
+        self.pattern_learning = PatternLearning()
         self.running = False
         self.thread = None
 
@@ -241,6 +244,38 @@ atr_used=any(
             print("Reasons:", learning.reasons)
             print("========================================")
             self.learning.add(learning)
+            # ----------------------------------------
+            # Learn Pattern
+            # ----------------------------------------
+
+            self.pattern_learning.learn(
+
+                closed_trade.pattern,
+
+                closed_trade.result
+
+            )
+            # ----------------------------------------
+            # Save Metadata
+            # ----------------------------------------
+
+            self.pattern_metadata.save(
+
+                closed_trade
+
+            )
+
+            print("----------------------------------------")
+            print("📊 Pattern Metadata Saved")
+            print("----------------------------------------")
+
+            print("========================================")
+            print("🧠 PATTERN LEARNING")
+            print("========================================")
+            print("Pattern :", closed_trade.pattern)
+            print("Result  :", closed_trade.result)
+            print("Trade   :", closed_trade.id)
+            print("========================================")
 
             print("----------------------------------------")
             print("🧠 Learning Record Saved")

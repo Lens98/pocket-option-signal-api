@@ -1,5 +1,5 @@
 /* ==========================================
-   Header
+   HEADER
 ========================================== */
 
 .header{
@@ -10,45 +10,103 @@
 
     align-items:center;
 
-    margin-bottom:18px;
-
-    padding-bottom:14px;
-
-    border-bottom:1px solid #23314F;
+    height:100%;
 
 }
 
-.header h2{
+/* ==========================================
+   LEFT
+========================================== */
+
+.header-left{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+}
+
+/* ==========================================
+   TITLE
+========================================== */
+
+.app-title{
 
     font-size:26px;
 
     font-weight:700;
 
+    color:#FFFFFF;
+
     letter-spacing:.5px;
 
+    line-height:1;
+
 }
+
+/* ==========================================
+   VERSION
+========================================== */
 
 .version{
 
+    margin-top:6px;
+
     color:#94A3B8;
 
-    font-size:13px;
+    font-size:12px;
+
+    font-weight:500;
 
 }
 
+/* ==========================================
+   RIGHT
+========================================== */
+
+.header-right{
+
+    display:flex;
+
+    align-items:center;
+
+}
+
+/* ==========================================
+   STATUS
+========================================== */
+
 .status{
 
-    padding:8px 18px;
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:120px;
+
+    height:36px;
+
+    padding:0 18px;
 
     border-radius:999px;
 
     font-size:13px;
 
-    font-weight:bold;
+    font-weight:700;
+
+    transition:.25s;
 
 }
 
-.online{
+/* ==========================================
+   ONLINE
+========================================== */
+
+.status.online{
 
     background:#14532D;
 
@@ -56,10 +114,26 @@
 
 }
 
-.offline{
+/* ==========================================
+   OFFLINE
+========================================== */
+
+.status.offline{
 
     background:#4B1113;
 
     color:#F87171;
+
+}
+
+/* ==========================================
+   WARNING
+========================================== */
+
+.status.warning{
+
+    background:#3B3414;
+
+    color:#FACC15;
 
 }

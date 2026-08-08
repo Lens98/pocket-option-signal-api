@@ -2,11 +2,13 @@ from fastapi import APIRouter
 
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
-
+from datetime import datetime
 from app.storage.shared import (
     market_storage,
     signal_storage,
     trade_state,
+    trade_storage,
+    active_asset,
 )
 
 from app.services.trading_engine import TradingEngine
@@ -45,6 +47,26 @@ def update_market(data: MarketUpdate):
     # Store history
     market_storage.update(market)
 
+    # ========================================
+    # Active Asset Filter
+    # ========================================
+
+    current = active_asset.get()
+
+
+    if current is not None and data.asset != current:
+
+        print(
+            "⏭ Ignoring analysis for:",
+            data.asset,
+            "Active:",
+            current
+        )
+
+        return {
+            "status": "stored_only",
+            "asset": data.asset
+        }
     # Read full history
     market = market_storage.get(data.asset)
 
@@ -54,6 +76,8 @@ def update_market(data: MarketUpdate):
 
     # Generate signal
     signal = engine.generate_signal(market)
+    if signal.asset is None:
+     signal.asset = data.asset
 
     # Save latest signal
     signal_storage.update(signal)
@@ -101,13 +125,88 @@ def trade_state_status():
 # LIVE CANDLES
 # ========================================
 
-@router.get("/candles/{asset}")
+@router.get("/candles/{asset:path}")
 def get_candles(asset: str):
+
+    print("================================")
+    print("GET /candles")
+    print("Requested asset:", repr(asset))
+    print("================================")
 
     market = market_storage.get(asset)
 
-    if market is None:
+    print("Market found:", market is not None)
 
+    if market is None:
         return []
 
+    print("Candlestick count:", len(market.candles))
+
     return market.candles
+
+# ========================================
+# TRADE STATISTICS
+# ========================================
+
+@router.get("/trade/statistics")
+def trade_statistics():
+
+    stats = trade_storage.statistics()
+
+    return {
+
+        "wins": trade_storage.win_count(),
+
+        "losses": trade_storage.loss_count(),
+
+        "draws": trade_storage.draw_count(),
+
+        "win_rate": trade_storage.win_rate(),
+
+        "profit": stats.get("profit", 0)
+
+    }
+@router.get("/market/select/{asset}")
+def select_asset(asset: str):
+
+    active_asset.set(asset)
+
+    return {
+        "active_asset": asset
+    }
+@router.get("/trade/today")
+def today_session():
+
+    trades = trade_storage.all()
+
+    today = datetime.now().date()
+
+    today_trades = [
+        t for t in trades
+        if t.entry_time.date() == today
+    ]
+
+    wins = len([
+        t for t in today_trades
+        if t.result == "WIN"
+    ])
+
+    losses = len([
+        t for t in today_trades
+        if t.result == "LOSS"
+    ])
+
+    total = len(today_trades)
+
+    win_rate = (
+        round((wins / total) * 100, 2)
+        if total > 0
+        else 0
+    )
+
+    return {
+        "trades": total,
+        "wins": wins,
+        "losses": losses,
+        "win_rate": win_rate
+    }

@@ -4,35 +4,16 @@
 
 .chart-card{
 
-    position:relative;
-
     display:flex;
-
     flex-direction:column;
 
+    width:100%;
     height:100%;
 
 }
 
-.chart-card::after{
-
-    content:"";
-
-    position:absolute;
-
-    inset:0;
-
-    border-radius:16px;
-
-    pointer-events:none;
-
-    box-shadow:
-        inset 0 0 35px rgba(255,255,255,.02);
-
-}
-
 /* ==========================================
-   MARKET TITLE
+   TITLE
 ========================================== */
 
 .market-title{
@@ -43,11 +24,7 @@
 
     align-items:center;
 
-    margin-bottom:16px;
-
-    padding-bottom:10px;
-
-    border-bottom:1px solid #243453;
+    margin-bottom:18px;
 
 }
 
@@ -57,18 +34,18 @@
 
     align-items:center;
 
-    gap:8px;
+    gap:6px;
 
-    color:#22C55E;
-
-    font-size:13px;
+    font-size:12px;
 
     font-weight:700;
+
+    color:#22C55E;
 
 }
 
 /* ==========================================
-   MARKET HEADER
+   HEADER
 ========================================== */
 
 .market-header{
@@ -79,9 +56,13 @@
 
     align-items:flex-start;
 
-    margin-bottom:16px;
+    margin-bottom:18px;
 
 }
+
+/* ==========================================
+   LEFT
+========================================== */
 
 .market-left{
 
@@ -93,25 +74,9 @@
 
 }
 
-.market-right{
-
-    display:flex;
-
-    flex-direction:column;
-
-    align-items:flex-end;
-
-    gap:4px;
-
-}
-
-/* ==========================================
-   ASSET
-========================================== */
-
 .market-asset{
 
-    font-size:17px;
+    font-size:20px;
 
     font-weight:700;
 
@@ -121,23 +86,33 @@
 
 .market-type{
 
-    font-size:13px;
+    font-size:12px;
 
     color:#94A3B8;
 
 }
 
 /* ==========================================
-   PRICE
+   RIGHT
 ========================================== */
+
+.market-right{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:flex-end;
+
+    gap:6px;
+
+}
 
 .market-price{
 
-    font-size:20px;
+    font-size:28px;
 
-    font-weight:500;
-
-    line-height:1;
+    font-weight:700;
 
     color:#22C55E;
 
@@ -145,23 +120,11 @@
 
 .market-change{
 
-    font-size:13px;
+    font-size:12px;
 
     font-weight:600;
 
     color:#22C55E;
-
-}
-
-.market-trend{
-
-    font-size:14px;
-
-    font-weight:700;
-
-    color:#22C55E;
-
-    text-transform:uppercase;
 
 }
 
@@ -173,21 +136,28 @@
 
     flex:1;
 
+    display:flex;
+
+    width:100%;
+
     min-height:100px;
+  
 
-    background:#101827;
-
-    border:1px solid #243453;
+    margin:16px 0;
 
     border-radius:14px;
 
-    overflow:hidden;
+    border:1px solid #243453;
 
-    margin-bottom:18px;
+    background:#101827;
+
+    overflow:hidden;
 
 }
 
 .market-chart canvas{
+
+    flex:1;
 
     width:100%;
 
@@ -208,9 +178,10 @@
     justify-content:space-between;
 
     align-items:center;
-        margin-top:18px;
 
-    flex-shrink:0;
+    margin-top:auto;
+
+    padding-top:16px;
 
 }
 
@@ -228,9 +199,9 @@
 
 .timeframe{
 
-    min-width:46px;
+    width:30px;
 
-    height:32px;
+    height:25px;
 
     border:none;
 
@@ -238,23 +209,21 @@
 
     background:#18253D;
 
-    color:#A8B7CF;
+    color:#A8C7FA;
 
-    font-size:12px;
+    font-size:10px;
 
     font-weight:700;
 
     cursor:pointer;
 
-    transition:all .25s ease;
+    transition:.25s;
 
 }
 
 .timeframe:hover{
 
-    background:#243453;
-
-    color:#FFFFFF;
+    background:#31568A;
 
 }
 
@@ -262,15 +231,16 @@
 
     background:#2563EB;
 
-    color:#FFFFFF;
+    color:#FFF;
 
     box-shadow:
-        0 0 12px rgba(37,99,235,.35);
+
+        0 0 18px rgba(37,99,235,.45);
 
 }
 
 /* ==========================================
-   LIVE
+   LIVE STATUS
 ========================================== */
 
 .market-live{
@@ -279,48 +249,86 @@
 
     align-items:center;
 
-    gap:8px;
+    gap:6px;
 
     color:#22C55E;
 
-    font-size:13px;
-
     font-weight:700;
 
+    font-size:10px;
+
 }
+#chartContainer{
+
+    width:100%;
+
+    height:100%;
+
+}
+/* ==========================================
+   LIVE DOT
+========================================== */
 
 .live-dot{
 
-    width:9px;
+    width:6px;
 
-    height:9px;
+    height:6px;
 
     border-radius:50%;
 
     background:#22C55E;
 
-    box-shadow:
-        0 0 10px rgba(34,197,94,.7);
-
-    animation:pulse 1.5s infinite;
+    animation:pulse 1.6s infinite;
 
 }
 
 /* ==========================================
-   CARD ANIMATION
+   ANIMATION
 ========================================== */
 
-.chart-card:hover .market-chart{
+@keyframes pulse{
 
-    border-color:#31568A;
+    0%{
 
-    transition:.25s;
+        opacity:.4;
+
+        transform:scale(.9);
+
+    }
+
+    50%{
+
+        opacity:1;
+
+        transform:scale(1.3);
+
+    }
+
+    100%{
+
+        opacity:.4;
+
+        transform:scale(.9);
+
+    }
+
+}
+.market-change.bullish{
+
+    color:#22C55E;
 
 }
 
-.chart-card:hover .market-price{
+.market-change.bearish{
 
-    text-shadow:
-        0 0 12px rgba(34,197,94,.35);
+    color:#EF4444;
 
 }
+
+.market-change.neutral{
+
+    color:#FACC15;
+
+}
+

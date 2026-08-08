@@ -7,7 +7,7 @@ const API_BASE = "http://127.0.0.1:8000";
 export async function getSignal() {
 
     const response =
-        await fetch(`${API_BASE}/signal`);
+       await fetch(`${API_BASE}/signal`);
 
     if (!response.ok) {
 
@@ -77,24 +77,30 @@ export async function getTradeState() {
 }
 
 /* ==========================================
-   GET CANDLES
-========================================== */
-
-/* ==========================================
    GET LIVE CANDLES
 ========================================== */
 
-export async function getCandles(asset){
+export async function getCandles(asset) {
+
+    const encodedAsset = encodeURIComponent(asset);
+
+    console.log("Loading candles for:", asset);
 
     const response =
-        await fetch(`${API_BASE}/candles/${asset}`);
+        await fetch(`${API_BASE}/candles/${encodedAsset}`);
 
-    if(!response.ok){
+    console.log("Status:", response.status);
+
+    if (!response.ok) {
 
         throw new Error("Unable to load candles");
 
     }
 
-    return await response.json();
+    const candles = await response.json();
+
+    console.log("Candles returned:", candles.length);
+
+    return candles;
 
 }

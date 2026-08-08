@@ -1,14 +1,20 @@
 let canvas = null;
 let ctx = null;
 let candles = [];
-
 export function initChart() {
 
     canvas = document.getElementById("miniChart");
 
     if (!canvas) return;
 
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = canvas.clientWidth * dpr;
+    canvas.height = canvas.clientHeight * dpr;
+
     ctx = canvas.getContext("2d");
+
+    ctx.scale(dpr, dpr);
 
 }
 
@@ -22,20 +28,34 @@ export function setCandles(data) {
 
 export function drawChart() {
 
+    console.log("Drawing", candles.length, "candles");
     if (!ctx || !canvas) return;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(
+        0,
+        0,
+        canvas.clientWidth,
+        canvas.clientHeight
+    );
+
+    drawBackground();
 
     drawGrid();
 
     if (candles.length === 0) {
 
         ctx.fillStyle = "#94A3B8";
-        ctx.font = "18px Segoe UI";
+
+        ctx.font = "15px Segoe UI";
+
         ctx.fillText(
+
             "Waiting for market data...",
+
             20,
-            40
+
+            35
+
         );
 
         return;
@@ -45,20 +65,74 @@ export function drawChart() {
     drawCandles();
 
 }
+function drawBackground(){
 
-function drawGrid() {
+    const gradient = ctx.createLinearGradient(
 
-    ctx.strokeStyle = "#1E293B";
+        0,
 
-    ctx.lineWidth = 1;
+        0,
 
-    for (let i = 0; i <= 5; i++) {
+        0,
 
-        const y = (canvas.height / 5) * i;
+        canvas.clientHeight
+
+    );
+
+    gradient.addColorStop(0,"#101827");
+
+    gradient.addColorStop(1,"#0B1220");
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(
+
+        0,
+
+        0,
+
+        canvas.clientWidth,
+
+        canvas.clientHeight
+
+    );
+
+}
+
+function drawGrid(){
+
+    const w = canvas.clientWidth;
+
+    const h = canvas.clientHeight;
+
+    ctx.strokeStyle="#1E293B";
+
+    ctx.lineWidth=1;
+
+    for(let i=0;i<=5;i++){
+
+        const y=h/5*i;
 
         ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvas.width, y);
+
+        ctx.moveTo(0,y);
+
+        ctx.lineTo(w,y);
+
+        ctx.stroke();
+
+    }
+
+    for(let i=0;i<=8;i++){
+
+        const x=w/8*i;
+
+        ctx.beginPath();
+
+        ctx.moveTo(x,0);
+
+        ctx.lineTo(x,h);
+
         ctx.stroke();
 
     }
@@ -72,10 +146,17 @@ function drawCandles() {
     const highs = visible.map(c => c.high);
     const lows = visible.map(c => c.low);
 
-    const max = Math.max(...highs);
-    const min = Math.min(...lows);
+   const max = Math.max(...highs);
 
-    const range = max - min || 1;
+const min = Math.min(...lows);
+
+const padding = (max-min)*0.08;
+
+const highest = max+padding;
+
+const lowest = min-padding;
+
+const range = highest-lowest;
 
     const candleWidth = canvas.width / visible.length;
 
@@ -123,6 +204,27 @@ function drawCandles() {
             candleWidth * 0.5,
             bodyHeight
         );
+        if(i===visible.length-1){
+
+    ctx.shadowColor=ctx.fillStyle;
+
+    ctx.shadowBlur=12;
+
+    ctx.fillRect(
+
+        x-candleWidth*.25,
+
+        bodyTop,
+
+        candleWidth*.5,
+
+        bodyHeight
+
+    );
+
+    ctx.shadowBlur=0;
+
+}
 
     });
 

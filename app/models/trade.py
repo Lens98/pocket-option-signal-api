@@ -26,6 +26,8 @@ class Trade(BaseModel):
 
     probability: float = 0.0
 
+    agreement_score: float = 0.0
+
     grade: str
 
     risk: str
@@ -53,6 +55,8 @@ class Trade(BaseModel):
     # ========================================
 
     reasons: list[str]
+
+    pattern: str = ""
 
     # ========================================
     # Trade Status

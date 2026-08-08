@@ -14,9 +14,13 @@ from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
-from app.storage.trade_storage import TradeStorage
+from app.storage.shared import trade_storage
 from app.services.signal_lock import SignalLock
+from app.services.entry_manager import EntryState
+from app.services.market_quality import MarketQuality
+from app.services.pattern_fingerprint import PatternFingerprint
 from app.storage.shared import trade_state
+from app.services.signal_agreement import SignalAgreement
 from app.services.presentation_builder import PresentationBuilder
 from app.services.entry_manager import EntryManager
 from app.services.entry_manager import (
@@ -40,9 +44,12 @@ class TradingEngine:
         self.entry_engine = EntryEngine()
         # NEW
         self.confidence = ConfidenceEngine()
+        self.market_quality = MarketQuality()
         self.market_regime = MarketRegimeDetector()
         # NEW
         self.probability = ProbabilityEngine()
+        self.agreement = SignalAgreement()
+        self.pattern_fingerprint = PatternFingerprint()
         self.session = SessionDetector()
         self.signal_lock = SignalLock()
         # ----------------------------------------
@@ -56,6 +63,11 @@ class TradingEngine:
         # ----------------------------------------
 
         self.support = SupportResistance()
+        # ----------------------------------------
+        # Candle Tracking
+        # ----------------------------------------
+
+        self.last_candle_timestamp = None
 
         # ----------------------------------------
         # Multi Timeframe
@@ -69,7 +81,7 @@ class TradingEngine:
         # Trade Storage
         # ----------------------------------------
 
-        self.trade_storage = TradeStorage()
+        self.trade_storage = trade_storage
 
     # =====================================================
     # Generate Trading Signal
@@ -218,34 +230,16 @@ class TradingEngine:
 
         if not allowed:
 
-            print("❌ Blocked by Multi-Timeframe Filter")
+            print("⚠ Multi-Timeframe not confirmed")
 
-            return Signal(
+            filter_block_reason = filter_result["reason"]
 
-                asset=market.asset,
+        else:
 
-                timeframe=market.timeframe,
+             filter_block_reason = None
 
-                action="WAIT",
-
-                confidence=0,
-
-                trend="SIDEWAYS",
-
-                expiration="Next Candle",
-
-                entry_price=market.candles[-1].close,
-
-                timestamp=datetime.now(),
-
-                risk="HIGH",
-
-                reasons=[
-                    filter_result["reason"]
-                ]
-
-            )
-               # ----------------------------------------
+            
+        # ----------------------------------------
         # Indicators
         # ----------------------------------------
 
@@ -323,10 +317,11 @@ class TradingEngine:
         print("Support / Resistance Updated")
         print("----------------------------------------")
 
+        if 'regime' not in locals():
 
-        # =====================================================
-        # PART 2 STARTS HERE
-        # =====================================================
+            regime = self.market_regime.detect(
+                indicator_result
+            )
 
         # ----------------------------------------
         # Analyze Market
@@ -335,29 +330,119 @@ class TradingEngine:
         signal = self.strategy.analyze(
             market,
             indicator_result
+        ) 
+        # ----------------------------------------
+        # Build Pattern Fingerprint
+        # ----------------------------------------
+
+        signal.pattern = self.pattern_fingerprint.build(signal)
+
+        print("----------------------------------------")
+        print("Pattern Fingerprint")
+        print("----------------------------------------")
+        print(signal.pattern)
+        print("----------------------------------------")
+        agreement = self.agreement.calculate(signal)
+        market_quality = self.market_quality.calculate(signal)
+
+
+        signal.agreement_score = (
+        agreement["agreement"]
         )
 
-        # ----------------------------------------
-        # Signal Lock
-        # ----------------------------------------
 
-        if self.signal_lock.is_locked():
+        signal.confirmation_count = (
+         agreement["confirmations"]
+        )
 
-            locked = self.signal_lock.current()
 
-            if locked is not None:
+        signal.confirmation_total = (
+        agreement["total"]
+        )
+        # ========================================
+        #AI ANALYSIS DATA FOR DASHBOARD
+        # ========================================
 
-                print("----------------------------------------")
-                print("🔒 SIGNAL IS LOCKED")
-                print("----------------------------------------")
-                print("Current Bias :", signal.bias)
-                print("Locked Bias  :", locked.bias)
-                print("Locked State :", locked.market_state)
-                print("----------------------------------------")
+        signal.ema_status = (
+             "✓ Active"
+             if indicator_result.ema20 is not None
+             else "--"
+         )
 
-                # Keep only the workflow state.
-                # Never overwrite the newly analyzed bias.
-                signal.market_state = locked.market_state
+        signal.ema_strength = (
+            "Startup"
+            if indicator_result.ema50 is None
+            else "Strong"
+        )
+
+
+        signal.rsi_status = (
+             "✓ Momentum"
+             if indicator_result.rsi is not None
+            else "--"
+        )
+
+        signal.rsi_strength = (
+            "Strong"
+            if indicator_result.rsi is not None
+            else "--"
+        )
+
+
+        signal.macd_status = "--"
+        signal.macd_strength = "--"
+
+
+        if (
+           indicator_result.macd is not None
+           and indicator_result.signal_line is not None
+        ):
+
+         signal.macd_status = (
+            "✓ Bullish"
+           if indicator_result.macd > indicator_result.signal_line
+            else "✓ Bearish"
+        )
+
+
+        if indicator_result.histogram is not None:
+
+           signal.macd_strength = (
+                "Strong"
+               if indicator_result.histogram > 0
+             else "Weak"
+         )
+
+        signal.structure_status = (
+            "✓ Confirmed"
+            if signal.structure_confirmed
+            else "--"
+        )
+
+        signal.structure_strength = (
+            "Strong"
+            if signal.structure_confirmed
+            else "--"
+        )
+
+
+        signal.volatility_status = (
+            "✓ Active"
+           if indicator_result.atr is not None
+          else "UNKNOWN"
+        )
+
+        signal.volatility_strength = (
+           "Strong"
+           if indicator_result.atr is not None
+           else "--"
+        )
+
+
+        signal.volume_status = "--"
+
+        signal.volume_strength = "--"
+
         # ----------------------------------------
         # Save Market Regime
         # ----------------------------------------
@@ -370,19 +455,26 @@ class TradingEngine:
         # ----------------------------------------
         # AI Confidence Engine
         # ----------------------------------------
-
-        signal.confidence = self.confidence.calculate(signal)
-        # ----------------------------------------
-        # Probability Engine
-        # ----------------------------------------
-
         signal.probability = self.probability.calculate(
+        
+                signal,
+        
+                indicator_result.mode
+        
+                )
 
-        signal,
+        signal.confidence = self.confidence.calculate(
 
-        indicator_result.mode
+            signal,
 
-        )
+            agreement_score=signal.agreement_score,
+
+           market_quality=market_quality,
+
+           learning_score=signal.probability
+
+       )
+        
 
         print("----------------------------------------")
         print("Probability Engine")
@@ -477,17 +569,25 @@ class TradingEngine:
         print("Trend       :", signal.trend)
         print("========================================")
         
-        state = self.entry_manager.determine(signal)
+        # ----------------------------------------
+        # Entry State
+        # ----------------------------------------
 
-        self.entry_engine.confirm(signal,state)
+        if self.signal_lock.is_locked():
 
-        signal.market_state = state.value
+             locked = self.signal_lock.current()
 
-        signal = self.presentation.build(signal)
-        
-        print("ENTRY STATE :", state)
+             print("----------------------------------------")
+             print("🔒 USING LOCKED SIGNAL")
+             print("----------------------------------------")
 
-        
+             state = EntryState(locked.market_state)
+
+             # Keep the locked signal information
+             signal = locked
+        else:
+
+            state = self.entry_manager.determine(signal)
         # ----------------------------------------
         # Lock Signal
         # ----------------------------------------
@@ -495,9 +595,78 @@ class TradingEngine:
         if (
            state == EntryState.WAITING_FOR_CANDLE_CLOSE
            and not self.signal_lock.is_locked()
-         ):
+        ):
 
-            self.signal_lock.lock(signal)
+         self.signal_lock.lock(
+
+              signal,
+
+              reason="WAITING FOR NEW CANDLE"
+
+          )
+
+        # ----------------------------------------
+        # Detect New Candle
+        # ----------------------------------------
+
+        latest_candle = market.candles[-1]
+
+        if self.last_candle_timestamp is None:
+
+           self.last_candle_timestamp = latest_candle.timestamp
+
+        elif latest_candle.timestamp != self.last_candle_timestamp:
+
+            print("========================================")
+            print("🟢 NEW CANDLE OPENED")
+            print("Previous :", self.last_candle_timestamp)
+            print("Current  :", latest_candle.timestamp)
+            print("========================================")
+
+            self.last_candle_timestamp = latest_candle.timestamp
+
+            locked = None
+
+            if self.signal_lock.is_locked():
+
+             # Save the locked signal FIRST
+             locked = self.signal_lock.current()
+
+            # Now unlock
+            self.signal_lock.unlock()
+
+            if locked is not None:
+
+              print("----------------------------------------")
+              print("✅ CANDLE CLOSED")
+              print("Entering previous locked signal")
+              print("----------------------------------------")
+
+              signal = locked
+
+              state = EntryState.ENTRY
+
+              signal.market_state = EntryState.ENTRY.value
+ 
+          
+              
+
+        # ----------------------------------------
+        # Confirm Entry
+        # ----------------------------------------
+
+        signal.market_state = state.value
+
+        self.entry_engine.confirm(
+           signal,
+           state
+        )
+
+        signal = self.presentation.build(signal)
+
+        print("ENTRY STATE :", state)
+
+        
         print("========================================")
         print("SIGNAL FLOW")
         print("========================================")
@@ -511,19 +680,23 @@ class TradingEngine:
         # Risk Manager Override
         # ----------------------------------------
 
-        if not risk["allowed"]:
+        if not risk["allowed"] and state != EntryState.ENTRY:
+
+            signal.action = "WAIT"
+
+            signal.market_state = EntryState.WAITING.value
+
+            signal.can_enter = False
+
+            signal.reasons.extend(risk["reasons"])
+
+        if filter_block_reason and state != EntryState.ENTRY:
 
            signal.action = "WAIT"
 
-           signal.market_state = EntryState.WAITING.value
-
            signal.can_enter = False
 
-           signal.reasons.extend(
-
-         risk["reasons"]
-
-         )
+           signal.reasons.append(filter_block_reason)
 
         # ----------------------------------------
         # AI Explanation
@@ -538,8 +711,25 @@ class TradingEngine:
         # ----------------------------------------
         # Save Trade
         # ----------------------------------------
+        if signal.action == "WAIT":
 
-        if signal.can_enter:
+            print("❌ BLOCKED: WAIT signal cannot create trade")
+
+            signal.can_enter = False
+
+        if (
+            signal.can_enter
+            and signal.action in ["CALL", "PUT"]
+        ):
+
+            print("========================================")
+            print("TRADE CREATION CHECK")
+            print("========================================")
+            print("can_enter :", signal.can_enter)
+            print("action    :", signal.action)
+            print("state     :", signal.market_state)
+            print("confidence:", signal.confidence)
+            print("========================================")
            
             try:
 
@@ -549,51 +739,55 @@ class TradingEngine:
 
                 trade = Trade(
 
-                    id=str(uuid4()),
+    id=str(uuid4()),
 
-                    asset=signal.asset,
+    asset=signal.asset,
 
-                    timeframe=signal.timeframe,
+    timeframe=signal.timeframe,
 
-                    action=signal.action,
+    confidence=signal.confidence,
 
-                    confidence=signal.confidence,
+    probability=signal.probability,
 
-                    probability=signal.probability,
+    agreement_score=signal.agreement_score,
 
-                    session=signal.session,
+    session=signal.session,
 
-                    regime=signal.regime,
+    action=signal.action,
 
-                    indicator_mode=indicator_result.mode,
+    regime=signal.regime,
 
-                    grade=signal.grade,
+    indicator_mode=indicator_result.mode,
 
-                    risk=signal.risk,
+    grade=signal.grade,
 
-                    trend=signal.trend,
+    risk=signal.risk,
 
-                    entry_price=signal.entry_price,
+    trend=signal.trend,
 
-                    exit_price=None,
+    entry_price=signal.entry_price,
 
-                    entry_time=datetime.now(),
+    exit_price=None,
 
-                    exit_time=None,
+    entry_time=datetime.now(),
 
-                    expiration_seconds=60,
+    exit_time=None,
 
-                    status="OPEN",
+    expiration_seconds=60,
 
-                    result="",
+    status="OPEN",
 
-                    profit=0.0,
+    result="",
 
-                    payout=0.0,
+    profit=0.0,
 
-                    reasons=signal.reasons
+    payout=0.0,
 
-                )
+    reasons=signal.reasons,
+
+    pattern=signal.pattern
+
+)
 
                 self.trade_storage.add(trade)
 

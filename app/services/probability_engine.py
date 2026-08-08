@@ -2,7 +2,7 @@ from app.storage.learning_storage import LearningStorage
 from app.services.session_ranking import SessionRanking
 from app.services.asset_ranking import AssetRanking
 from app.services.asset_learning import AssetLearning
-
+from app.services.pattern_learning import PatternLearning
 class ProbabilityEngine:
 
     def __init__(self):
@@ -11,6 +11,7 @@ class ProbabilityEngine:
         self.sessions = SessionRanking()
         self.assets = AssetRanking()
         self.asset_learning = AssetLearning()
+        self.pattern_learning = PatternLearning()
     # ========================================
     # Safe Win Rate
     # ========================================
@@ -284,6 +285,58 @@ class ProbabilityEngine:
 
                     print("Asset Penalty : -2")
 
+                 # ========================================
+        # Pattern Learning
+        # ========================================
+
+        pattern = self.pattern_learning.statistics(
+
+            signal
+
+        )
+
+        print("----------------------------------------")
+        print("Pattern Learning")
+        print("----------------------------------------")
+        print("Pattern :", pattern["pattern"])
+        print("Trades  :", pattern["total"])
+        print("Win Rate:", pattern["win_rate"])
+        print("----------------------------------------")
+
+        if pattern["total"] >= 10:
+
+            rate = pattern["win_rate"]
+
+            if rate >= 80:
+
+                probability += 8
+
+                print("Pattern Bonus : +8")
+
+            elif rate >= 70:
+
+                probability += 5
+
+                print("Pattern Bonus : +5")
+
+            elif rate >= 60:
+
+                probability += 3
+
+                print("Pattern Bonus : +3")
+
+            elif rate <= 40:
+
+                probability -= 8
+
+                print("Pattern Penalty : -8")
+
+            elif rate <= 50:
+
+                probability -= 5
+
+                print("Pattern Penalty : -5")
+
         # ========================================
         # Clamp
         # ========================================
@@ -297,3 +350,4 @@ class ProbabilityEngine:
         print("----------------------------------------")
 
         return probability
+ 

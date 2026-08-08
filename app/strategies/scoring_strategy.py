@@ -12,22 +12,63 @@ class ScoringStrategy:
         bearish_reasons = []
 
         # ========================================
-        # Collect Results
+        # Collect Results (Bias Aware)
         # ========================================
+
+        BULLISH_KEYWORDS = [
+
+            "Bullish",
+            "Higher High",
+            "Demand Zone",
+            "EMA20 Above",
+            "EMA50 Above",
+            "MACD Above",
+            "Oversold",
+            "Hammer"
+
+        ]
+
+        BEARISH_KEYWORDS = [
+
+           "Bearish",
+           "Lower High",
+           "Supply Zone",
+           "EMA20 Below",
+            "EMA50 Below",
+            "MACD Below",
+            "Overbought",
+            "Shooting Star"
+
+        ]
+
+        NEUTRAL_KEYWORDS = [
+
+            "ATR",
+            "ADX",
+            "Volatility",
+            "Regime"
+
+]
 
         for result in results:
 
             bullish_score += result.bullish_score
             bearish_score += result.bearish_score
 
-            if result.bullish_score > result.bearish_score:
+            for reason in result.reasons:
 
-                bullish_reasons.extend(result.reasons)
+                if any(word in reason for word in BULLISH_KEYWORDS):
 
-            elif result.bearish_score > result.bullish_score:
+                   bullish_reasons.append(reason)
 
-                bearish_reasons.extend(result.reasons)
+                elif any(word in reason for word in BEARISH_KEYWORDS):
 
+                   bearish_reasons.append(reason)
+
+                elif any(word in reason for word in NEUTRAL_KEYWORDS):
+
+                    bullish_reasons.append(reason)
+                    bearish_reasons.append(reason)
         # ========================================
         # Clamp Scores
         # ========================================
@@ -64,7 +105,7 @@ class ScoringStrategy:
             reasons = (
                 bullish_reasons +
                 bearish_reasons
-            )
+        )
 
         # ========================================
         # Confidence

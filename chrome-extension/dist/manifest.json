@@ -20,14 +20,14 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-BTUoQII5.js"
+        "assets/content.js-VXLdDQRU.js"
       ],
       "matches": [
         "https://*.pocketoption.com/*"
       ],
       "run_at": "document_start",
       "css": [
-        "assets/content-YaZSwduM.css"
+        "assets/content-x1XGuNl0.css"
       ]
     }
   ],
@@ -38,7 +38,7 @@
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-BTUoQII5.js"
+        "assets/content.js-VXLdDQRU.js"
       ],
       "use_dynamic_url": false
     }

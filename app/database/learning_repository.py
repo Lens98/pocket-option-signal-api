@@ -1,21 +1,29 @@
 import json
 import sqlite3
+import threading
 
 from app.models.trade_learning import TradeLearning
 
 
 class LearningRepository:
 
+
     def __init__(self):
 
         self.connection = sqlite3.connect(
             "trades.db",
-            check_same_thread=False
+            check_same_thread=False,
+            timeout=30
         )
 
         self.connection.row_factory = sqlite3.Row
 
+        # SQLite protection
+        self.lock = threading.Lock()
+
         self.create_table()
+
+
 
     # ========================================
     # New Cursor
@@ -24,7 +32,6 @@ class LearningRepository:
     def _cursor(self):
 
         return self.connection.cursor()
-
     # ========================================
     # Create Table
     # ========================================
@@ -117,6 +124,8 @@ atr_used INTEGER,
     # ========================================
 
     def add(self, record: TradeLearning):
+
+     with self.lock:
 
         cursor = self._cursor()
 
@@ -336,6 +345,8 @@ record.exit_price,
 
     def asset_stats(self, asset):
 
+     with self.lock:
+
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -378,6 +389,8 @@ record.exit_price,
 
     def regime_stats(self, regime):
 
+     with self.lock:
+
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -419,6 +432,7 @@ record.exit_price,
     # ========================================
 
     def session_stats(self, session):
+      with self.lock:
 
         cursor = self._cursor()
 
@@ -461,7 +475,7 @@ record.exit_price,
     # ========================================
 
     def confidence_stats(self, minimum):
-
+      with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -504,6 +518,8 @@ record.exit_price,
 
     def mode_stats(self, mode):
 
+     with self.lock:
+
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -513,23 +529,14 @@ record.exit_price,
                 COUNT(*) AS total,
 
                 COALESCE(
-
                     SUM(
-
                         CASE
-
                             WHEN result='WIN'
-
                             THEN 1
-
                             ELSE 0
-
                         END
-
                     ),
-
                     0
-
                 ) AS wins,
 
                 AVG(profit) AS average_profit
@@ -545,7 +552,7 @@ record.exit_price,
     # ========================================
 
     def overall_stats(self):
-
+      with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -585,7 +592,7 @@ record.exit_price,
     # ========================================
 
     def recent_stats(self, limit=50):
-
+     with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -632,7 +639,7 @@ record.exit_price,
     # ========================================
 
     def ema_stats(self):
-
+      with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -672,7 +679,7 @@ record.exit_price,
     # ========================================
 
     def rsi_stats(self):
-
+      with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -712,7 +719,7 @@ record.exit_price,
     # ========================================
 
     def macd_stats(self):
-
+     with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -752,7 +759,7 @@ record.exit_price,
     # ========================================
 
     def adx_stats(self):
-
+     with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
@@ -792,7 +799,7 @@ record.exit_price,
     # ========================================
 
     def atr_stats(self):
-
+     with self.lock:
         cursor = self._cursor()
 
         return cursor.execute("""
