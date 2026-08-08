@@ -6,7 +6,7 @@ export async function loadTradeHistory() {
 
         const response =
             await fetch(
-                "http://127.0.0.1:8000/trade/all"
+                "https://pocket-option-signal-api-production.up.railway.app/trade/all"
             );
 
         console.log("Response Status:", response.status);

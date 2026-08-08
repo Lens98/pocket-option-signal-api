@@ -4,7 +4,7 @@ export async function loadTradeStatistics() {
 
         const response =
             await fetch(
-                "http://127.0.0.1:8000/trade/statistics"
+                "https://pocket-option-signal-api-production.up.railway.app/trade/statistics"
             );
 
         const stats =

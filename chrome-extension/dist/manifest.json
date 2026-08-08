@@ -10,7 +10,7 @@
     "tabs"
   ],
   "host_permissions": [
-    "http://127.0.0.1:8000/*",
+    "https://pocket-option-signal-api-production.up.railway.app/*",
     "https://*.pocketoption.com/*"
   ],
   "background": {
@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-VXLdDQRU.js"
+        "assets/content.js-CmrNLn6A.js"
       ],
       "matches": [
         "https://*.pocketoption.com/*"
@@ -38,7 +38,7 @@
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-VXLdDQRU.js"
+        "assets/content.js-CmrNLn6A.js"
       ],
       "use_dynamic_url": false
     }

@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8000";
+const API = "https://pocket-option-signal-api-production.up.railway.app";
 
 export async function sendMarket(asset, timeframe, candles) {
 
@@ -82,8 +82,9 @@ export async function sendMarket(asset, timeframe, candles) {
             response.status
         );
 
-        const text = await response.text();
+        const result = await response.json();
 
+        console.log("Server Response:", result);
         console.log(text);
 
         return text;

@@ -1,4 +1,4 @@
-const API_BASE = "http://127.0.0.1:8000";
+const API = "https://pocket-option-signal-api-production.up.railway.app";
 
 /* ==========================================
    GET SIGNAL
@@ -7,7 +7,7 @@ const API_BASE = "http://127.0.0.1:8000";
 export async function getSignal() {
 
     const response =
-       await fetch(`${API_BASE}/signal`);
+       await fetch(`${API}/signal`);
 
     if (!response.ok) {
 
@@ -26,7 +26,7 @@ export async function getSignal() {
 export async function getTradeStatistics() {
 
     const response =
-        await fetch(`${API_BASE}/trade/statistics`);
+        await fetch(`${API}/trade/statistics`);
 
     if (!response.ok) {
 
@@ -45,7 +45,7 @@ export async function getTradeStatistics() {
 export async function getTradeHistory() {
 
     const response =
-        await fetch(`${API_BASE}/trade/all`);
+        await fetch(`${API}/trade/all`);
 
     if (!response.ok) {
 
@@ -64,7 +64,7 @@ export async function getTradeHistory() {
 export async function getTradeState() {
 
     const response =
-        await fetch(`${API_BASE}/trade/state`);
+        await fetch(`${API}/trade/state`);
 
     if (!response.ok) {
 
@@ -87,7 +87,7 @@ export async function getCandles(asset) {
     console.log("Loading candles for:", asset);
 
     const response =
-        await fetch(`${API_BASE}/candles/${encodedAsset}`);
+        await fetch(`${API}/candles/${encodedAsset}`);
 
     console.log("Status:", response.status);
 
