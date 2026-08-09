@@ -628,7 +628,7 @@ class TradingEngine:
 
         if (
            signal.confidence >= 70
-           and signal.bias in ["CALL", "PUT", "BUY", "SELL"]
+           and signal.action in ["CALL", "PUT"]
          ):
            review = self.openai.review(signal)
 
