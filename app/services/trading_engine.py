@@ -623,6 +623,25 @@ class TradingEngine:
         signal.risk = risk["risk"]
         signal.grade = risk["grade"]
         # ----------------------------------------
+        #OpenAI Review
+        # ----------------------------------------
+
+        if (
+           signal.confidence >= 70
+           and signal.action in ["CALL", "PUT"]
+        ):
+
+           review = self.openai.review(signal)
+
+        print()
+        print("========================================")
+        print("OPENAI REVIEW")
+        print("========================================")
+        print("Decision   :", review.get("decision"))
+        print("Confidence :", review.get("confidence"))
+        print("Reason     :", review.get("reason"))
+        print("========================================")
+        # ----------------------------------------
         # Entry Manager
         # ----------------------------------------
         print("========================================")
