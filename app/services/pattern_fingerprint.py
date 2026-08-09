@@ -2,32 +2,61 @@ class PatternFingerprint:
 
     def build(self, signal):
 
-        flags = [
+        pattern = []
 
-            ("EMA", signal.ema_confirmed),
-            ("MACD", signal.macd_confirmed),
-            ("RSI", signal.rsi_confirmed),
-            ("STRUCT", signal.structure_confirmed),
-            ("ZONE", signal.zone_confirmed),
-            ("ADX", signal.adx_confirmed),
-            ("ATR", signal.atr_confirmed),
-            ("CANDLE", signal.candle_confirmed),
-            ("PULLBACK", signal.pullback_confirmed),
+        # -----------------------------
+        # Direction
+        # -----------------------------
 
-        ]
+        pattern.append(signal.action or "UNKNOWN_ACTION")
 
-        active = [
+        # -----------------------------
+        # Trend
+        # -----------------------------
 
-            name
+        pattern.append(signal.trend or "UNKNOWN_TREND")
 
-            for name, enabled in flags
+        # -----------------------------
+        # Regime
+        # -----------------------------
 
-            if enabled
+        pattern.append(signal.regime or "UNKNOWN_REGIME")
 
-        ]
+        # -----------------------------
+        # Session
+        # -----------------------------
 
-        if not active:
+        pattern.append(signal.session or "UNKNOWN_SESSION")
 
-            return "NONE"
+        # -----------------------------
+        # Confirmations
+        # -----------------------------
 
-        return "_".join(active)
+        if signal.ema_confirmed:
+            pattern.append("EMA")
+
+        if signal.macd_confirmed:
+            pattern.append("MACD")
+
+        if signal.rsi_confirmed:
+            pattern.append("RSI")
+
+        if signal.structure_confirmed:
+            pattern.append("STRUCT")
+
+        if signal.zone_confirmed:
+            pattern.append("ZONE")
+
+        if signal.pullback_confirmed:
+            pattern.append("PULLBACK")
+
+        if signal.candle_confirmed:
+            pattern.append("CANDLE")
+
+        if signal.adx_confirmed:
+            pattern.append("ADX")
+
+        if signal.atr_confirmed:
+            pattern.append("ATR")
+
+        return "|".join(pattern)
