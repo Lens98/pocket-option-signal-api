@@ -633,14 +633,14 @@ class TradingEngine:
 
            review = self.openai.review(signal)
 
-        print()
-        print("========================================")
-        print("OPENAI REVIEW")
-        print("========================================")
-        print("Decision   :", review.get("decision"))
-        print("Confidence :", review.get("confidence"))
-        print("Reason     :", review.get("reason"))
-        print("========================================")
+           print()
+           print("========================================")
+           print("OPENAI REVIEW")
+           print("========================================")
+           print("Decision   :", review.get("decision"))
+           print("Confidence :", review.get("confidence"))
+           print("Reason     :", review.get("reason"))
+           print("========================================")
         # ----------------------------------------
         # Entry Manager
         # ----------------------------------------
