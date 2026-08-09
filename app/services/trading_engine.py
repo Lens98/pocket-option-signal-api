@@ -360,6 +360,17 @@ class TradingEngine:
         agreement["total"]
         )
         # ========================================
+        # DEBUG AGREEMENT
+        # ========================================
+
+        print("----------------------------------------")
+        print("AGREEMENT ENGINE")
+        print("----------------------------------------")
+        print("Agreement Score :", signal.agreement_score)
+        print("Confirmations   :", signal.confirmation_count)
+        print("Total           :", signal.confirmation_total)
+        print("----------------------------------------")
+        # ========================================
         #AI ANALYSIS DATA FOR DASHBOARD
         # ========================================
 
@@ -717,6 +728,30 @@ class TradingEngine:
 
             signal.can_enter = False
 
+        # ========================================
+        # Minimum Confidence Filter
+        # ========================================
+
+        MIN_CONFIDENCE = 80
+
+        if (
+            signal.can_enter
+            and signal.confidence < MIN_CONFIDENCE
+        ):
+            print("----------------------------------------")
+            print("❌ BLOCKED: Confidence too low")
+            print("Confidence :", signal.confidence)
+            print("Minimum    :", MIN_CONFIDENCE)
+            print("----------------------------------------")
+
+            signal.action = "WAIT"
+            signal.can_enter = False
+            signal.market_state = EntryState.WAITING.value
+            signal.reasons.append(
+                f"Confidence below {MIN_CONFIDENCE}%"
+            )
+
+   
         if (
             signal.can_enter
             and signal.action in ["CALL", "PUT"]
