@@ -149,3 +149,6 @@ class Signal(BaseModel):
     trend: str
 
     regime: str = "UNKNOWN"
+    candle_pattern: str = "NONE"
+
+    candle_strength: int = 0

@@ -20,7 +20,9 @@ from app.services.entry_manager import EntryState
 from app.services.market_quality import MarketQuality
 from app.services.pattern_fingerprint import PatternFingerprint
 from app.storage.shared import trade_state
+from app.services.candle_strategy import CandleStrategy
 from app.services.signal_agreement import SignalAgreement
+from app.services.learning_analyzer import LearningAnalyzer
 from app.services.presentation_builder import PresentationBuilder
 from app.services.entry_manager import EntryManager
 from app.services.entry_manager import (
@@ -52,6 +54,8 @@ class TradingEngine:
         self.pattern_fingerprint = PatternFingerprint()
         self.session = SessionDetector()
         self.signal_lock = SignalLock()
+        self.learning = LearningAnalyzer()
+        self.candle_strategy = CandleStrategy()
         # ----------------------------------------
         # Risk
         # ----------------------------------------
@@ -332,10 +336,60 @@ class TradingEngine:
             indicator_result
         ) 
         # ----------------------------------------
+        # Candle Strategy
+        # ----------------------------------------
+
+        candle_result = self.candle_strategy.analyze(market.candles)
+
+        print()
+        print("========================================")
+        print("CANDLE STRATEGY")
+        print("========================================")
+        print("Pattern     :", candle_result["pattern"])
+        print("Direction   :", candle_result["direction"])
+        print("Strength    :", candle_result["strength"])
+        print("Trade       :", candle_result["can_trade"])
+        print("========================================")
+
+        signal.candle_confirmed = candle_result["confirmed"]
+
+        signal.candle_pattern = candle_result["pattern"]
+
+        signal.candle_strength = candle_result["strength"]
+        # ----------------------------------------
         # Build Pattern Fingerprint
         # ----------------------------------------
 
         signal.pattern = self.pattern_fingerprint.build(signal)
+
+        # ----------------------------------------
+        # Learning Statistics
+        # ----------------------------------------
+
+        pattern_stats = self.learning.pattern(signal.pattern)
+        asset_stats = self.learning.asset(market.asset)
+
+        print()
+        print("========================================")
+        print("LEARNING ENGINE")
+        print("========================================")
+
+        print("Pattern :", signal.pattern)
+        print("Trades  :", pattern_stats["trades"])
+        print("WinRate :", pattern_stats["win_rate"])
+        print("Wins    :", pattern_stats["wins"])
+        print("Losses  :", pattern_stats["losses"])
+
+        print("----------------------------------------")
+
+        print("Asset   :", signal.asset)
+        print("Trades  :", asset_stats["trades"])
+        print("WinRate :", asset_stats["win_rate"])
+        print("Wins    :", asset_stats["wins"])
+        print("Losses  :", asset_stats["losses"])
+
+        print("========================================")
+
 
         print("----------------------------------------")
         print("Pattern Fingerprint")
@@ -732,7 +786,7 @@ class TradingEngine:
         # Minimum Confidence Filter
         # ========================================
 
-        MIN_CONFIDENCE = 80
+        MIN_CONFIDENCE = 70
 
         if (
             signal.can_enter
