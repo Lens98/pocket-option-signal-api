@@ -9,6 +9,7 @@ from app.services.ai_reason_service import AIReasonService
 from app.services.market_regime import MarketRegimeDetector
 from app.support_resistance.support_resistance import SupportResistance
 from app.risk.risk_manager import RiskManager
+from app.services.openai_reviewer import OpenAIReviewer
 from app.services.probability_engine import ProbabilityEngine
 from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
@@ -56,6 +57,7 @@ class TradingEngine:
         self.signal_lock = SignalLock()
         self.learning = LearningAnalyzer()
         self.candle_strategy = CandleStrategy()
+        self.openai = OpenAIReviewer()
         # ----------------------------------------
         # Risk
         # ----------------------------------------
