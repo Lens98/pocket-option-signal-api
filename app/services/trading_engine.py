@@ -25,7 +25,6 @@ from app.services.candle_strategy import CandleStrategy
 from app.services.signal_agreement import SignalAgreement
 from app.services.learning_analyzer import LearningAnalyzer
 from app.services.presentation_builder import PresentationBuilder
-from app.services.entry_manager import EntryManager
 from app.services.entry_manager import (
     EntryManager,
     EntryState,
@@ -98,6 +97,77 @@ class TradingEngine:
         market,
         indicator_result=None
     ):
+
+             # ----------------------------------------
+        # ACTIVE TRADE LOCK
+        # ----------------------------------------
+        # Never generate a new signal while an
+        # existing trade is still active.
+
+        if self.signal_lock.is_trade_locked():
+
+            locked = self.signal_lock.current()
+
+            print("----------------------------------------")
+            print("🔒 ACTIVE TRADE LOCKED")
+            print("----------------------------------------")
+
+            print("Trade ID :", self.signal_lock.trade_id)
+            print("Asset    :", locked.asset)
+            print("Bias     :", locked.bias)
+            print("Action   :", locked.action)
+            print("State    :", locked.market_state)
+
+            open_trades = self.trade_storage.open_trades()
+
+            active_trade = None
+
+            for trade in open_trades:
+
+                if trade.id == self.signal_lock.trade_id:
+
+                    active_trade = trade
+                    break
+
+            # ----------------------------------------
+            # Trade still active
+            # ----------------------------------------
+
+            if active_trade is not None:
+
+                active_signal = locked.model_copy(
+                    deep=True
+                )
+
+                active_signal.market_state = (
+                    EntryState.ACTIVE.value
+                )
+
+                active_signal.trade_status = "ACTIVE"
+                active_signal.can_enter = False
+                active_signal.action = locked.bias
+                active_signal.reason = "TRADE_ACTIVE"
+
+                active_signal.instruction = (
+                    f"{locked.bias} trade is currently active."
+                )
+
+                print("🔵 TRADE STILL ACTIVE")
+                print("🚫 NEW SIGNAL BLOCKED")
+                print("Locked Bias :", locked.bias)
+                print("----------------------------------------")
+
+                return active_signal
+
+            # ----------------------------------------
+            # Trade finished
+            # ----------------------------------------
+
+            print("----------------------------------------")
+            print("🏁 ACTIVE TRADE FINISHED")
+            print("----------------------------------------")
+
+            self.signal_lock.unlock()
 
         print()
         print("========================================")
@@ -637,25 +707,26 @@ class TradingEngine:
         print("Trend       :", signal.trend)
         print("========================================")
         
-        # ----------------------------------------
-        # Entry State
-        # ----------------------------------------
+
+      # ----------------------------------------
+      # Waiting-for-candle lock
+      # ----------------------------------------
 
         if self.signal_lock.is_locked():
+  
+          locked = self.signal_lock.current()
 
-             locked = self.signal_lock.current()
+          print("----------------------------------------")
+          print("🔒 USING LOCKED SIGNAL")
+          print("----------------------------------------")
 
-             print("----------------------------------------")
-             print("🔒 USING LOCKED SIGNAL")
-             print("----------------------------------------")
+          state = EntryState(locked.market_state)
 
-             state = EntryState(locked.market_state)
+          signal = locked
 
-             # Keep the locked signal information
-             signal = locked
         else:
 
-            state = self.entry_manager.determine(signal)
+         state = self.entry_manager.determine(signal)
         # ----------------------------------------
         # Lock Signal
         # ----------------------------------------
@@ -665,11 +736,11 @@ class TradingEngine:
            and not self.signal_lock.is_locked()
         ):
 
-         self.signal_lock.lock(
+            self.signal_lock.lock(
 
-              signal,
+            signal,
 
-              reason="WAITING FOR NEW CANDLE"
+        reason="WAITING FOR NEW CANDLE"
 
           )
 
@@ -941,7 +1012,28 @@ class TradingEngine:
                 print("----------------------------------------")
                 print("Trade ID :", trade.id)
                 print("Status   :", trade.status)
+                # ----------------------------------------
+                # LOCKACTIVE TRADE
+                # ----------------------------------------
 
+                self.signal_lock.lock(
+                    signal,
+                    reason="ACTIVE",
+                    trade_id=trade.id
+                )
+
+                self.signal_lock.activate(
+                trade.id
+)
+
+                print("----------------------------------------")
+                print("🔒 ACTIVE TRADE LOCKED")
+                print("----------------------------------------")
+                print("Trade ID :", trade.id)
+                print("Asset    :", trade.asset)
+                print("Action   :", trade.action)
+                print("Status   :", trade.status)
+                print("----------------------------------------")
             except Exception as e:
 
                 print("----------------------------------------")
