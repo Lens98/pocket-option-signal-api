@@ -80,39 +80,12 @@ export function startCountdown(getMarketState) {
 
         else if (marketState === "ENTRY") {
 
-            if (remaining <= 3 && remaining > 0) {
+            banner.innerHTML = "🚀 ENTER NOW";
 
-                banner.innerHTML = "🟢 GET READY";
+           action.innerHTML = "🚀 ENTER NOW";
 
-                action.innerHTML =
-                    `ENTRY IN ${remaining}`;
-
-                entryMessage.innerHTML =
-                    `Prepare to enter in ${remaining} second(s).`;
-
-            }
-
-            else if (remaining === 60) {
-
-                banner.innerHTML = "🚀 ENTER NOW";
-
-                action.innerHTML = "🚀 ENTER NOW";
-
-                entryMessage.innerHTML =
-                    "New candle opened. Enter now.";
-
-            }
-
-            else {
-
-                banner.innerHTML = "❌ ENTRY WINDOW MISSED";
-
-                action.innerHTML = "MISSED";
-
-                entryMessage.innerHTML =
-                    "Wait for the next trade setup.";
-
-            }
+          entryMessage.innerHTML =
+        "New candle opened. Enter now.";
 
         }
 
