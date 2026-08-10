@@ -17,7 +17,6 @@ from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
 from app.storage.shared import trade_storage
 from app.services.signal_lock import SignalLock
-from app.services.entry_manager import EntryState
 from app.services.market_quality import MarketQuality
 from app.services.pattern_fingerprint import PatternFingerprint
 from app.storage.shared import trade_state
@@ -98,7 +97,7 @@ class TradingEngine:
         indicator_result=None
     ):
 
-             # ----------------------------------------
+        # ----------------------------------------
         # ACTIVE TRADE LOCK
         # ----------------------------------------
         # Never generate a new signal while an
@@ -107,40 +106,74 @@ class TradingEngine:
         if self.signal_lock.is_trade_locked():
 
             locked = self.signal_lock.current()
-
-            print("----------------------------------------")
-            print("🔒 ACTIVE TRADE LOCKED")
-            print("----------------------------------------")
-
-            print("Trade ID :", self.signal_lock.trade_id)
-            print("Asset    :", locked.asset)
-            print("Bias     :", locked.bias)
-            print("Action   :", locked.action)
-            print("State    :", locked.market_state)
-
-            open_trades = self.trade_storage.open_trades()
-
-            active_trade = None
-
-            for trade in open_trades:
-
-                if trade.id == self.signal_lock.trade_id:
-
-                    active_trade = trade
-                    break
-
             # ----------------------------------------
-            # Trade still active
+            # ACTIVE TRADE MUST MATCH CURRENT ASSET
             # ----------------------------------------
 
-            if active_trade is not None:
+            if (
+                locked is not None
+                and locked.asset != market.asset
+            ):
 
-                active_signal = locked.model_copy(
-                    deep=True
+                print("----------------------------------------")
+                print("⚠️ ACTIVE TRADE BELONGS TO ANOTHER ASSET")
+                print("----------------------------------------")
+                print("Locked Asset :", locked.asset)
+                print("Current Asset:", market.asset)
+                print("🚫 NEW TRADE BLOCKED")
+                print("----------------------------------------")
+
+                return Signal(
+                    asset=market.asset,
+                    timeframe=market.timeframe,
+                    action="WAIT",
+                    confidence=0,
+                    probability=0,
+                    trend="SIDEWAYS",
+                    expiration="Next Candle",
+                    entry_price=market.candles[-1].close,
+                    timestamp=datetime.now(),
+                    risk="HIGH",
+                    reasons=[
+                        "Another asset has an active trade"
+                    ]
                 )
 
-                active_signal.market_state = (
-                    EntryState.ACTIVE.value
+            else:
+
+                print("----------------------------------------")
+                print("🔒 ACTIVE TRADE LOCKED")
+                print("----------------------------------------")
+
+                print("Trade ID :", self.signal_lock.trade_id)
+                print("Asset    :", locked.asset)
+                print("Bias     :", locked.bias)
+                print("Action   :", locked.action)
+                print("State    :", locked.market_state)
+
+                open_trades = self.trade_storage.open_trades()
+
+                active_trade = None
+
+                for trade in open_trades:
+
+                    if trade.id == self.signal_lock.trade_id:
+
+                        active_trade = trade
+                        break
+
+                # ----------------------------------------
+                # Trade still active
+                # ----------------------------------------
+
+                if active_trade is not None:
+
+                   active_signal = locked.model_copy(
+                        deep=True
+                )
+
+                   active_signal.market_state = (
+                        EntryState.ACTIVE.value
                 )
 
                 active_signal.trade_status = "ACTIVE"
@@ -715,6 +748,7 @@ class TradingEngine:
         if self.signal_lock.is_locked():
   
           locked = self.signal_lock.current()
+
 
           print("----------------------------------------")
           print("🔒 USING LOCKED SIGNAL")
