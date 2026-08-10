@@ -8,25 +8,76 @@ class PatternFingerprint:
         # Direction
         # -----------------------------
 
-        pattern.append(signal.action or "UNKNOWN_ACTION")
+        direction = getattr(signal, "bias", None)
+
+        if direction not in ["CALL", "PUT"]:
+            direction = getattr(signal, "action", None)
+
+        pattern.append(
+            direction or "UNKNOWN_DIRECTION"
+        )
 
         # -----------------------------
         # Trend
         # -----------------------------
 
-        pattern.append(signal.trend or "UNKNOWN_TREND")
+        pattern.append(
+            signal.trend or "UNKNOWN_TREND"
+        )
 
         # -----------------------------
         # Regime
         # -----------------------------
 
-        pattern.append(signal.regime or "UNKNOWN_REGIME")
+        pattern.append(
+            signal.regime or "UNKNOWN_REGIME"
+        )
 
         # -----------------------------
         # Session
         # -----------------------------
 
-        pattern.append(signal.session or "UNKNOWN_SESSION")
+        pattern.append(
+            signal.session or "UNKNOWN_SESSION"
+        )
+
+        # -----------------------------
+        # Candle Pattern
+        # -----------------------------
+
+        candle_pattern = getattr(
+            signal,
+            "candle_pattern",
+            None
+        )
+
+        if candle_pattern:
+
+            pattern.append(
+                f"CANDLE_PATTERN:{candle_pattern}"
+            )
+
+        else:
+
+            pattern.append(
+                "CANDLE_PATTERN:UNKNOWN"
+            )
+
+        # -----------------------------
+        # Candle Strength
+        # -----------------------------
+
+        candle_strength = getattr(
+            signal,
+            "candle_strength",
+            None
+        )
+
+        if candle_strength is not None:
+
+            pattern.append(
+                f"CANDLE_STRENGTH:{int(candle_strength)}"
+            )
 
         # -----------------------------
         # Confirmations
