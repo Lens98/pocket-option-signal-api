@@ -3,6 +3,8 @@ from enum import Enum
 from app.models.signal import Signal
 from app.services.decision_explainer import DecisionExplainer
 from app.services.decision_history import DecisionHistory
+from app.services.pattern_learning import PatternLearning
+
 
 class EntryState(Enum):
 
@@ -22,6 +24,7 @@ class EntryManager:
 
         self.explainer = DecisionExplainer()
         self.history = DecisionHistory()
+        self.pattern_learning = PatternLearning()
 
     def determine(self, signal: Signal) -> EntryState:
 
@@ -49,8 +52,6 @@ class EntryManager:
         )
 
         self.history.print(5)
-
-        # Continue with the rest of your code...
 
         # ----------------------------------------
         # No valid market direction
@@ -87,6 +88,7 @@ class EntryManager:
 
             print("🟡 Probability too low")
             return EntryState.ANALYZING
+
         # ----------------------------------------
         # Agreement Score
         # ----------------------------------------
@@ -98,6 +100,7 @@ class EntryManager:
             print("🟡 Agreement too weak")
 
             return EntryState.CONFIRMING
+
         # ----------------------------------------
         # Confirmation Count
         # ----------------------------------------
@@ -107,42 +110,120 @@ class EntryManager:
             signal.confirmation_count,
             "/",
             signal.confirmation_total
-         )
+        )
 
         if signal.confirmation_count < 4:
 
-          print("🟡 Not enough confirmations")
+            print("🟡 Not enough confirmations")
 
-          return EntryState.CONFIRMING
-    
+            return EntryState.CONFIRMING
+
         # ----------------------------------------
         # Waiting for Pullback
         # ----------------------------------------
 
         if not signal.pullback_confirmed:
+
             print("========================================")
             print("ENTRY CHECK")
             print("========================================")
-            print("Bias      :", signal.bias)
-            print("Risk      :", signal.risk)
-            print("Confidence:", signal.confidence)
-            print("Probability:", signal.probability)
-            print("Agreement :", signal.agreement_score)
+            print("Bias        :", signal.bias)
+            print("Risk        :", signal.risk)
+            print("Confidence  :", signal.confidence)
+            print("Probability :", signal.probability)
+            print("Agreement   :", signal.agreement_score)
             print(
-                 "Confirmations:",
-                   f"{signal.confirmation_count}/{signal.confirmation_total}"
-)
-            print("Pullback :", signal.pullback_confirmed)
+                "Confirmations:",
+                f"{signal.confirmation_count}/"
+                f"{signal.confirmation_total}"
+            )
+            print("Pullback    :", signal.pullback_confirmed)
             print("========================================")
 
             print("🟡 Waiting for Pullback")
+
             return EntryState.READY
 
         # ----------------------------------------
-        # Enough confirmations
-        # Wait for candle close
+        # Pattern Learning Check
         # ----------------------------------------
 
-        print("✅ Waiting for Candle Close")
+        print("========================================")
+        print("🧠 PATTERN LEARNING CHECK")
+        print("========================================")
+
+        pattern_stats = self.pattern_learning.statistics(signal)
+
+        pattern = pattern_stats["pattern"]
+        wins = pattern_stats["wins"]
+        losses = pattern_stats["losses"]
+        total = pattern_stats["total"]
+        win_rate = pattern_stats["win_rate"]
+
+        print("Pattern   :", pattern)
+        print("Wins      :", wins)
+        print("Losses    :", losses)
+        print("Total     :", total)
+        print("Win Rate  :", round(win_rate, 2), "%")
+        print("========================================")
+
+        # ----------------------------------------
+        # Insufficient Pattern History
+        # ----------------------------------------
+
+        if total < 10:
+
+            print("🟡 Pattern history insufficient")
+            print("Using normal strategy.")
+
+        # ----------------------------------------
+        # Good Historical Pattern
+        # ----------------------------------------
+
+        elif win_rate >= 60:
+
+            print("🟢 GOOD PATTERN")
+            print(
+                f"Historical win rate: {win_rate:.2f}%"
+            )
+
+        # ----------------------------------------
+        # Bad Historical Pattern
+        # ----------------------------------------
+
+        elif win_rate < 45:
+
+            print("🔴 BAD PATTERN")
+            print(
+                f"Historical win rate: {win_rate:.2f}%"
+            )
+
+            print("❌ Trade blocked by pattern learning")
+
+            return EntryState.CONFIRMING
+
+        # ----------------------------------------
+        # Neutral Historical Pattern
+        # ----------------------------------------
+
+        else:
+
+            print("🟡 NEUTRAL PATTERN")
+            print(
+                f"Historical win rate: {win_rate:.2f}%"
+            )
+
+        # ----------------------------------------
+        # Enough Confirmations
+        # Wait for Candle Close
+        # ----------------------------------------
+
+        print("========================================")
+        print("✅ WAITING FOR CANDLE CLOSE")
+        print("========================================")
+        print("Bias       :", signal.bias)
+        print("Pattern    :", pattern)
+        print("Win Rate   :", round(win_rate, 2), "%")
+        print("========================================")
 
         return EntryState.WAITING_FOR_CANDLE_CLOSE
