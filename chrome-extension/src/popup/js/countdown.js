@@ -1,5 +1,9 @@
 let countdownInterval = null;
 
+// ========================================
+// Stop Countdown
+// ========================================
+
 export function stopCountdown() {
 
     if (countdownInterval) {
@@ -9,8 +13,11 @@ export function stopCountdown() {
         countdownInterval = null;
 
     }
-
 }
+
+// ========================================
+// Start Dashboard State Display
+// ========================================
 
 export function startCountdown(getMarketState) {
 
@@ -20,7 +27,7 @@ export function startCountdown(getMarketState) {
         document.getElementById("countdown");
 
     const banner =
-    document.getElementById("countdownLabel");
+        document.getElementById("countdownLabel");
 
     const action =
         document.getElementById("action");
@@ -30,92 +37,190 @@ export function startCountdown(getMarketState) {
 
     function update() {
 
-        const now = new Date();
-
-        const remaining =
-            60 - now.getSeconds();
-
-        timer.innerHTML =
-            `00:${String(remaining).padStart(2, "0")}`;
-
         const marketState =
             getMarketState();
 
-        // =====================================
-        // Countdown State Machine
-        // =====================================
+        // ========================================
+        // WAITING
+        // ========================================
 
         if (marketState === "WAITING") {
 
-            banner.innerHTML = "🟡 WAITING FOR SETUP";
+            timer.innerHTML = "--:--";
 
-            action.innerHTML = "WAIT";
+            banner.innerHTML =
+                "🟡 WAITING FOR SETUP";
+
+            action.innerHTML =
+                "WAIT";
 
             entryMessage.innerHTML =
                 "Waiting for a valid trade setup.";
 
+            return;
         }
 
-        else if (marketState === "READY") {
+        // ========================================
+        // ANALYZING
+        // ========================================
 
-            banner.innerHTML = "🟢 PREPARING ENTRY";
+        if (marketState === "ANALYZING") {
 
-            action.innerHTML = "READY";
+            timer.innerHTML = "--:--";
+
+            banner.innerHTML =
+                "🔍 ANALYZING";
+
+            action.innerHTML =
+                "WAIT";
 
             entryMessage.innerHTML =
-                `Wait ${remaining} seconds for the candle to close.`;
+                "Analyzing the current market setup.";
 
+            return;
         }
 
-        else if (marketState === "WAITING_FOR_CANDLE_CLOSE") {
+        // ========================================
+        // CONFIRMING
+        // ========================================
 
-            banner.innerHTML = "⏳ WAITING FOR CANDLE CLOSE";
+        if (marketState === "CONFIRMING") {
 
-            action.innerHTML = "WAIT";
+            timer.innerHTML = "--:--";
+
+            banner.innerHTML =
+                "🟡 CONFIRMING";
+
+            action.innerHTML =
+                "WAIT";
 
             entryMessage.innerHTML =
-                `Current candle ends in ${remaining} sec.`;
+                "Waiting for stronger confirmation.";
 
+            return;
         }
 
-        else if (marketState === "ENTRY") {
+        // ========================================
+        // READY
+        // ========================================
 
-            banner.innerHTML = "🚀 ENTER NOW";
+        if (marketState === "READY") {
 
-           action.innerHTML = "🚀 ENTER NOW";
+            timer.innerHTML = "--:--";
 
-          entryMessage.innerHTML =
-        "New candle opened. Enter now.";
+            banner.innerHTML =
+                "🟢 PREPARING ENTRY";
 
+            action.innerHTML =
+                "READY";
+
+            entryMessage.innerHTML =
+                "Setup detected. Waiting for confirmation.";
+
+            return;
         }
 
-        else if (marketState === "ACTIVE") {
+        // ========================================
+        // WAITING FOR CANDLE CLOSE
+        // ========================================
 
-            banner.innerHTML = "🟢 TRADE ACTIVE";
+        if (
+            marketState ===
+            "WAITING_FOR_CANDLE_CLOSE"
+        ) {
 
-            action.innerHTML = "ACTIVE";
+            timer.innerHTML = "--:--";
+
+            banner.innerHTML =
+                "⏳ WAITING FOR CANDLE CLOSE";
+
+            action.innerHTML =
+                "WAIT";
+
+            entryMessage.innerHTML =
+                "Analyzing the current candle. Final signal will be confirmed when it closes.";
+
+            return;
+        }
+
+        // ========================================
+        // ENTRY
+        // ========================================
+
+        if (marketState === "ENTRY") {
+
+            timer.innerHTML = "NOW";
+
+            banner.innerHTML =
+                "🚀 ENTER NOW";
+
+            action.innerHTML =
+                "🚀 ENTER NOW";
+
+            entryMessage.innerHTML =
+                "Final signal confirmed. Enter immediately on the new candle.";
+
+            return;
+        }
+
+        // ========================================
+        // ACTIVE
+        // ========================================
+
+        if (marketState === "ACTIVE") {
+
+            timer.innerHTML = "--:--";
+
+            banner.innerHTML =
+                "🟢 TRADE ACTIVE";
+
+            action.innerHTML =
+                "ACTIVE";
 
             entryMessage.innerHTML =
                 "Trade is currently running.";
 
+            return;
         }
 
-        else if (marketState === "RESULT") {
+        // ========================================
+        // RESULT
+        // ========================================
 
-            banner.innerHTML = "🏁 TRADE COMPLETE";
+        if (marketState === "RESULT") {
 
-            action.innerHTML = "RESULT";
+            timer.innerHTML = "--:--";
+
+            banner.innerHTML =
+                "🏁 TRADE COMPLETE";
+
+            action.innerHTML =
+                "RESULT";
 
             entryMessage.innerHTML =
-                "Waiting for the next setup.";
+                "Trade completed. Waiting for the next setup.";
 
+            return;
         }
 
+        // ========================================
+        // UNKNOWN STATE
+        // ========================================
+
+        timer.innerHTML = "--:--";
+
+        banner.innerHTML =
+            "⚪ WAITING";
+
+        action.innerHTML =
+            "WAIT";
+
+        entryMessage.innerHTML =
+            "Waiting for the next valid setup.";
     }
 
     update();
 
     countdownInterval =
         setInterval(update, 1000);
-
 }

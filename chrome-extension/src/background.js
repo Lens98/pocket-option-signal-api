@@ -1,9 +1,10 @@
 // ========================================
 // Pocket Option AI PRO
-// Background Engine v2
+// Background Engine
 // ========================================
 
-const API_URL = "https://pocket-option-signal-api-production.up.railway.app";
+const API_URL =
+    "https://pocket-option-signal-api-production.up.railway.app";
 
 const state = {
 
@@ -18,17 +19,12 @@ const state = {
     history: [],
 
     stats: {
-
         CALL: 0,
-
         PUT: 0,
-
         WAIT: 0
-
     },
 
     lastUpdate: null
-
 };
 
 // ========================================
@@ -50,7 +46,6 @@ async function restoreState() {
         console.log("✅ Session restored.");
 
     }
-
 }
 
 // ========================================
@@ -60,11 +55,26 @@ async function restoreState() {
 async function saveState() {
 
     await chrome.storage.local.set({
-
         pocketState: state
-
     });
+}
 
+// ========================================
+// Create Unique Signal Key
+// ========================================
+
+function getSignalKey(signal) {
+
+    if (!signal) {
+        return "";
+    }
+
+    return [
+        signal.asset || "",
+        signal.timestamp || "",
+        signal.entry_price || "",
+        signal.action || ""
+    ].join("|");
 }
 
 // ========================================
@@ -75,79 +85,111 @@ async function refresh() {
 
     try {
 
-        console.log("Fetching /signal...");
+        // ----------------------------------------
+        // Get Signal
+        // ----------------------------------------
 
         const signalResponse =
             await fetch(`${API_URL}/signal`);
 
-        console.log("✅ /signal OK");
+        if (!signalResponse.ok) {
+            throw new Error(
+                `/signal returned ${signalResponse.status}`
+            );
+        }
 
-        state.signal =
+        const signal =
             await signalResponse.json();
 
-        console.log("Fetching /trade/state...");
+        state.signal = signal;
+
+        // ----------------------------------------
+        // Get Trade State
+        // ----------------------------------------
 
         const tradeResponse =
             await fetch(`${API_URL}/trade/state`);
 
-        console.log("✅ /trade/state OK");
+        if (!tradeResponse.ok) {
+            throw new Error(
+                `/trade/state returned ${tradeResponse.status}`
+            );
+        }
 
         const trade =
             await tradeResponse.json();
 
         state.tradeState =
-            trade.state;
-        // ========================================
-       // Load Trade History
-      // ========================================
+            trade.state || "WAITING";
 
-       const historyResponse =
-           await fetch(`${API_URL}/trade/all`);
+        // ----------------------------------------
+        // Get Trade History
+        // ----------------------------------------
 
-state.history =
-    await historyResponse.json();
+        const historyResponse =
+            await fetch(`${API_URL}/trade/all`);
+
+        if (!historyResponse.ok) {
+            throw new Error(
+                `/trade/all returned ${historyResponse.status}`
+            );
+        }
+
+        state.history =
+            await historyResponse.json();
+
+        // ----------------------------------------
+        // Connection Status
+        // ----------------------------------------
 
         state.connected = true;
-        console.log("✅ Connected to API");
-        console.log(state);
 
         state.lastUpdate =
             new Date().toISOString();
 
+        // ----------------------------------------
+        // Count Signal ONLY ONCE
+        // ----------------------------------------
+
+        const signalKey =
+            getSignalKey(signal);
+
         if (
-            state.signal &&
-            !state.signal.status
+            signalKey &&
+            signalKey !== state.lastSignalKey
         ) {
-           
+
             if (
-                state.stats[
-                state.signal.action
-                ] !== undefined
+                signal &&
+                !signal.status &&
+                state.stats[signal.action] !== undefined
             ) {
 
-                state.stats[
-                    state.signal.action
-                ]++;
+                state.stats[signal.action]++;
 
             }
 
+            state.lastSignalKey =
+                signalKey;
         }
 
         await saveState();
 
     }
 
-    
     catch (err) {
 
         state.connected = false;
 
+        state.lastUpdate =
+            new Date().toISOString();
+
         await saveState();
 
-        console.error("❌ Background refresh failed");
-        console.error("Error message:", err.message);
-        console.error("API URL:", API_URL);
-        console.error(err);
+        console.error(
+            "❌ Background refresh failed:",
+            err.message
+        );
 
     }
 }
@@ -162,25 +204,27 @@ async function initialize() {
 
     await refresh();
 
-    setInterval(refresh,1000);
-
+    setInterval(
+        refresh,
+        1000
+    );
 }
 
 initialize();
+
 // ========================================
 // Popup Communication
 // ========================================
 
 chrome.runtime.onMessage.addListener(
+    (message, sender, sendResponse) => {
 
-(message,sender,sendResponse)=>{
+        if (message.type === "GET_STATE") {
 
-    if(message.type==="GET_STATE"){
+            sendResponse(state);
 
-        sendResponse(state);
+        }
 
+        return true;
     }
-
-    return true;
-
-});
+);
