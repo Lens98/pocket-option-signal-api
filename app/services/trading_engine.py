@@ -712,102 +712,56 @@ class TradingEngine:
 
                 signal = locked
 
+                print("Locked Bias   :", signal.bias)
                 print("Locked Action :", signal.action)
                 print("Confidence    :", signal.confidence)
                 print("Probability   :", signal.probability)
                 print("Candle Pattern:", signal.candle_pattern)
                 print("Candle Strength:", signal.candle_strength)
 
-                # ----------------------------------------
-                # FINAL CANDLE-CLOSE CONFIRMATION
-                # ----------------------------------------
+                print("----------------------------------------")
+                print("🎯 CANDLE CLOSED - FINAL SIGNAL")
+                print("----------------------------------------")
 
-                if signal.action in ["CALL", "PUT"]:
+                candidate_action = signal.bias
+
+                print("Candidate :", candidate_action)
+                print("Pattern   :", signal.candle_pattern)
+                print("Strength  :", signal.candle_strength)
+                print("Confidence:", signal.confidence)
+                print("Agreement :", signal.agreement_score)
+                print("Confirmations:",
+                    f"{signal.confirmation_count}/{signal.confirmation_total}")
+
+                if candidate_action in ["CALL", "PUT"]:
+
+                    signal.action = candidate_action
+                    signal.market_state = EntryState.ENTRY.value
+                    signal.can_enter = True
+
+                    state = EntryState.ENTRY
 
                     print("----------------------------------------")
-                    print("OPENAI FINAL REVIEW")
+                    print("✅ FINAL CONFIRMATION PASSED")
+                    print("----------------------------------------")
+                    print("FINAL ACTION :", signal.action)
+                    print("🚀 ENTER NEXT CANDLE")
                     print("----------------------------------------")
 
-                    review = self.openai.review(signal)
-
-                    decision = str(
-                        review.get("decision", "WAIT")
-                    ).upper()
-
-                    ai_confidence = review.get(
-                        "confidence", 0
-                    )
-
-                    ai_reason = review.get(
-                       "reason", ""
-                    )
-
-                    print("AI Decision   :", decision)
-                    print("AI Confidence :", ai_confidence)
-                    print("AI Reason     :", ai_reason)
-
-                    # ----------------------------------------
-                    # Normalize AI decision
-                    # ----------------------------------------
-
-                    if decision == "BUY":
-                       ai_action = "CALL"
-
-                    elif decision == "SELL":
-                        ai_action = "PUT"
-
-                    elif decision in ["CALL", "PUT"]:
-                        ai_action = decision
-
-                    else:
-                        ai_action = "WAIT"
-
-                    # ----------------------------------------
-                    # FINAL AGREEMENT
-                    # ----------------------------------------
-
-                    if ai_action == signal.action:
-
-                       print("----------------------------------------")
-                       print("✅ FINAL CONFIRMATION PASSED")
-                       print("----------------------------------------")
-
-                       print(
-                            "Strategy :", signal.action
-                       )
-                       print(
-                           "AI       :", ai_action
-                        )
-
-                       signal.action = ai_action
-                       signal.market_state = EntryState.ENTRY.value
-
-                       state = EntryState.ENTRY
-
-                    else:
-
-                        print("----------------------------------------")
-                        print("❌ FINAL CONFIRMATION FAILED")
-                        print("----------------------------------------")
-
-                        print(
-                             "Strategy :", signal.action
-                        )
-
-                        print(
-                            "AI       :", ai_action
-                        )
-
-                        signal.action = "WAIT"
-                        signal.can_enter = False
-                        signal.market_state = EntryState.WAITING.value
-
-                        signal.reasons.append(
-                            "Final AI confirmation did not agree"
-                        )
-
-                        state = EntryState.ANALYZING
                 else:
+
+                       signal.action = "WAIT"
+                       signal.can_enter = False
+                       signal.market_state = EntryState.WAITING.value
+
+                       state = EntryState.ANALYZING
+
+                       print("----------------------------------------")
+                       print("❌ FINAL CONFIRMATION FAILED")
+                       print("----------------------------------------")           
+
+                    
+            else:
 
                     signal.action = "WAIT"
                     signal.can_enter = False

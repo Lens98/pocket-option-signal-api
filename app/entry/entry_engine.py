@@ -17,7 +17,6 @@ class EntryEngine:
         print("----------------------------------------")
 
         # Default values
-
         signal.can_enter = False
         signal.action = "WAIT"
         signal.trade_status = state.value
@@ -95,9 +94,21 @@ class EntryEngine:
                 f"ENTER {signal.bias} NOW"
             )
 
-            signal.entry_window = 5
+            # New candle = immediate entry.
+            # No 5-second countdown.
+            signal.entry_window = 1
+            signal.countdown = 0
 
+            print("----------------------------------------")
             print("✅ ENTRY CONFIRMED")
+            print("----------------------------------------")
+            print("ACTION      :", signal.action)
+            print("CAN ENTER   :", signal.can_enter)
+            print("ENTRY WINDOW:", signal.entry_window)
+            print("COUNTDOWN   :", signal.countdown)
+            print("🚀 ENTER NOW")
+            print("----------------------------------------")
+
             return True
 
         # ==========================================
@@ -137,7 +148,7 @@ class EntryEngine:
             return False
 
         # ==========================================
-        # Unknown State
+        # UNKNOWN STATE
         # ==========================================
 
         signal.reason = "UNKNOWN_STATE"
