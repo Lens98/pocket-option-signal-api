@@ -772,6 +772,7 @@ class TradingEngine:
                     signal.can_enter = True
 
                     state = EntryState.ENTRY
+                    signal.can_enter = True
 
                     print("----------------------------------------")
                     print("✅ FINAL CONFIRMATION PASSED")
