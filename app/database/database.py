@@ -27,6 +27,10 @@ class Database:
 
         cursor = self.connection.cursor()
 
+        # ----------------------------------------
+        # Trades table - EXISTING
+        # ----------------------------------------
+
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS trades (
@@ -65,6 +69,48 @@ class Database:
                 payout REAL,
 
                 reasons TEXT
+
+            )
+            """
+        )
+
+        # ----------------------------------------
+        # Users table - NEW
+        # ----------------------------------------
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+
+                id TEXT PRIMARY KEY,
+
+                email TEXT UNIQUE NOT NULL,
+
+                password_hash TEXT NOT NULL,
+
+                created_at TEXT NOT NULL
+
+            )
+            """
+        )
+
+        # ----------------------------------------
+        # Sessions table - NEW
+        # ----------------------------------------
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sessions (
+
+                token TEXT PRIMARY KEY,
+
+                user_id TEXT NOT NULL,
+
+                created_at TEXT NOT NULL,
+
+                expires_at TEXT NOT NULL,
+
+                FOREIGN KEY (user_id) REFERENCES users(id)
 
             )
             """

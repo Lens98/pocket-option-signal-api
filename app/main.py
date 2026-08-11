@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.trade import router as trade_router
 from app.api.market import router as market_router
-
+from app.api.auth import router as auth_router
 from app.services.signal_service import generate_signal
 from app.services.trade_monitor import TradeMonitor
 
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(market_router)
 app.include_router(trade_router)
+app.include_router(auth_router)
 
 
 @app.on_event("startup")
