@@ -117,56 +117,6 @@ class TradingEngine:
             print("Action   :", locked.action)
             print("State    :", locked.market_state)
 
-            open_trades = self.trade_storage.open_trades()
-
-            active_trade = None
-
-            for trade in open_trades:
-
-                    if trade.id == self.signal_lock.trade_id:
-
-                        active_trade = trade
-                        break
-
-                # ----------------------------------------
-                # Trade still active
-                # ----------------------------------------
-
-            if active_trade is not None:
-
-                   active_signal = locked.model_copy(
-                        deep=True
-                )
-
-                   active_signal.market_state = (
-                        EntryState.ACTIVE.value
-                )
-
-            active_signal.trade_status = "ACTIVE"
-            active_signal.can_enter = False
-            active_signal.action = locked.bias
-            active_signal.reason = "TRADE_ACTIVE"
-
-            active_signal.instruction = (
-                f"{locked.bias} trade is currently active."
-                )
-
-            print("🔵 TRADE STILL ACTIVE")
-            print("🚫 NEW SIGNAL BLOCKED")
-            print("Locked Bias :", locked.bias)
-            print("----------------------------------------")
-
-            return active_signal
-
-        # ----------------------------------------
-        # Trade finished
-        # ----------------------------------------
-
-        print("----------------------------------------")
-        print("🏁 ACTIVE TRADE FINISHED")
-        print("----------------------------------------")
-
-        self.signal_lock.unlock()
 
         print()
         print("========================================")
