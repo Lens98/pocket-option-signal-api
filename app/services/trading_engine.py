@@ -106,56 +106,22 @@ class TradingEngine:
         if self.signal_lock.is_trade_locked():
 
             locked = self.signal_lock.current()
-            # ----------------------------------------
-            # ACTIVE TRADE MUST MATCH CURRENT ASSET
-            # ----------------------------------------
+           
+            print("----------------------------------------")
+            print("🔒 ACTIVE TRADE LOCKED")
+            print("----------------------------------------")
 
-            if (
-                locked is not None
-                and locked.asset != market.asset
-            ):
+            print("Trade ID :", self.signal_lock.trade_id)
+            print("Asset    :", locked.asset)
+            print("Bias     :", locked.bias)
+            print("Action   :", locked.action)
+            print("State    :", locked.market_state)
 
-                print("----------------------------------------")
-                print("⚠️ ACTIVE TRADE BELONGS TO ANOTHER ASSET")
-                print("----------------------------------------")
-                print("Locked Asset :", locked.asset)
-                print("Current Asset:", market.asset)
-                print("🚫 NEW TRADE BLOCKED")
-                print("----------------------------------------")
+            open_trades = self.trade_storage.open_trades()
 
-                return Signal(
-                    asset=market.asset,
-                    timeframe=market.timeframe,
-                    action="WAIT",
-                    confidence=0,
-                    probability=0,
-                    trend="SIDEWAYS",
-                    expiration="Next Candle",
-                    entry_price=market.candles[-1].close,
-                    timestamp=datetime.now(),
-                    risk="HIGH",
-                    reasons=[
-                        "Another asset has an active trade"
-                    ]
-                )
+            active_trade = None
 
-            else:
-
-                print("----------------------------------------")
-                print("🔒 ACTIVE TRADE LOCKED")
-                print("----------------------------------------")
-
-                print("Trade ID :", self.signal_lock.trade_id)
-                print("Asset    :", locked.asset)
-                print("Bias     :", locked.bias)
-                print("Action   :", locked.action)
-                print("State    :", locked.market_state)
-
-                open_trades = self.trade_storage.open_trades()
-
-                active_trade = None
-
-                for trade in open_trades:
+            for trade in open_trades:
 
                     if trade.id == self.signal_lock.trade_id:
 
@@ -166,7 +132,7 @@ class TradingEngine:
                 # Trade still active
                 # ----------------------------------------
 
-                if active_trade is not None:
+            if active_trade is not None:
 
                    active_signal = locked.model_copy(
                         deep=True
@@ -176,31 +142,31 @@ class TradingEngine:
                         EntryState.ACTIVE.value
                 )
 
-                active_signal.trade_status = "ACTIVE"
-                active_signal.can_enter = False
-                active_signal.action = locked.bias
-                active_signal.reason = "TRADE_ACTIVE"
+            active_signal.trade_status = "ACTIVE"
+            active_signal.can_enter = False
+            active_signal.action = locked.bias
+            active_signal.reason = "TRADE_ACTIVE"
 
-                active_signal.instruction = (
-                    f"{locked.bias} trade is currently active."
+            active_signal.instruction = (
+                f"{locked.bias} trade is currently active."
                 )
 
-                print("🔵 TRADE STILL ACTIVE")
-                print("🚫 NEW SIGNAL BLOCKED")
-                print("Locked Bias :", locked.bias)
-                print("----------------------------------------")
-
-                return active_signal
-
-            # ----------------------------------------
-            # Trade finished
-            # ----------------------------------------
-
-            print("----------------------------------------")
-            print("🏁 ACTIVE TRADE FINISHED")
+            print("🔵 TRADE STILL ACTIVE")
+            print("🚫 NEW SIGNAL BLOCKED")
+            print("Locked Bias :", locked.bias)
             print("----------------------------------------")
 
-            self.signal_lock.unlock()
+            return active_signal
+
+        # ----------------------------------------
+        # Trade finished
+        # ----------------------------------------
+
+        print("----------------------------------------")
+        print("🏁 ACTIVE TRADE FINISHED")
+        print("----------------------------------------")
+
+        self.signal_lock.unlock()
 
         print()
         print("========================================")
