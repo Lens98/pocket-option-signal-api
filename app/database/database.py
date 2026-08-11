@@ -1,14 +1,18 @@
+import os
 import sqlite3
 from pathlib import Path
-
 
 class Database:
 
     def __init__(self):
 
-        base = Path(__file__).resolve().parent
+        volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
 
-        self.db_path = base / "trades.db"
+        if volume_path:
+            self.db_path = Path(volume_path) / "trades.db"
+        else:
+            base = Path(__file__).resolve().parent
+            self.db_path = base / "trades.db"
 
         self.connection = sqlite3.connect(
             self.db_path,
