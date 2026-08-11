@@ -1,4 +1,6 @@
 from datetime import datetime
+import os
+
 from app.entry.entry_engine import EntryEngine
 from app.models.market import MarketData
 from app.models.signal import Signal
@@ -28,6 +30,12 @@ from app.services.entry_manager import (
     EntryManager,
     EntryState,
 )
+DEBUG_LOGS = os.getenv("DEBUG_LOGS", "false").lower() == "true"
+
+
+def debug_print(*args, **kwargs):
+    if DEBUG_LOGS:
+        print(*args, **kwargs)
 
 class TradingEngine:
 
@@ -118,14 +126,14 @@ class TradingEngine:
             print("State    :", locked.market_state)
 
 
-        print()
-        print("========================================")
-        print("🚀 NEW MARKET UPDATE")
-        print("========================================")
-        print("Asset      :", market.asset)
-        print("Timeframe  :", market.timeframe)
-        print("Candles    :", len(market.candles))
-        print("========================================")
+        debug_print()
+        debug_print("========================================")
+        debug_print("🚀 NEW MARKET UPDATE")
+        debug_print("========================================")
+        debug_print("Asset      :", market.asset)
+        debug_print("Timeframe  :", market.timeframe)
+        debug_print("Candles    :", len(market.candles))
+        debug_print("========================================")
 
         # ----------------------------------------
         # Need enough candles
@@ -883,128 +891,144 @@ class TradingEngine:
             )
 
    
+        # ========================================
+        # TRADE CREATION CHECK
+        # ========================================
+
         if (
-            signal.can_enter
-            and signal.action in ["CALL", "PUT"]
+           signal.can_enter
+           and signal.action in ["CALL", "PUT"]
         ):
 
-            print("========================================")
-            print("TRADE CREATION CHECK")
-            print("========================================")
-            print("can_enter :", signal.can_enter)
-            print("action    :", signal.action)
-            print("state     :", signal.market_state)
-            print("confidence:", signal.confidence)
-            print("========================================")
-           
-            try:
+          print("========================================")
+          print("TRADE CREATION CHECK")
+          print("========================================")
 
-                from uuid import uuid4
+          # ----------------------------------------
+          # HARD OPEN TRADE PROTECTION
+          # ----------------------------------------
 
-                from app.models.trade import Trade
+          open_trades = self.trade_storage.open_trades()
 
-                trade = Trade(
+          if open_trades:
 
-    id=str(uuid4()),
+               existing = open_trades[0]
 
-    asset=signal.asset,
+               print("🛑 TRADE CREATION BLOCKED")
+               print("An OPEN trade already exists.")
+               print("Trade ID :", existing.id)
+               print("Asset    :", existing.asset)
+               print("Action   :", existing.action)
+               print("Status   :", existing.status)
+               print("----------------------------------------")
 
-    timeframe=signal.timeframe,
-
-    confidence=signal.confidence,
-
-    probability=signal.probability,
-
-    agreement_score=signal.agreement_score,
-
-    session=signal.session,
-
-    action=signal.action,
-
-    regime=signal.regime,
-
-    indicator_mode=indicator_result.mode,
-
-    grade=signal.grade,
-
-    risk=signal.risk,
-
-    trend=signal.trend,
-
-    entry_price=signal.entry_price,
-
-    exit_price=None,
-
-    entry_time=datetime.now(),
-
-    exit_time=None,
-
-    expiration_seconds=60,
-
-    status="OPEN",
-
-    result="",
-
-    profit=0.0,
-
-    payout=0.0,
-
-    reasons=signal.reasons,
-
-    pattern=signal.pattern
-
-)
-
-                self.trade_storage.add(trade)
-
-                print("----------------------------------------")
-                print("Trade Logged")
-                print("----------------------------------------")
-                print("Trade ID :", trade.id)
-                print("Status   :", trade.status)
-                # ----------------------------------------
-                # LOCKACTIVE TRADE
-                # ----------------------------------------
-
-                self.signal_lock.lock(
-                    signal,
-                    reason="ACTIVE",
-                    trade_id=trade.id
+               signal.action = "WAIT"
+               signal.can_enter = False
+               signal.market_state = EntryState.WAITING.value
+               signal.reason = "OPEN_TRADE_EXISTS"
+               signal.instruction = (
+                   "A trade is already active. "
+                   "Wait for it to finish."
                 )
 
-                self.signal_lock.activate(
-                trade.id
-)
+          else:
 
-                print("----------------------------------------")
-                print("🔒 ACTIVE TRADE LOCKED")
-                print("----------------------------------------")
-                print("Trade ID :", trade.id)
-                print("Asset    :", trade.asset)
-                print("Action   :", trade.action)
-                print("Status   :", trade.status)
-                print("----------------------------------------")
-            except Exception as e:
+              print("✅ NO OPEN TRADE")
+              print("Creating new trade...")
+              print("----------------------------------------")
+ 
+             # ----------------------------------------
+             # Final Signal Information
+             # ----------------------------------------
 
-                print("----------------------------------------")
-                print("Trade Logger Error")
-                print("----------------------------------------")
-                print(e)
+              signal.asset = market.asset
+              signal.timeframe = market.timeframe
+              signal.entry_price = market.candles[-1].close
+              signal.timestamp = datetime.now()
 
-        # =====================================================
-        # PART 3 STARTS HERE
-        # =====================================================
-        # ----------------------------------------
-        # Final Signal Information
-        # ----------------------------------------
+              if not signal.expiration:
+                  signal.expiration = "Next Candle"
 
-        signal.asset = market.asset
-        signal.timeframe = market.timeframe
-        signal.entry_price = market.candles[-1].close
-        signal.timestamp = datetime.now()
+              # ----------------------------------------
+              # Create Trade
+              # ----------------------------------------
 
-        if not signal.expiration:
-            signal.expiration = "Next Candle"
+              try:
+
+                 from uuid import uuid4
+                 from app.models.trade import Trade
+ 
+                 trade = Trade(
+                     id=str(uuid4()),
+                     asset=signal.asset,
+                     timeframe=signal.timeframe,
+                     confidence=signal.confidence,
+                     probability=signal.probability,
+                     agreement_score=signal.agreement_score,
+                     session=signal.session,
+                     action=signal.action,
+                     regime=signal.regime,
+                     indicator_mode=indicator_result.mode,
+                     grade=signal.grade,
+                     risk=signal.risk,
+                     trend=signal.trend,
+                     entry_price=signal.entry_price,
+                     exit_price=None,
+                     entry_time=datetime.now(),
+                     exit_time=None,
+                     expiration_seconds=60,
+                     status="OPEN",
+                     result="",
+                     profit=0.0,
+                     payout=0.0,
+                     reasons=signal.reasons,
+                     pattern=signal.pattern
+                )
+
+                 self.trade_storage.add(trade)
+
+                 print("----------------------------------------")
+                 print("🚀 TRADE CREATED")
+                 print("----------------------------------------")
+                 print("Trade ID :", trade.id)
+                 print("Asset    :", trade.asset)
+                 print("Action   :", trade.action)
+                 print("Entry    :", trade.entry_price)
+                 print("Expiration: 60 seconds")
+                 print("Status   :", trade.status)
+                 print("----------------------------------------")
+
+                 # ----------------------------------------
+                 # Lock Active Trade
+                 # ----------------------------------------
+
+                 self.signal_lock.lock(
+                      signal,
+                      reason="ACTIVE",
+                      trade_id=trade.id
+                )
+
+                 self.signal_lock.activate(
+                     trade.id
+                )
+
+                 print("----------------------------------------")
+                 print("🔒 ACTIVE TRADE LOCKED")
+                 print("----------------------------------------")
+                 print("Trade ID :", trade.id)
+                 print("Asset    :", trade.asset)
+                 print("Action   :", trade.action)
+                 print("Status   :", trade.status)
+                 print("----------------------------------------")
+
+              except Exception as e:
+
+                 print("----------------------------------------")
+                 print("Trade Logger Error")
+                 print("----------------------------------------")
+                 print(e)
+                 print("----------------------------------------")
+        
 
         # ----------------------------------------
         # Final Console Output
