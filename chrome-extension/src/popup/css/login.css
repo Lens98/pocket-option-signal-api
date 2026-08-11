@@ -1,0 +1,361 @@
+#authScreen {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 999999;
+
+    width: 100%;
+
+    min-height: 100vh;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #18243d 0%,
+            #090d18 45%,
+            #05070c 100%
+        );
+
+    color: #ffffff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+}
+
+
+.auth-container {
+
+    width: 340px;
+
+    max-width: 90%;
+
+    padding: 32px 28px;
+
+    text-align: center;
+}
+
+
+.auth-logo {
+
+    width: 64px;
+
+    height: 64px;
+
+    margin: 0 auto 16px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #7c3aed
+        );
+
+    font-size: 30px;
+
+    box-shadow:
+        0 10px 35px
+        rgba(59, 130, 246, 0.30);
+}
+
+
+.auth-title {
+
+    margin: 0;
+
+    font-size: 24px;
+
+    font-weight: 700;
+}
+
+
+.auth-subtitle {
+
+    margin: 7px 0 28px;
+
+    color: #8994aa;
+
+    font-size: 13px;
+}
+
+
+.auth-view h2 {
+
+    margin: 0 0 8px;
+
+    font-size: 20px;
+}
+
+
+.auth-description {
+
+    margin: 0 0 22px;
+
+    color: #8d97aa;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+.auth-view {
+
+    text-align: left;
+}
+
+
+.auth-view label {
+
+    display: block;
+
+    margin:
+        14px 0 7px;
+
+    color: #c8d0df;
+
+    font-size: 12px;
+
+    font-weight: 600;
+}
+
+
+.auth-view input {
+
+    box-sizing: border-box;
+
+    width: 100%;
+
+    height: 44px;
+
+    padding: 0 13px;
+
+    border: 1px solid #273249;
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background: #101726;
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+
+.auth-view input:focus {
+
+    border-color: #4f8cff;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(79, 140, 255, 0.12);
+}
+
+
+.auth-view input::placeholder {
+
+    color: #5e697d;
+}
+
+
+.auth-button {
+
+    width: 100%;
+
+    height: 46px;
+
+    margin-top: 22px;
+
+    border: none;
+
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #6d4aff
+        );
+
+    color: #ffffff;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.6px;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s,
+        opacity 0.15s;
+}
+
+
+.auth-button:hover {
+
+    transform: translateY(-1px);
+}
+
+
+.auth-button:disabled {
+
+    opacity: 0.55;
+
+    cursor: wait;
+
+    transform: none;
+}
+
+
+.auth-link {
+
+    width: 100%;
+
+    margin-top: 18px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #70a1ff;
+
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+
+.auth-link:hover {
+
+    text-decoration: underline;
+}
+
+
+.auth-message {
+
+    min-height: 18px;
+
+    margin-top: 12px;
+
+    font-size: 12px;
+
+    text-align: center;
+}
+
+
+.auth-message.error {
+
+    color: #ff6b7a;
+}
+
+
+.auth-message.success {
+
+    color: #43d69b;
+}
+
+
+.hidden {
+
+    display: none !important;
+}
+/* ==========================================
+   ACCOUNT FOOTER
+   ========================================== */
+
+.account-footer-item {
+
+    min-width: 150px;
+}
+
+
+.account-email {
+
+    display: block;
+
+    max-width: 170px;
+
+    margin-top: 3px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    color: #8ea0bd;
+
+    font-size: 11px;
+}
+
+
+.logout-button {
+
+    margin-top: 6px;
+
+    padding: 5px 10px;
+
+    border: 1px solid #33415f;
+
+    border-radius: 6px;
+
+    background: #111a2a;
+
+    color: #8fb4ff;
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.4px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        color 0.2s,
+        border-color 0.2s;
+}
+
+
+.logout-button:hover {
+
+    background: #1a2740;
+
+    border-color: #4f8cff;
+
+    color: #ffffff;
+}
+
+
+.logout-button:disabled {
+
+    opacity: 0.5;
+
+    cursor: wait;
+}
