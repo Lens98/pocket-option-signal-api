@@ -705,6 +705,7 @@ class TradingEngine:
         # ----------------------------------------
         # Detect New Candle
         # ----------------------------------------
+        new_candle_opened = False
 
         latest_candle = market.candles[-1]
 
@@ -713,6 +714,8 @@ class TradingEngine:
            self.last_candle_timestamp = latest_candle.timestamp
 
         elif latest_candle.timestamp != self.last_candle_timestamp:
+
+            new_candle_opened = True
 
             print("========================================")
             print("🟢 NEW CANDLE OPENED")
@@ -896,10 +899,10 @@ class TradingEngine:
         # ========================================
 
         if (
-           signal.can_enter
-           and signal.action in ["CALL", "PUT"]
+            new_candle_opened
+            and signal.can_enter
+            and signal.action in ["CALL", "PUT"]
         ):
-
           print("========================================")
           print("TRADE CREATION CHECK")
           print("========================================")
