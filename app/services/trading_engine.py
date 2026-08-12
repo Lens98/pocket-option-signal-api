@@ -765,35 +765,47 @@ class TradingEngine:
                 print("Confirmations:",
                     f"{signal.confirmation_count}/{signal.confirmation_total}")
 
+                MIN_CONFIDENCE = 70
+
                 if candidate_action in ["CALL", "PUT"]:
 
-                    signal.action = candidate_action
-                    signal.market_state = EntryState.ENTRY.value
-                    signal.can_enter = True
+                   if signal.confidence >= MIN_CONFIDENCE:
 
-                    state = EntryState.ENTRY
-                    signal.can_enter = True
+                      signal.action = candidate_action
+                      signal.market_state = EntryState.ENTRY.value
+                      signal.can_enter = True
 
-                    print("----------------------------------------")
-                    print("✅ FINAL CONFIRMATION PASSED")
-                    print("----------------------------------------")
-                    print("FINAL ACTION :", signal.action)
-                    print("🚀 ENTER NEXT CANDLE")
-                    print("----------------------------------------")
+                      state = EntryState.ENTRY
+
+                      print("----------------------------------------")
+                      print("✅ FINAL CONFIRMATION PASSED")
+                      print("----------------------------------------")
+                      print("FINAL ACTION :", signal.action)
+                      print("CONFIDENCE   :", signal.confidence)
+                      print("MINIMUM      :", MIN_CONFIDENCE)
+                      print("🚀 ENTER NEXT CANDLE")
+                      print("----------------------------------------")
 
                 else:
 
-                       signal.action = "WAIT"
-                       signal.can_enter = False
-                       signal.market_state = EntryState.WAITING.value
+                     signal.action = "WAIT"
+                     signal.can_enter = False
+                     signal.market_state = EntryState.WAITING.value
+ 
+                     state = EntryState.WAITING
 
-                       state = EntryState.ANALYZING
+                     signal.reasons.append(
+                          f"Confidence below {MIN_CONFIDENCE}%"
+                    )
 
-                       print("----------------------------------------")
-                       print("❌ FINAL CONFIRMATION FAILED")
-                       print("----------------------------------------")           
+                     print("----------------------------------------")
+                     print("❌ FINAL CONFIRMATION BLOCKED")
+                     print("----------------------------------------")
+                     print("Confidence :", signal.confidence)
+                     print("Minimum    :", MIN_CONFIDENCE)
+                     print("Action     : WAIT")
+                     print("----------------------------------------")
 
-                    
             else:
 
                     signal.action = "WAIT"
@@ -801,9 +813,10 @@ class TradingEngine:
                     signal.market_state = EntryState.WAITING.value
 
                     state = EntryState.ANALYZING
- 
-          
-              
+
+                    print("----------------------------------------")
+                    print("❌ FINAL CONFIRMATION FAILED")
+                    print("----------------------------------------")              
 
         # ----------------------------------------
         # Confirm Entry
