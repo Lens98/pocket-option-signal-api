@@ -24,11 +24,11 @@ class DecisionExplainer:
 
             {
                 "name": "Confidence",
-                "passed": signal.confidence >= 60,
+                "passed": signal.confidence >= 70,
                 "value": signal.confidence,
                 "message": (
                     "Confidence acceptable"
-                    if signal.confidence >= 60
+                    if signal.confidence >= 70
                     else "Confidence too low"
                 )
             },

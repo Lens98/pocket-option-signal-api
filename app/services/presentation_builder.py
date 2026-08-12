@@ -55,10 +55,6 @@ class PresentationBuilder:
         # Final Action
         # -----------------------------------------
 
-        if not signal.can_enter:
-
-            signal.action = "WAIT"
-
         print("Action       :", signal.action)
         print("Instruction  :", signal.instruction)
         print("Reason       :", signal.reason)
