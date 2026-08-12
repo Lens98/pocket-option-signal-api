@@ -391,19 +391,33 @@ class TradeRepository:
 
     def statistics(self):
 
+        row = database.fetch_one(
+             """
+             SELECT
+                  COALESCE(SUM(profit), 0) AS profit
+             FROM trades
+             """
+        )
+
+        profit = float(row["profit"] or 0)
+
         return {
 
-            "total": self.count(),
+             "total": self.count(),
 
-            "wins": self.win_count(),
+             "wins": self.win_count(),
 
-            "losses": self.loss_count(),
+             "losses": self.loss_count(),
 
-            "draws": self.draw_count(),
+             "draws": self.draw_count(),
 
-            "win_rate": self.win_rate()
+             "win_rate": self.win_rate(),
+
+             "profit": round(profit, 2)
 
         }
+
+
 
     # ----------------------------------------
     # Delete Trade
