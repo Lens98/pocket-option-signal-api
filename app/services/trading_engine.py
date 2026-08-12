@@ -124,6 +124,7 @@ class TradingEngine:
             print("Bias     :", locked.bias)
             print("Action   :", locked.action)
             print("State    :", locked.market_state)
+            return locked
 
 
         debug_print()
