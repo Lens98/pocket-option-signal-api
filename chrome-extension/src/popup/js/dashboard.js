@@ -31,7 +31,7 @@ export async function initializeDashboard() {
 
         console.log("First refresh complete");
 
-        startCountdown(() => window.marketState);
+       startCountdown(() => window.marketState,() => window.latestCandle);
 
         console.log("Countdown started");
 
@@ -93,8 +93,10 @@ if (!signal.asset) {
 
 }
 
-const candles = await getCandles(signal.asset);
-
+    const candles = await getCandles(signal.asset);
+        
+window.latestCandle =
+    candles[candles.length - 1] ?? null;
 console.log("Candles from backend:", candles);
 console.log("Number of candles:", candles.length);
 

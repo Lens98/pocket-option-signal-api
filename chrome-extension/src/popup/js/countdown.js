@@ -19,7 +19,7 @@ export function stopCountdown() {
 // Start Dashboard State Display
 // ========================================
 
-export function startCountdown(getMarketState) {
+export function startCountdown(getMarketState,getLatestCandle) {
 
     stopCountdown();
 
@@ -147,21 +147,21 @@ export function startCountdown(getMarketState) {
         // ENTRY
         // ========================================
 
-        if (marketState === "ENTRY") {
+       if (marketState === "ENTRY") {
 
-            timer.innerHTML = "NOW";
+          timer.innerHTML = "NOW";
 
-            banner.innerHTML =
-                "🚀 ENTER NOW";
+         banner.innerHTML =
+        "🚀 ENTER NOW";
 
-            action.innerHTML =
-                "🚀 ENTER NOW";
+        action.innerHTML =
+        "🚀 ENTER NOW";
 
-            entryMessage.innerHTML =
-                "Final signal confirmed. Enter immediately on the new candle.";
+       entryMessage.innerHTML =
+        "Final signal confirmed. Enter immediately on the new candle.";
 
-            return;
-        }
+      return;
+     }
 
         // ========================================
         // ACTIVE
@@ -188,9 +188,7 @@ export function startCountdown(getMarketState) {
         // ========================================
 
         if (marketState === "RESULT") {
-
             timer.innerHTML = "--:--";
-
             banner.innerHTML =
                 "🏁 TRADE COMPLETE";
 

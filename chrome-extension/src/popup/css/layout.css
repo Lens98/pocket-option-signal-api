@@ -13,22 +13,21 @@
 ========================================== */
 
 html,
-body{
+body {
 
-    width:800px;
-    height:1000px;
+    width: 780px;
+    height: 1100px;
 
-    overflow:hidden;
+    overflow: hidden;
 
-    font-family:"Segoe UI",Arial,sans-serif;
+    font-family: "Segoe UI", Arial, sans-serif;
 
     background:
-        radial-gradient(circle at top right,#1A3B5D 0%,transparent 45%),
-        radial-gradient(circle at bottom left,#132238 0%,transparent 35%),
+        radial-gradient(circle at top right, #1A3B5D 0%, transparent 45%),
+        radial-gradient(circle at bottom left, #132238 0%, transparent 35%),
         #0B1220;
 
-    color:#FFFFFF;
-
+    color: #FFFFFF;
 }
 
 /* ==========================================

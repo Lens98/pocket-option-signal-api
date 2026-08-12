@@ -17,6 +17,11 @@ export function initializeAccount(user) {
             "logoutButton"
         );
 
+    const accountStatus =
+        document.getElementById(
+            "accountStatus"
+        );
+
 
     if (!emailElement || !logoutButton) {
 
@@ -27,13 +32,18 @@ export function initializeAccount(user) {
         return;
     }
 
-
     // ==========================================
     // DISPLAY USER EMAIL
     // ==========================================
 
     emailElement.textContent =
         user?.email || "Unknown User";
+    if (accountStatus) {
+
+    accountStatus.textContent =
+        "● ACTIVE";
+
+}
 
 
     // ==========================================

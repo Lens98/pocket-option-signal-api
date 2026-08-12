@@ -4,7 +4,7 @@ from app.models.signal import Signal
 from app.services.decision_explainer import DecisionExplainer
 from app.services.decision_history import DecisionHistory
 from app.services.pattern_learning import PatternLearning
-
+MIN_CONFIDENCE = 70
 
 class EntryState(Enum):
 
@@ -75,7 +75,7 @@ class EntryManager:
         # Low Confidence
         # ----------------------------------------
 
-        if signal.confidence < 60:
+        if signal.confidence < MIN_CONFIDENCE:
 
             print("🟡 Confidence too low")
             return EntryState.ANALYZING
