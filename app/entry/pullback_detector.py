@@ -9,57 +9,79 @@ class PullbackDetector:
         # ----------------------------------------
 
         if len(candles) < 2:
-
             return False
 
         current_price = candles[-1].close
-
         ema20 = indicators.ema20
 
         if ema20 is None:
-
             return False
 
         # ----------------------------------------
-        # Allow a small distance from EMA20
+        # Pullback Distance
         # ----------------------------------------
 
-        tolerance = abs(current_price * 0.0015)
-        # ========================================
+        distance = abs(current_price - ema20)
+
+        # Normal pullback zone = 0.15%
+        normal_tolerance = abs(current_price * 0.0015)
+
+        # Extended pullback zone = 0.30%
+        extended_tolerance = abs(current_price * 0.0030)
+
+        # ----------------------------------------
         # Debug
-        # ========================================
+        # ----------------------------------------
 
         print("----------------------------------------")
         print("PULLBACK DETECTOR")
         print("----------------------------------------")
-        print("Bias        :", bias)
-        print("Price       :", current_price)
-        print("EMA20       :", ema20)
-        print("Tolerance   :", tolerance)
+        print("Bias              :", bias)
+        print("Price             :", current_price)
+        print("EMA20             :", ema20)
+        print("Distance          :", distance)
+        print("Normal Tolerance  :", normal_tolerance)
+        print("Extended Tolerance:", extended_tolerance)
         print("----------------------------------------")
 
-        # ========================================
-        # CALL Pullback
-        # ========================================
+        # ----------------------------------------
+        # Invalid Bias
+        # ----------------------------------------
 
-        if bias == "CALL":
+        if bias not in ["CALL", "PUT"]:
+            print("❌ No valid pullback bias")
+            return False
 
-            return (
-                current_price >= ema20 - tolerance
-                and
-                current_price <= ema20 + tolerance
-            )
+        # ----------------------------------------
+        # Normal Pullback
+        # ----------------------------------------
 
-        # ========================================
-        # PUT Pullback
-        # ========================================
+        if distance <= normal_tolerance:
 
-        if bias == "PUT":
+            print("🟢 NORMAL PULLBACK CONFIRMED")
+            return True
 
-            return (
-                current_price <= ema20 + tolerance
-                and
-                current_price >= ema20 - tolerance
-            )
+        # ----------------------------------------
+        # Extended Pullback
+        # ----------------------------------------
+        # Allow a slightly larger distance only when
+        # price remains on the correct side of EMA20.
+        # This prevents the detector from approving
+        # a completely unrelated price move.
 
+        if distance <= extended_tolerance:
+
+            if bias == "CALL" and current_price >= ema20:
+                print("🟢 EXTENDED CALL PULLBACK CONFIRMED")
+                return True
+
+            if bias == "PUT" and current_price <= ema20:
+                print("🟢 EXTENDED PUT PULLBACK CONFIRMED")
+                return True
+
+        # ----------------------------------------
+        # No Pullback
+        # ----------------------------------------
+
+        print("🟡 NO PULLBACK")
         return False
