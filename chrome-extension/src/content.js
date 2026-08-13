@@ -12,18 +12,6 @@ const manager = new MarketManager();
 const history = new CandleHistory(300);
 
 // --------------------------------------
-// Inject page script
-// --------------------------------------
-
-const script = document.createElement("script");
-
-script.src = chrome.runtime.getURL("src/injected.js");
-
-script.onload = () => script.remove();
-
-(document.head || document.documentElement).appendChild(script);
-
-// --------------------------------------
 // Listen for injected messages
 // --------------------------------------
 

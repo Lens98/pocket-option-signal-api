@@ -4,10 +4,10 @@
     "version": "1.0.0",
     "description": "Reads live Pocket Option market data and displays AI trading signals.",
     "permissions": [
-      "storage",
-      "activeTab",
-      "scripting",
-      "tabs"
+        "storage",
+        "activeTab",
+        "scripting",
+        "tabs"
     ],
     "host_permissions": [
         "https://pocket-option-signal-api-production.up.railway.app/*",
@@ -23,21 +23,31 @@
                 "https://*.pocketoption.com/*"
             ],
             "js": [
+                "src/injected.js"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
+        },
+        {
+            "matches": [
+                "https://*.pocketoption.com/*"
+            ],
+            "js": [
                 "src/content.js"
             ],
             "run_at": "document_start"
         }
     ],
     "web_accessible_resources": [
-    {
-        "resources": [
-            "src/injected.js"
-        ],
-        "matches": [
-            "https://*.pocketoption.com/*"
-        ]
-    }
-],
+        {
+            "resources": [
+                "src/injected.js"
+            ],
+            "matches": [
+                "https://*.pocketoption.com/*"
+            ]
+        }
+    ],
     "action": {
         "default_popup": "src/popup/popup.html",
         "default_title": "Pocket Option AI"
