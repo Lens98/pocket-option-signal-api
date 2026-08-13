@@ -1,100 +1,112 @@
 class SignalAgreement:
 
-    def calculate(self, signal):
+    def calculate(self, signal, indicators):
 
-        score = 0
+        # ========================================
+        # Confirmation Weights
+        # ========================================
 
-        # ==========================
-        # Trend
-        # ==========================
+        weights = {
+            "ema": 25,
+            "structure": 20,
+            "pullback": 15,
+            "candle": 15,
+            "macd": 10,
+            "zone": 7,
+            "rsi": 5,
+            "adx": 2,
+            "atr": 1,
+        }
 
-        if signal.ema_confirmed:
-            score += 25
+        # ========================================
+        # Determine Which Confirmations Exist
+        # ========================================
 
-        # ==========================
-        # Market Structure
-        # ==========================
+        available = {
+            "ema": indicators.ema20 is not None,
+            "structure": True,
+            "pullback": True,
+            "candle": True,
+            "macd": (
+                indicators.macd is not None and indicators.signal_line is not None
+            ),
+            "zone": True,
+            "rsi": indicators.rsi is not None,
+            "adx": indicators.adx is not None,
+            "atr": indicators.atr is not None,
+        }
 
-        if signal.structure_confirmed:
-            score += 20
+        # ========================================
+        # Confirmation Values
+        # ========================================
 
-        # ==========================
-        # Pullback
-        # ==========================
+        confirmed = {
+            "ema": signal.ema_confirmed,
+            "structure": signal.structure_confirmed,
+            "pullback": signal.pullback_confirmed,
+            "candle": signal.candle_confirmed,
+            "macd": signal.macd_confirmed,
+            "zone": signal.zone_confirmed,
+            "rsi": signal.rsi_confirmed,
+            "adx": signal.adx_confirmed,
+            "atr": signal.atr_confirmed,
+        }
 
-        if signal.pullback_confirmed:
-            score += 15
+        # ========================================
+        # Calculate Available Weight
+        # ========================================
 
-        # ==========================
-        # Candle
-        # ==========================
+        available_weight = sum(weights[name] for name in weights if available[name])
 
-        if signal.candle_confirmed:
-            score += 15
+        # ========================================
+        # Calculate Confirmed Weight
+        # ========================================
 
-        # ==========================
-        # MACD
-        # ==========================
+        confirmed_weight = sum(
+            weights[name] for name in weights if available[name] and confirmed[name]
+        )
 
-        if signal.macd_confirmed:
-            score += 10
+        # ========================================
+        # Normalize Agreement
+        # ========================================
 
-        # ==========================
-        # Supply / Demand
-        # ==========================
+        if available_weight > 0:
 
-        if signal.zone_confirmed:
-            score += 7
+            agreement = (confirmed_weight / available_weight) * 100
 
-        # ==========================
-        # RSI
-        # ==========================
+        else:
 
-        if signal.rsi_confirmed:
-            score += 5
+            agreement = 0
 
-        # ==========================
-        # ADX
-        # ==========================
+        agreement = round(agreement, 2)
 
-        if signal.adx_confirmed:
-            score += 2
+        # ========================================
+        # Confirmation Count
+        # ========================================
 
-        # ==========================
-        # ATR
-        # ==========================
+        confirmation_count = sum(
+            1 for name in weights if available[name] and confirmed[name]
+        )
 
-        if signal.atr_confirmed:
-            score += 1
+        confirmation_total = sum(1 for name in weights if available[name])
 
-        confirmations = sum([
+        # ========================================
+        # Debug
+        # ========================================
 
-            signal.ema_confirmed,
-
-            signal.structure_confirmed,
-
-            signal.pullback_confirmed,
-
-            signal.candle_confirmed,
-
-            signal.macd_confirmed,
-
-            signal.zone_confirmed,
-
-            signal.rsi_confirmed,
-
-            signal.adx_confirmed,
-
-            signal.atr_confirmed
-
-        ])
+        print()
+        print("========================================")
+        print("BINARY SIGNAL AGREEMENT")
+        print("========================================")
+        print("Confirmed Weight :", confirmed_weight)
+        print("Available Weight :", available_weight)
+        print("Agreement        :", agreement)
+        print("Confirmations    :", f"{confirmation_count}/{confirmation_total}")
+        print("========================================")
+        print()
 
         return {
-
-            "agreement": score,
-
-            "confirmations": confirmations,
-
-            "total": 9
-
+            "agreement": agreement,
+            "confirmations": confirmation_count,
+            "total": confirmation_total,
         }
