@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import os
 
 from app.entry.entry_engine import EntryEngine
@@ -750,7 +750,6 @@ class TradingEngine:
         # Detect New Candle
         # ----------------------------------------
         new_candle_opened = False
-
         latest_candle = market.candles[-1]
 
         if self.last_candle_timestamp is None:
@@ -782,85 +781,237 @@ class TradingEngine:
             if locked is not None:
 
                 print("----------------------------------------")
-                print("✅ CANDLE CLOSED")
-                print("FINAL CONFIRMATION")
+                print("CANDLE CLOSED")
+                print("FINAL BINARY CONFIRMATION")
                 print("----------------------------------------")
 
                 signal = locked
 
-                print("Locked Bias   :", signal.bias)
-                print("Locked Action :", signal.action)
-                print("Confidence    :", signal.confidence)
-                print("Probability   :", signal.probability)
-                print("Candle Pattern:", signal.candle_pattern)
-                print("Candle Strength:", signal.candle_strength)
+                # ----------------------------------------
+                # RECHECK THE JUST-CLOSED CANDLE
+                # ----------------------------------------
 
-                print("----------------------------------------")
-                print("🎯 CANDLE CLOSED - FINAL SIGNAL")
-                print("----------------------------------------")
+                closed_candles = market.candles[:-1]
 
-                candidate_action = signal.bias
+                closed_direction = "WAIT"
 
-                print("Candidate :", candidate_action)
-                print("Pattern   :", signal.candle_pattern)
-                print("Strength  :", signal.candle_strength)
-                print("Confidence:", signal.confidence)
-                print("Agreement :", signal.agreement_score)
-                print("Confirmations:",
-                    f"{signal.confirmation_count}/{signal.confirmation_total}")
+                if len(closed_candles) >= 2:
 
-                MIN_CONFIDENCE = 70
+                    closed_candle_result = (
+                        self.candle_strategy.analyze(
+                            closed_candles
+                        )
+                    )
 
-                if candidate_action in ["CALL", "PUT"]:
+                    signal.candle_confirmed = (
+                        closed_candle_result["confirmed"]
+                    )
 
-                   if signal.confidence >= MIN_CONFIDENCE:
+                    signal.candle_pattern = (
+                        closed_candle_result["pattern"]
+                    )
 
-                      signal.action = candidate_action
-                      signal.market_state = EntryState.ENTRY.value
-                      signal.can_enter = True
+                    signal.candle_strength = (
+                        closed_candle_result["strength"]
+                    )
 
-                      state = EntryState.ENTRY
+                    closed_direction = (
+                        closed_candle_result["direction"]
+                    )
 
-                      print("----------------------------------------")
-                      print("✅ FINAL CONFIRMATION PASSED")
-                      print("----------------------------------------")
-                      print("FINAL ACTION :", signal.action)
-                      print("CONFIDENCE   :", signal.confidence)
-                      print("MINIMUM      :", MIN_CONFIDENCE)
-                      print("🚀 ENTER NEXT CANDLE")
-                      print("----------------------------------------")
+                    print("----------------------------------------")
+                    print("CLOSED CANDLE RECHECK")
+                    print("----------------------------------------")
+                    print(
+                        "Pattern   :",
+                        signal.candle_pattern
+                    )
+                    print(
+                        "Direction :",
+                        closed_direction
+                    )
+                    print(
+                        "Strength  :",
+                        signal.candle_strength
+                    )
+                    print(
+                        "Confirmed :",
+                        signal.candle_confirmed
+                    )
+                    print("----------------------------------------")
 
                 else:
 
-                     signal.action = "WAIT"
-                     signal.can_enter = False
-                     signal.market_state = EntryState.WAITING.value
- 
-                     state = EntryState.WAITING
+                    signal.candle_confirmed = False
+                    signal.candle_pattern = "NONE"
+                    signal.candle_strength = 0
 
-                     signal.reasons.append(
-                          f"Confidence below {MIN_CONFIDENCE}%"
+                    print("----------------------------------------")
+                    print("CLOSED CANDLE CHECK FAILED")
+                    print("Not enough candles")
+                    print("----------------------------------------")
+
+                # ----------------------------------------
+                # FINAL BINARY 1-MINUTE ENTRY CHECK
+                # ----------------------------------------
+
+                candidate_action = signal.bias
+
+                MIN_CONFIDENCE = 70
+                MIN_PROBABILITY = 55
+                MIN_AGREEMENT = 70
+                MIN_CONFIRMATIONS = 4
+
+                # Candle direction MUST agree with signal direction
+                direction_matches = (
+                    signal.candle_confirmed
+                    and closed_direction == candidate_action
+                )
+
+                print("----------------------------------------")
+                print("BINARY 1-MINUTE ENTRY CHECK")
+                print("----------------------------------------")
+                print("Candidate       :", candidate_action)
+                print("Closed Direction:", closed_direction)
+                print("Direction Match :", direction_matches)
+                print("Confidence      :", signal.confidence)
+                print("Probability     :", signal.probability)
+                print("Agreement       :", signal.agreement_score)
+                print(
+                    "Confirmations   :",
+                    f"{signal.confirmation_count}/"
+                    f"{signal.confirmation_total}"
+                )
+                print("Candle Confirmed:", signal.candle_confirmed)
+                print("Candle Pattern  :", signal.candle_pattern)
+                print("Candle Strength :", signal.candle_strength)
+                print("----------------------------------------")
+
+                # ----------------------------------------
+                # VALID CALL / PUT ONLY
+                # ----------------------------------------
+
+                if candidate_action in ["CALL", "PUT"]:
+
+                    entry_allowed = (
+                        signal.confidence >= MIN_CONFIDENCE
+                        and signal.probability >= MIN_PROBABILITY
+                        and signal.agreement_score >= MIN_AGREEMENT
+                        and signal.confirmation_count >= MIN_CONFIRMATIONS
+                        and direction_matches
                     )
 
-                     print("----------------------------------------")
-                     print("❌ FINAL CONFIRMATION BLOCKED")
-                     print("----------------------------------------")
-                     print("Confidence :", signal.confidence)
-                     print("Minimum    :", MIN_CONFIDENCE)
-                     print("Action     : WAIT")
-                     print("----------------------------------------")
+                    if entry_allowed:
 
-            else:
+                        signal.action = candidate_action
+                        signal.market_state = EntryState.ENTRY.value
+                        signal.can_enter = True
+
+                        state = EntryState.ENTRY
+
+                        print("----------------------------------------")
+                        print("BINARY ENTRY CONFIRMED")
+                        print("----------------------------------------")
+                        print("FINAL ACTION :", signal.action)
+                        print("Confidence   :", signal.confidence)
+                        print("Probability  :", signal.probability)
+                        print("Agreement    :", signal.agreement_score)
+                        print(
+                            "Confirmations:",
+                            f"{signal.confirmation_count}/"
+                            f"{signal.confirmation_total}"
+                        )
+                        print(
+                            "Closed Candle:",
+                            closed_direction
+                        )
+                        print(
+                            "Pattern      :",
+                            signal.candle_pattern
+                        )
+                        print("Expiration   : 60 seconds")
+                        print("ENTER NEXT 1-MINUTE CANDLE")
+                        print("----------------------------------------")
+
+                    else:
+
+                        signal.action = "WAIT"
+                        signal.can_enter = False
+                        signal.market_state = EntryState.WAITING.value
+
+                        state = EntryState.WAITING
+
+                        print("----------------------------------------")
+                        print("BINARY ENTRY BLOCKED")
+                        print("----------------------------------------")
+
+                        if signal.confidence < MIN_CONFIDENCE:
+                            print("Confidence too low")
+
+                        if signal.probability < MIN_PROBABILITY:
+                            print("Probability too low")
+
+                        if signal.agreement_score < MIN_AGREEMENT:
+                            print("Agreement too weak")
+
+                        if (
+                            signal.confirmation_count
+                            < MIN_CONFIRMATIONS
+                        ):
+                            print("Not enough confirmations")
+
+                        if not signal.candle_confirmed:
+                            print("Candle not confirmed")
+
+                        if closed_direction != candidate_action:
+                            print(
+                                "Candle direction mismatch:",
+                                closed_direction,
+                                "vs",
+                                candidate_action
+                            )
+
+                        print("----------------------------------------")
+
+                else:
 
                     signal.action = "WAIT"
                     signal.can_enter = False
                     signal.market_state = EntryState.WAITING.value
 
-                    state = EntryState.ANALYZING
+                    state = EntryState.WAITING
+
+                    signal.reasons.append(
+                        "No valid binary CALL/PUT direction"
+                    )
 
                     print("----------------------------------------")
-                    print("❌ FINAL CONFIRMATION FAILED")
-                    print("----------------------------------------")           
+                    print("BINARY ENTRY BLOCKED")
+                    print("----------------------------------------")
+                    print(
+                        "Candidate :",
+                        candidate_action
+                    )
+                    print("Action    : WAIT")
+                    print("----------------------------------------")
+
+            else:
+
+                # ----------------------------------------
+                # NO LOCKED SIGNAL
+                # ----------------------------------------
+
+                signal.action = "WAIT"
+                signal.can_enter = False
+                signal.market_state = EntryState.WAITING.value
+
+                state = EntryState.WAITING
+
+                print("----------------------------------------")
+                print("NO LOCKED SIGNAL")
+                print("BINARY ENTRY BLOCKED")
+                print("----------------------------------------")
+
           
 
         # ----------------------------------------
@@ -1011,11 +1162,19 @@ class TradingEngine:
               if not signal.expiration:
                   signal.expiration = "Next Candle"
 
+             # ----------------------------------------
+             # Binary Entry Timestamp
+             # ----------------------------------------
+
+        entry_time = datetime.fromisoformat(
+            latest_candle.timestamp
+        ).astimezone(timezone.utc)
+
               # ----------------------------------------
               # Create Trade
               # ----------------------------------------
 
-              try:
+        try:
 
                  from uuid import uuid4
                  from app.models.trade import Trade
@@ -1036,7 +1195,7 @@ class TradingEngine:
                      trend=signal.trend,
                      entry_price=signal.entry_price,
                      exit_price=None,
-                     entry_time=datetime.now(),
+                     entry_time=entry_time,
                      exit_time=None,
                      expiration_seconds=60,
                      status="OPEN",
@@ -1083,7 +1242,7 @@ class TradingEngine:
                  print("Status   :", trade.status)
                  print("----------------------------------------")
 
-              except Exception as e:
+        except Exception as e:
 
                  print("----------------------------------------")
                  print("Trade Logger Error")

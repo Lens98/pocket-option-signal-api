@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import threading
 import time
 from app.models.trade_learning import TradeLearning
@@ -108,7 +108,7 @@ class TradeMonitor:
         if not trades:
             return
 
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
 
         for trade in trades:
 
