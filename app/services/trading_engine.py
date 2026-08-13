@@ -953,9 +953,33 @@ class TradingEngine:
             # Binary Entry Timestamp
             # ----------------------------------------
 
-        entry_time = datetime.fromisoformat(latest_candle.timestamp).astimezone(
-            timezone.utc
-        )
+        timestamp_value = latest_candle.timestamp
+
+        try:
+            timestamp_number = float(timestamp_value)
+
+            # Pocket Option may provide Unix seconds or milliseconds.
+            if timestamp_number > 10_000_000_000:
+                entry_time = datetime.fromtimestamp(
+                    timestamp_number / 1000,
+                    tz=timezone.utc,
+                )
+            else:
+                entry_time = datetime.fromtimestamp(
+                    timestamp_number,
+                    tz=timezone.utc,
+                )
+
+        except (TypeError, ValueError, OverflowError):
+
+            entry_time = datetime.fromisoformat(
+                str(timestamp_value).replace("Z", "+00:00")
+            )
+
+            if entry_time.tzinfo is None:
+                entry_time = entry_time.replace(tzinfo=timezone.utc)
+            else:
+                entry_time = entry_time.astimezone(timezone.utc)
 
         # ----------------------------------------
         # Create Trade
