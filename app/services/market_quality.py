@@ -21,15 +21,4 @@ class MarketQuality:
         elif signal.regime == "RANGE":
             quality -= 10
 
-        # Risk
-
-        if signal.risk == "LOW":
-            quality += 10
-
-        elif signal.risk == "MEDIUM":
-            quality += 5
-
-        elif signal.risk == "HIGH":
-            quality -= 15
-
         return max(0, min(quality, 100))
