@@ -398,7 +398,7 @@ class TradingEngine:
         print("----------------------------------------")
         print(signal.pattern)
         print("----------------------------------------")
-        agreement = self.agreement.calculate(signal)
+        agreement = self.agreement.calculate(signal, indicator_result)
         market_quality = self.market_quality.calculate(signal)
 
         signal.agreement_score = agreement["agreement"]
