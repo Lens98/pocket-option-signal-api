@@ -20,7 +20,17 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-BzGF-OGF.js"
+        "assets/injected.js-8fsZFNBg.js"
+      ],
+      "matches": [
+        "https://*.pocketoption.com/*"
+      ],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "js": [
+        "assets/content.js-B-kDs7mu.js"
       ],
       "matches": [
         "https://*.pocketoption.com/*"
@@ -38,7 +48,8 @@
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-BzGF-OGF.js"
+        "assets/injected.js-8fsZFNBg.js",
+        "assets/content.js-B-kDs7mu.js"
       ],
       "use_dynamic_url": false
     }

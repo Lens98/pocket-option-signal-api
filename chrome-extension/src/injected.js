@@ -2,85 +2,440 @@ console.log("✅ Injected script loaded.");
 
 const NativeWebSocket = window.WebSocket;
 
-window.WebSocket = function (...args) {
+/* ==========================================
+   TICK VALIDATION
+========================================== */
 
-    console.log("Opening WebSocket:", args[0]);
+function isValidTick(value) {
+    if (!Array.isArray(value)) {
+        return false;
+    }
 
-    const socket = new NativeWebSocket(...args);
-    socket.binaryType = "arraybuffer";
-    socket.addEventListener("message", (event) => {
+    if (value.length !== 3) {
+        return false;
+    }
 
-        // Binary messages
-        if (event.data instanceof ArrayBuffer) {
+    const asset = value[0];
+    const timestamp = value[1];
+    const price = value[2];
 
-            const bytes = new Uint8Array(event.data);
+    if (typeof asset !== "string") {
+        return false;
+    }
 
-            console.log("========== BINARY ==========");
-            console.log("Length:", bytes.length);
+    if (typeof timestamp !== "number") {
+        return false;
+    }
 
-            const text = new TextDecoder().decode(bytes);
+    if (typeof price !== "number") {
+        return false;
+    }
 
-            console.log("========== DECODED ==========");
-            console.log(text);
+    if (!asset.trim()) {
+        return false;
+    }
 
-            try {
+    if (!Number.isFinite(timestamp)) {
+        return false;
+    }
 
-    const packet = JSON.parse(text);
+    if (!Number.isFinite(price)) {
+        return false;
+    }
+
+    if (price <= 0) {
+        return false;
+    }
+
+    return true;
+}
+
+/* ==========================================
+   SEND TICK
+========================================== */
+
+function sendTick(tick) {
+
+    const asset = tick[0];
+    const timestamp = tick[1];
+    const price = tick[2];
+
+    console.log("======================================");
+    console.log("📈 POCKET OPTION TICK");
+    console.log("Asset     :", asset);
+    console.log("Timestamp :", timestamp);
+    console.log("Price     :", price);
+    console.log("======================================");
+
+    window.postMessage(
+        {
+            type: "POCKET_OPTION_TICK",
+
+            data: {
+                asset,
+                timestamp,
+                price
+            }
+        },
+        "*"
+    );
+}
+
+/* ==========================================
+   SEARCH OBJECT / ARRAY FOR TICK
+========================================== */
+
+function findTick(value, visited = new Set()) {
 
     if (
-        Array.isArray(packet) &&
-        Array.isArray(packet[0]) &&
-        packet[0].length === 3 &&
-        typeof packet[0][0] === "string" &&
-        typeof packet[0][1] === "number" &&
-        typeof packet[0][2] === "number"
+        value === null ||
+        value === undefined
+    ) {
+        return null;
+    }
+
+    if (
+        typeof value === "object"
+        &&
+        visited.has(value)
+    ) {
+        return null;
+    }
+
+    if (typeof value === "object") {
+        visited.add(value);
+    }
+
+    /* --------------------------------------
+       Direct tick:
+       ["EURUSD_otc", 1234567890, 1.12345]
+    -------------------------------------- */
+
+    if (isValidTick(value)) {
+        return value;
+    }
+
+    /* --------------------------------------
+       Object tick
+    -------------------------------------- */
+
+    if (
+        typeof value === "object"
+        &&
+        !Array.isArray(value)
     ) {
 
-        const tick = packet[0];
+        const asset =
+            value.asset ??
+            value.symbol ??
+            value.instrument;
 
-        console.log("Sending tick to content script", {
-            asset: tick[0],
-            timestamp: tick[1],
-            price: tick[2]
-        });
+        const timestamp =
+            value.timestamp ??
+            value.time ??
+            value.ts;
 
-        window.postMessage({
-            type: "POCKET_OPTION_TICK",
-            data: {
-                asset: tick[0],
-                timestamp: tick[1],
-                price: tick[2]
+        const price =
+            value.price ??
+            value.close ??
+            value.rate;
+
+        if (
+            typeof asset === "string" &&
+            typeof timestamp === "number" &&
+            typeof price === "number"
+        ) {
+
+            if (
+                asset.trim() &&
+                Number.isFinite(timestamp) &&
+                Number.isFinite(price) &&
+                price > 0
+            ) {
+
+                return [
+                    asset,
+                    timestamp,
+                    price
+                ];
             }
-        }, "*");
+        }
+    }
+
+    /* --------------------------------------
+       Recursive search
+    -------------------------------------- */
+
+    if (Array.isArray(value)) {
+
+        for (const item of value) {
+
+            const result =
+                findTick(item, visited);
+
+            if (result) {
+                return result;
+            }
+        }
 
     }
 
-} catch (err) {
+    else if (typeof value === "object") {
 
-    console.log("Non-JSON binary packet");
+        for (const key of Object.keys(value)) {
 
+            const result =
+                findTick(value[key], visited);
+
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
 }
 
-            return;
+/* ==========================================
+   PARSE JSON TEXT
+========================================== */
+
+function parseTextMessage(text) {
+
+    if (
+        typeof text !== "string" ||
+        !text.trim()
+    ) {
+        return;
+    }
+
+    const trimmed = text.trim();
+
+    /*
+     * Try normal JSON first.
+     */
+
+    try {
+
+        const parsed =
+            JSON.parse(trimmed);
+
+        const tick =
+            findTick(parsed);
+
+        if (tick) {
+
+            sendTick(tick);
+
+            return true;
         }
 
-        // Text messages
-        if (typeof event.data === "string") {
+    }
+    catch (error) {
+        // Continue with Socket.IO parsing.
+    }
 
-            console.log("========== TEXT ==========");
-            console.log(event.data);
+    /*
+     * Socket.IO / Engine.IO messages can contain
+     * a JSON payload after a numeric prefix.
+     *
+     * Example:
+     *
+     * 42["event", {...}]
+     */
 
-            window.postMessage({
-                type: "POCKET_OPTION_TEXT",
-                text: event.data
-            }, "*");
+    const jsonStart =
+        trimmed.search(/[\[\{]/);
+
+    if (jsonStart >= 0) {
+
+        const possibleJson =
+            trimmed.slice(jsonStart);
+
+        try {
+
+            const parsed =
+                JSON.parse(possibleJson);
+
+            const tick =
+                findTick(parsed);
+
+            if (tick) {
+
+                sendTick(tick);
+
+                return true;
+            }
 
         }
+        catch (error) {
+            // Not a JSON payload.
+        }
+    }
 
-    });
+    return false;
+}
+
+/* ==========================================
+   PARSE BINARY MESSAGE
+========================================== */
+
+function parseBinaryMessage(data) {
+
+    try {
+
+        const bytes =
+            new Uint8Array(data);
+
+        console.log("========== BINARY ==========");
+        console.log("Length:", bytes.length);
+
+        const text =
+            new TextDecoder().decode(bytes);
+
+        console.log("========== DECODED ==========");
+        console.log(text);
+
+        return parseTextMessage(text);
+
+    }
+    catch (error) {
+
+        console.error(
+            "❌ Binary message parse error:",
+            error
+        );
+
+        return false;
+    }
+}
+
+/* ==========================================
+   WEBSOCKET OVERRIDE
+========================================== */
+
+window.WebSocket = function (...args) {
+
+    console.log(
+        "Opening WebSocket:",
+        args[0]
+    );
+
+    const socket =
+        new NativeWebSocket(...args);
+
+    socket.binaryType =
+        "arraybuffer";
+
+    socket.addEventListener(
+        "message",
+        (event) => {
+
+            /* ==============================
+               BINARY
+            ============================== */
+
+            if (
+                event.data instanceof
+                ArrayBuffer
+            ) {
+
+                parseBinaryMessage(
+                    event.data
+                );
+
+                return;
+            }
+
+            /* ==============================
+               BLOB
+            ============================== */
+
+            if (
+                event.data instanceof Blob
+            ) {
+
+                event.data
+                    .arrayBuffer()
+                    .then(buffer => {
+
+                        parseBinaryMessage(
+                            buffer
+                        );
+
+                    })
+                    .catch(error => {
+
+                        console.error(
+                            "❌ Blob parse error:",
+                            error
+                        );
+
+                    });
+
+                return;
+            }
+
+            /* ==============================
+               TEXT
+            ============================== */
+
+            if (
+                typeof event.data === "string"
+            ) {
+
+                console.log(
+                    "========== TEXT =========="
+                );
+
+                console.log(
+                    event.data
+                );
+
+                const tickFound =
+                    parseTextMessage(
+                        event.data
+                    );
+
+                /*
+                 * Keep forwarding text messages
+                 * for debugging/other consumers.
+                 */
+
+                window.postMessage(
+                    {
+                        type:
+                            "POCKET_OPTION_TEXT",
+
+                        text:
+                            event.data,
+
+                        tickFound
+                    },
+                    "*"
+                );
+            }
+        }
+    );
 
     return socket;
-
 };
 
-window.WebSocket.prototype = NativeWebSocket.prototype;
+/* ==========================================
+   PRESERVE WEBSOCKET API
+========================================== */
+
+window.WebSocket.prototype =
+    NativeWebSocket.prototype;
+
+window.WebSocket.CONNECTING =
+    NativeWebSocket.CONNECTING;
+
+window.WebSocket.OPEN =
+    NativeWebSocket.OPEN;
+
+window.WebSocket.CLOSING =
+    NativeWebSocket.CLOSING;
+
+window.WebSocket.CLOSED =
+    NativeWebSocket.CLOSED;
