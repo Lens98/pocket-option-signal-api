@@ -21,9 +21,7 @@ engine = TradingEngine()
 @router.get("/health")
 def health():
 
-    return {
-        "status": "running"
-    }
+    return {"status": "running"}
 
 
 @router.post("/market/update")
@@ -39,9 +37,7 @@ def update_market(data: MarketUpdate):
     print("========================================")
 
     market = MarketData(
-        asset=data.asset,
-        timeframe=data.timeframe,
-        candles=data.candles
+        asset=data.asset, timeframe=data.timeframe, candles=data.candles
     )
 
     # Store history
@@ -53,20 +49,11 @@ def update_market(data: MarketUpdate):
 
     current = active_asset.get()
 
-
     if current is not None and data.asset != current:
 
-        print(
-            "⏭ Ignoring analysis for:",
-            data.asset,
-            "Active:",
-            current
-        )
+        print("⏭ Ignoring analysis for:", data.asset, "Active:", current)
 
-        return {
-            "status": "stored_only",
-            "asset": data.asset
-        }
+        return {"status": "stored_only", "asset": data.asset}
     # Read full history
     market = market_storage.get(data.asset)
 
@@ -77,7 +64,7 @@ def update_market(data: MarketUpdate):
     # Generate signal
     signal = engine.generate_signal(market)
     if signal.asset is None:
-     signal.asset = data.asset
+        signal.asset = data.asset
 
     # Save latest signal
     signal_storage.update(signal)
@@ -87,20 +74,26 @@ def update_market(data: MarketUpdate):
         "asset": data.asset,
         "timeframe": data.timeframe,
         "candles": len(data.candles),
-        "stored": market_storage.size(data.asset)
+        "stored": market_storage.size(data.asset),
     }
 
 
 @router.get("/signal")
 def latest_signal():
 
-    signal = signal_storage.get()
+    current = active_asset.get()
+
+    if current is not None:
+
+        signal = signal_storage.get(current)
+
+    else:
+
+        signal = signal_storage.get()
 
     if signal is None:
 
-        return {
-            "status": "No signal yet"
-        }
+        return {"status": "No signal yet"}
 
     return signal
 
@@ -110,20 +103,19 @@ def market_history(asset: str):
 
     candles = market_storage.history(asset)
 
-    return {
-        "asset": asset,
-        "count": len(candles),
-        "candles": candles
-    }
+    return {"asset": asset, "count": len(candles), "candles": candles}
+
+
 @router.get("/trade/state")
 def trade_state_status():
 
-    return {
-        "state": trade_state.get().value
-    }
+    return {"state": trade_state.get().value}
+
+
 # ========================================
 # LIVE CANDLES
 # ========================================
+
 
 @router.get("/candles/{asset:path}")
 def get_candles(asset: str):
@@ -144,9 +136,11 @@ def get_candles(asset: str):
 
     return market.candles
 
+
 # ========================================
 # TRADE STATISTICS
 # ========================================
+
 
 @router.get("/trade/statistics")
 def trade_statistics():
@@ -154,26 +148,22 @@ def trade_statistics():
     stats = trade_storage.statistics()
 
     return {
-
         "wins": trade_storage.win_count(),
-
         "losses": trade_storage.loss_count(),
-
         "draws": trade_storage.draw_count(),
-
         "win_rate": trade_storage.win_rate(),
-
-        "profit": stats.get("profit", 0)
-
+        "profit": stats.get("profit", 0),
     }
+
+
 @router.get("/market/select/{asset}")
 def select_asset(asset: str):
 
     active_asset.set(asset)
 
-    return {
-        "active_asset": asset
-    }
+    return {"active_asset": asset}
+
+
 @router.get("/trade/today")
 def today_session():
 
@@ -181,32 +171,14 @@ def today_session():
 
     today = datetime.now().date()
 
-    today_trades = [
-        t for t in trades
-        if t.entry_time.date() == today
-    ]
+    today_trades = [t for t in trades if t.entry_time.date() == today]
 
-    wins = len([
-        t for t in today_trades
-        if t.result == "WIN"
-    ])
+    wins = len([t for t in today_trades if t.result == "WIN"])
 
-    losses = len([
-        t for t in today_trades
-        if t.result == "LOSS"
-    ])
+    losses = len([t for t in today_trades if t.result == "LOSS"])
 
     total = len(today_trades)
 
-    win_rate = (
-        round((wins / total) * 100, 2)
-        if total > 0
-        else 0
-    )
+    win_rate = round((wins / total) * 100, 2) if total > 0 else 0
 
-    return {
-        "trades": total,
-        "wins": wins,
-        "losses": losses,
-        "win_rate": win_rate
-    }
+    return {"trades": total, "wins": wins, "losses": losses, "win_rate": win_rate}
