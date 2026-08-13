@@ -52,28 +52,40 @@ class ConfidenceEngine:
             technical += 10
 
         # -----------------------------
+        # MACD Histogram
+        # -----------------------------
+
+        if "Bullish Histogram" in reason_text or "Bearish Histogram" in reason_text:
+            technical += 5
+
+        # -----------------------------
+        # Momentum
+        # -----------------------------
+
+        if (
+            "Strong Bullish Momentum" in reason_text
+            or "Strong Bearish Momentum" in reason_text
+        ):
+            technical += 5
+
+        # -----------------------------
         # ADX
         # -----------------------------
 
         for reason in reasons:
             reason = str(reason)
 
-            if reason.startswith("ADX Strong"):
+            if reason.startswith("ADX Strong") or reason.startswith(
+                "Strong Trend (ADX)"
+            ):
                 technical += 12
 
-            elif reason.startswith("ADX Moderate"):
+            elif reason.startswith("ADX Moderate") or reason.startswith(
+                "Moderate Trend (ADX)"
+            ):
                 technical += 6
 
-            elif reason.startswith("ADX Weak"):
-                technical -= 8
-
-            elif reason.startswith("Strong Trend (ADX)"):
-                technical += 12
-
-            elif reason.startswith("Moderate Trend (ADX)"):
-                technical += 6
-
-            elif reason.startswith("Weak Trend (ADX)"):
+            elif reason.startswith("ADX Weak") or reason.startswith("Weak Trend (ADX)"):
                 technical -= 8
 
         # -----------------------------
@@ -83,16 +95,10 @@ class ConfidenceEngine:
         for reason in reasons:
             reason = str(reason)
 
-            if reason.startswith("ATR High"):
+            if reason.startswith("ATR High") or reason == "ATR Volatility: HIGH":
                 technical += 5
 
-            elif reason.startswith("ATR Low"):
-                technical -= 5
-
-            elif reason == "ATR Volatility: HIGH":
-                technical += 5
-
-            elif reason == "ATR Volatility: LOW":
+            elif reason.startswith("ATR Low") or reason == "ATR Volatility: LOW":
                 technical -= 5
 
         # -----------------------------
@@ -108,6 +114,11 @@ class ConfidenceEngine:
             "THREE_WHITE_SOLDIERS",
             "Three Black Crows",
             "Three White Soldiers",
+            "Doji",
+            "Morning Star",
+            "Evening Star",
+            "Bullish Harami",
+            "Bearish Harami",
         ]
 
         for pattern in patterns:
@@ -121,10 +132,17 @@ class ConfidenceEngine:
 
         candle_strength = getattr(signal, "candle_strength", 0) or 0
 
+        try:
+            candle_strength = float(candle_strength)
+        except (TypeError, ValueError):
+            candle_strength = 0
+
         if candle_strength >= 90:
             technical += 10
+
         elif candle_strength >= 75:
             technical += 7
+
         elif candle_strength >= 60:
             technical += 4
 
@@ -157,23 +175,102 @@ class ConfidenceEngine:
             technical += 5
 
         # -----------------------------
+        # Confirmation Strength
+        # -----------------------------
+
+        confirmation_count = (
+            getattr(
+                signal,
+                "confirmation_count",
+                0,
+            )
+            or 0
+        )
+
+        confirmation_total = (
+            getattr(
+                signal,
+                "confirmation_total",
+                0,
+            )
+            or 0
+        )
+
+        try:
+            confirmation_count = int(confirmation_count)
+            confirmation_total = int(confirmation_total)
+        except (TypeError, ValueError):
+            confirmation_count = 0
+            confirmation_total = 0
+
+        if confirmation_total > 0:
+
+            confirmation_ratio = confirmation_count / confirmation_total
+
+            if confirmation_ratio >= 0.75:
+                technical += 8
+
+            elif confirmation_ratio >= 0.55:
+                technical += 5
+
+            elif confirmation_ratio >= 0.40:
+                technical += 2
+
+        # -----------------------------
+        # Candle Confirmation
+        # -----------------------------
+
+        candle_confirmed = getattr(
+            signal,
+            "candle_confirmed",
+            False,
+        )
+
+        if candle_confirmed:
+            technical += 5
+
+        # -----------------------------
+        # Pullback Confirmation
+        # -----------------------------
+
+        pullback_confirmed = getattr(
+            signal,
+            "pullback_confirmed",
+            False,
+        )
+
+        if pullback_confirmed:
+            technical += 5
+
+        # -----------------------------
         # Clamp Technical
         # -----------------------------
 
-        technical = max(0, min(technical, 100))
+        technical = max(
+            0,
+            min(technical, 100),
+        )
 
         # ========================================
-        # Confidence Engine V3
+        # Confidence Engine V4
+        # Binary Trading Weighting
         # ========================================
 
         final_confidence = (
-            technical * 0.40
+            technical * 0.50
             + agreement_score * 0.30
-            + market_quality * 0.20
+            + market_quality * 0.10
             + learning_score * 0.10
         )
 
+        # -----------------------------
+        # Final Clamp
+        # -----------------------------
+
         return round(
-            max(0, min(final_confidence, 100)),
+            max(
+                0,
+                min(final_confidence, 100),
+            ),
             2,
         )

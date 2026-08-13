@@ -10,7 +10,7 @@ export async function sendMarket(asset, timeframe, candles) {
 
         candles: candles.map(candle => ({
 
-           timestamp: String(candle.timestamp),
+            timestamp: String(candle.timestamp),
 
             open: candle.open,
 
@@ -47,9 +47,7 @@ export async function sendMarket(asset, timeframe, candles) {
 
         console.log(
             "Last:",
-            payload.candles[
-                payload.candles.length - 1
-            ].timestamp
+            payload.candles[payload.candles.length - 1].timestamp
         );
 
     }
@@ -63,17 +61,13 @@ export async function sendMarket(asset, timeframe, candles) {
         const response = await fetch(
             `${API}/market/update`,
             {
-
                 method: "POST",
 
                 headers: {
-
                     "Content-Type": "application/json"
-
                 },
 
                 body: JSON.stringify(payload)
-
             }
         );
 
@@ -84,10 +78,12 @@ export async function sendMarket(asset, timeframe, candles) {
 
         const result = await response.json();
 
-        console.log("Server Response:", result);
-        console.log(text);
+        console.log(
+            "Server Response:",
+            result
+        );
 
-        return text;
+        return result;
 
     } catch (err) {
 
@@ -97,5 +93,4 @@ export async function sendMarket(asset, timeframe, candles) {
         return null;
 
     }
-
 }
