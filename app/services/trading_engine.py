@@ -111,20 +111,63 @@ class TradingEngine:
         # Never generate a new signal while an
         # existing trade is still active.
 
+        # ----------------------------------------
+        # ACTIVE TRADE LOCK
+        # ----------------------------------------
+
         if self.signal_lock.is_trade_locked():
 
             locked = self.signal_lock.current()
-           
+            trade_id = self.signal_lock.trade_id
+
             print("----------------------------------------")
             print("🔒 ACTIVE TRADE LOCKED")
             print("----------------------------------------")
 
-            print("Trade ID :", self.signal_lock.trade_id)
-            print("Asset    :", locked.asset)
-            print("Bias     :", locked.bias)
-            print("Action   :", locked.action)
-            print("State    :", locked.market_state)
-            return locked
+            print("Trade ID :", trade_id)
+
+            # Check whether the locked trade still exists
+            trade = (
+                self.trade_storage.find(trade_id)
+                if trade_id
+                else None
+            )
+
+            # ----------------------------------------
+            # Trade finished
+            # ----------------------------------------
+
+            if trade is None or trade.status != "OPEN":
+
+                 print("----------------------------------------")
+                 print("✅ ACTIVE TRADE FINISHED")
+                 print("----------------------------------------")
+
+                 if trade is not None:
+
+                     print("Trade ID :", trade.id)
+                     print("Status   :", trade.status)
+                     print("Result   :", trade.result)
+                     print("Profit   :", trade.profit)
+
+                 self.signal_lock.unlock()
+
+                 print("🔓 SIGNAL LOCK RELEASED")
+                 print("----------------------------------------")
+
+            # ----------------------------------------
+            # Trade still active
+            # ----------------------------------------
+
+            else:
+
+               print("Status   :", trade.status)
+               print("Asset    :", locked.asset)
+               print("Bias     :", locked.bias)
+               print("Action   :", locked.action)
+               print("State    :", locked.market_state)
+
+               return locked
 
 
         debug_print()
