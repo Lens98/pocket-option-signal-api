@@ -30,12 +30,14 @@ from app.services.entry_manager import (
     EntryManager,
     EntryState,
 )
+
 DEBUG_LOGS = os.getenv("DEBUG_LOGS", "false").lower() == "true"
 
 
 def debug_print(*args, **kwargs):
     if DEBUG_LOGS:
         print(*args, **kwargs)
+
 
 class TradingEngine:
 
@@ -67,7 +69,7 @@ class TradingEngine:
         # ----------------------------------------
         # Risk
         # ----------------------------------------
-        self.presentation = PresentationBuilder()   # ⭐ NEW
+        self.presentation = PresentationBuilder()  # ⭐ NEW
         self.risk = RiskManager()
 
         # ----------------------------------------
@@ -99,11 +101,7 @@ class TradingEngine:
     # Generate Trading Signal
     # =====================================================
 
-    def generate_signal(
-        self,
-        market,
-        indicator_result=None
-    ):
+    def generate_signal(self, market, indicator_result=None):
 
         # ----------------------------------------
         # ACTIVE TRADE LOCK
@@ -127,11 +125,7 @@ class TradingEngine:
             print("Trade ID :", trade_id)
 
             # Check whether the locked trade still exists
-            trade = (
-                self.trade_storage.find(trade_id)
-                if trade_id
-                else None
-            )
+            trade = self.trade_storage.find(trade_id) if trade_id else None
 
             # ----------------------------------------
             # Trade finished
@@ -139,21 +133,21 @@ class TradingEngine:
 
             if trade is None or trade.status != "OPEN":
 
-                 print("----------------------------------------")
-                 print("✅ ACTIVE TRADE FINISHED")
-                 print("----------------------------------------")
+                print("----------------------------------------")
+                print("✅ ACTIVE TRADE FINISHED")
+                print("----------------------------------------")
 
-                 if trade is not None:
+                if trade is not None:
 
-                     print("Trade ID :", trade.id)
-                     print("Status   :", trade.status)
-                     print("Result   :", trade.result)
-                     print("Profit   :", trade.profit)
+                    print("Trade ID :", trade.id)
+                    print("Status   :", trade.status)
+                    print("Result   :", trade.result)
+                    print("Profit   :", trade.profit)
 
-                 self.signal_lock.unlock()
+                self.signal_lock.unlock()
 
-                 print("🔓 SIGNAL LOCK RELEASED")
-                 print("----------------------------------------")
+                print("🔓 SIGNAL LOCK RELEASED")
+                print("----------------------------------------")
 
             # ----------------------------------------
             # Trade still active
@@ -161,14 +155,13 @@ class TradingEngine:
 
             else:
 
-               print("Status   :", trade.status)
-               print("Asset    :", locked.asset)
-               print("Bias     :", locked.bias)
-               print("Action   :", locked.action)
-               print("State    :", locked.market_state)
+                print("Status   :", trade.status)
+                print("Asset    :", locked.asset)
+                print("Bias     :", locked.bias)
+                print("Action   :", locked.action)
+                print("State    :", locked.market_state)
 
-               return locked
-
+                return locked
 
         debug_print()
         debug_print("========================================")
@@ -188,42 +181,23 @@ class TradingEngine:
             print("❌ Not enough candles")
 
             return Signal(
-
                 asset=market.asset,
-
                 timeframe=market.timeframe,
-
                 action="WAIT",
-
                 confidence=0,
-
                 trend="SIDEWAYS",
-
                 expiration="Next Candle",
-
                 entry_price=market.candles[-1].close,
-
                 timestamp=datetime.now(),
-
                 risk="HIGH",
-
-                reasons=[
-
-                    "Not enough candles"
-
-                ]
-
+                reasons=["Not enough candles"],
             )
 
         # ----------------------------------------
         # Build Timeframes
         # ----------------------------------------
 
-        frames = self.timeframes.build(
-
-            market.candles
-
-        )
+        frames = self.timeframes.build(market.candles)
 
         print("----------------------------------------")
         print("Higher Timeframes")
@@ -236,35 +210,15 @@ class TradingEngine:
         # ----------------------------------------
 
         trend_1m = self.trend.analyze(
-
-        MarketData(
-
-        asset=market.asset,
-
-        timeframe="1m",
-
-        candles=frames["1m"]
-
-         )
-
-       )
+            MarketData(asset=market.asset, timeframe="1m", candles=frames["1m"])
+        )
 
         # ----------------------------------------
         # Analyze 5m Trend
         # ----------------------------------------
 
         trend_5m = self.trend.analyze(
-
-            MarketData(
-
-                asset=market.asset,
-
-                timeframe="5m",
-
-                candles=frames["5m"]
-
-            )
-
+            MarketData(asset=market.asset, timeframe="5m", candles=frames["5m"])
         )
 
         # ----------------------------------------
@@ -272,17 +226,7 @@ class TradingEngine:
         # ----------------------------------------
 
         trend_15m = self.trend.analyze(
-
-            MarketData(
-
-                asset=market.asset,
-
-                timeframe="15m",
-
-                candles=frames["15m"]
-
-            )
-
+            MarketData(asset=market.asset, timeframe="15m", candles=frames["15m"])
         )
 
         print("----------------------------------------")
@@ -294,11 +238,7 @@ class TradingEngine:
         # Multi Timeframe Filter
         # ----------------------------------------
 
-        filter_result = self.filter.evaluate(
-        trend_1m,
-        trend_5m,
-        trend_15m
-        )
+        filter_result = self.filter.evaluate(trend_1m, trend_5m, trend_15m)
         allowed = filter_result["allowed"]
 
         print("----------------------------------------")
@@ -313,9 +253,8 @@ class TradingEngine:
 
         else:
 
-             filter_block_reason = None
+            filter_block_reason = None
 
-            
         # ----------------------------------------
         # Indicators
         # ----------------------------------------
@@ -340,7 +279,7 @@ class TradingEngine:
 
                 for reason in regime.reasons:
 
-                 print("✓", reason)
+                    print("✓", reason)
 
                 print("========================================")
                 print()
@@ -363,7 +302,6 @@ class TradingEngine:
                 print("----------------------------------------")
 
                 return Signal(
-
                     asset=market.asset,
                     timeframe=market.timeframe,
                     action="WAIT",
@@ -373,8 +311,7 @@ class TradingEngine:
                     entry_price=market.candles[-1].close,
                     timestamp=datetime.now(),
                     risk="HIGH",
-                    reasons=[str(e)]
-
+                    reasons=[str(e)],
                 )
 
         print("----------------------------------------")
@@ -386,28 +323,21 @@ class TradingEngine:
         # Support & Resistance
         # ----------------------------------------
 
-        self.support.analyze(
-            market.candles
-        )
+        self.support.analyze(market.candles)
 
         print("----------------------------------------")
         print("Support / Resistance Updated")
         print("----------------------------------------")
 
-        if 'regime' not in locals():
+        if "regime" not in locals():
 
-            regime = self.market_regime.detect(
-                indicator_result
-            )
+            regime = self.market_regime.detect(indicator_result)
 
         # ----------------------------------------
         # Analyze Market
         # ----------------------------------------
 
-        signal = self.strategy.analyze(
-            market,
-            indicator_result
-        ) 
+        signal = self.strategy.analyze(market, indicator_result)
         # ----------------------------------------
         # Candle Strategy
         # ----------------------------------------
@@ -463,7 +393,6 @@ class TradingEngine:
 
         print("========================================")
 
-
         print("----------------------------------------")
         print("Pattern Fingerprint")
         print("----------------------------------------")
@@ -472,20 +401,11 @@ class TradingEngine:
         agreement = self.agreement.calculate(signal)
         market_quality = self.market_quality.calculate(signal)
 
+        signal.agreement_score = agreement["agreement"]
 
-        signal.agreement_score = (
-        agreement["agreement"]
-        )
+        signal.confirmation_count = agreement["confirmations"]
 
-
-        signal.confirmation_count = (
-         agreement["confirmations"]
-        )
-
-
-        signal.confirmation_total = (
-        agreement["total"]
-        )
+        signal.confirmation_total = agreement["total"]
         # ========================================
         # DEBUG AGREEMENT
         # ========================================
@@ -498,84 +418,48 @@ class TradingEngine:
         print("Total           :", signal.confirmation_total)
         print("----------------------------------------")
         # ========================================
-        #AI ANALYSIS DATA FOR DASHBOARD
+        # AI ANALYSIS DATA FOR DASHBOARD
         # ========================================
 
-        signal.ema_status = (
-             "✓ Active"
-             if indicator_result.ema20 is not None
-             else "--"
-         )
+        signal.ema_status = "✓ Active" if indicator_result.ema20 is not None else "--"
 
-        signal.ema_strength = (
-            "Startup"
-            if indicator_result.ema50 is None
-            else "Strong"
-        )
+        signal.ema_strength = "Startup" if indicator_result.ema50 is None else "Strong"
 
+        signal.rsi_status = "✓ Momentum" if indicator_result.rsi is not None else "--"
 
-        signal.rsi_status = (
-             "✓ Momentum"
-             if indicator_result.rsi is not None
-            else "--"
-        )
-
-        signal.rsi_strength = (
-            "Strong"
-            if indicator_result.rsi is not None
-            else "--"
-        )
-
+        signal.rsi_strength = "Strong" if indicator_result.rsi is not None else "--"
 
         signal.macd_status = "--"
         signal.macd_strength = "--"
 
-
         if (
-           indicator_result.macd is not None
-           and indicator_result.signal_line is not None
+            indicator_result.macd is not None
+            and indicator_result.signal_line is not None
         ):
 
-         signal.macd_status = (
-            "✓ Bullish"
-           if indicator_result.macd > indicator_result.signal_line
-            else "✓ Bearish"
-        )
-
+            signal.macd_status = (
+                "✓ Bullish"
+                if indicator_result.macd > indicator_result.signal_line
+                else "✓ Bearish"
+            )
 
         if indicator_result.histogram is not None:
 
-           signal.macd_strength = (
-                "Strong"
-               if indicator_result.histogram > 0
-             else "Weak"
-         )
+            signal.macd_strength = (
+                "Strong" if indicator_result.histogram > 0 else "Weak"
+            )
 
-        signal.structure_status = (
-            "✓ Confirmed"
-            if signal.structure_confirmed
-            else "--"
-        )
+        signal.structure_status = "✓ Confirmed" if signal.structure_confirmed else "--"
 
-        signal.structure_strength = (
-            "Strong"
-            if signal.structure_confirmed
-            else "--"
-        )
-
+        signal.structure_strength = "Strong" if signal.structure_confirmed else "--"
 
         signal.volatility_status = (
-            "✓ Active"
-           if indicator_result.atr is not None
-          else "UNKNOWN"
+            "✓ Active" if indicator_result.atr is not None else "UNKNOWN"
         )
 
         signal.volatility_strength = (
-           "Strong"
-           if indicator_result.atr is not None
-           else "--"
+            "Strong" if indicator_result.atr is not None else "--"
         )
-
 
         signal.volume_status = "--"
 
@@ -589,30 +473,18 @@ class TradingEngine:
 
         # Only if Signal has a regime field
         signal.regime = regime.regime
-    
+
         # ----------------------------------------
         # AI Confidence Engine
         # ----------------------------------------
-        signal.probability = self.probability.calculate(
-        
-                signal,
-        
-                indicator_result.mode
-        
-                )
+        signal.probability = self.probability.calculate(signal, indicator_result.mode)
 
         signal.confidence = self.confidence.calculate(
-
             signal,
-
             agreement_score=signal.agreement_score,
-
-           market_quality=market_quality,
-
-           learning_score=signal.probability
-
-       )
-        
+            market_quality=market_quality,
+            learning_score=signal.probability,
+        )
 
         print("----------------------------------------")
         print("Probability Engine")
@@ -623,29 +495,13 @@ class TradingEngine:
         # Confidence Cap by Mode
         # ----------------------------------------
 
-        caps = {
+        caps = {"STARTUP": 70, "STANDARD": 80, "ADVANCED": 90, "FULL": 100}
 
-             "STARTUP": 70,
-
-             "STANDARD": 80,
-
-             "ADVANCED": 90,
-
-             "FULL": 100
-
-            }
-
-        max_confidence = caps.get(
-
-            indicator_result.mode,
-
-            70
-
-        )
+        max_confidence = caps.get(indicator_result.mode, 70)
 
         if signal.confidence > max_confidence:
 
-          signal.confidence = max_confidence
+            signal.confidence = max_confidence
 
         # ----------------------------------------
         # Multi-Timeframe Bonus
@@ -654,8 +510,8 @@ class TradingEngine:
         signal.confidence += filter_result["confidence_bonus"]
 
         if signal.confidence > 100:
- 
-          signal.confidence = 100
+
+            signal.confidence = 100
 
         print("----------------------------------------")
         print("Confidence Engine")
@@ -693,7 +549,7 @@ class TradingEngine:
 
         signal.risk = risk["risk"]
         signal.grade = risk["grade"]
-    
+
         # ----------------------------------------
         # Entry Manager
         # ----------------------------------------
@@ -707,44 +563,36 @@ class TradingEngine:
         print("Grade       :", signal.grade)
         print("Trend       :", signal.trend)
         print("========================================")
-        
 
-      # ----------------------------------------
-      # Waiting-for-candle lock
-      # ----------------------------------------
+        # ----------------------------------------
+        # Waiting-for-candle lock
+        # ----------------------------------------
 
         if self.signal_lock.is_locked():
-  
-          locked = self.signal_lock.current()
 
+            locked = self.signal_lock.current()
 
-          print("----------------------------------------")
-          print("🔒 USING LOCKED SIGNAL")
-          print("----------------------------------------")
+            print("----------------------------------------")
+            print("🔒 USING LOCKED SIGNAL")
+            print("----------------------------------------")
 
-          state = EntryState(locked.market_state)
+            state = EntryState(locked.market_state)
 
-          signal = locked
+            signal = locked
 
         else:
 
-         state = self.entry_manager.determine(signal)
+            state = self.entry_manager.determine(signal)
         # ----------------------------------------
         # Lock Signal
         # ----------------------------------------
 
         if (
-           state == EntryState.WAITING_FOR_CANDLE_CLOSE
-           and not self.signal_lock.is_locked()
+            state == EntryState.WAITING_FOR_CANDLE_CLOSE
+            and not self.signal_lock.is_locked()
         ):
 
-            self.signal_lock.lock(
-
-            signal,
-
-        reason="WAITING FOR NEW CANDLE"
-
-          )
+            self.signal_lock.lock(signal, reason="WAITING FOR NEW CANDLE")
 
         # ----------------------------------------
         # Detect New Candle
@@ -754,7 +602,7 @@ class TradingEngine:
 
         if self.last_candle_timestamp is None:
 
-           self.last_candle_timestamp = latest_candle.timestamp
+            self.last_candle_timestamp = latest_candle.timestamp
 
         elif latest_candle.timestamp != self.last_candle_timestamp:
 
@@ -772,8 +620,8 @@ class TradingEngine:
 
             if self.signal_lock.is_locked():
 
-             # Save the locked signal FIRST
-             locked = self.signal_lock.current()
+                # Save the locked signal FIRST
+                locked = self.signal_lock.current()
 
             # Now unlock
             self.signal_lock.unlock()
@@ -797,47 +645,23 @@ class TradingEngine:
 
                 if len(closed_candles) >= 2:
 
-                    closed_candle_result = (
-                        self.candle_strategy.analyze(
-                            closed_candles
-                        )
-                    )
+                    closed_candle_result = self.candle_strategy.analyze(closed_candles)
 
-                    signal.candle_confirmed = (
-                        closed_candle_result["confirmed"]
-                    )
+                    signal.candle_confirmed = closed_candle_result["confirmed"]
 
-                    signal.candle_pattern = (
-                        closed_candle_result["pattern"]
-                    )
+                    signal.candle_pattern = closed_candle_result["pattern"]
 
-                    signal.candle_strength = (
-                        closed_candle_result["strength"]
-                    )
+                    signal.candle_strength = closed_candle_result["strength"]
 
-                    closed_direction = (
-                        closed_candle_result["direction"]
-                    )
+                    closed_direction = closed_candle_result["direction"]
 
                     print("----------------------------------------")
                     print("CLOSED CANDLE RECHECK")
                     print("----------------------------------------")
-                    print(
-                        "Pattern   :",
-                        signal.candle_pattern
-                    )
-                    print(
-                        "Direction :",
-                        closed_direction
-                    )
-                    print(
-                        "Strength  :",
-                        signal.candle_strength
-                    )
-                    print(
-                        "Confirmed :",
-                        signal.candle_confirmed
-                    )
+                    print("Pattern   :", signal.candle_pattern)
+                    print("Direction :", closed_direction)
+                    print("Strength  :", signal.candle_strength)
+                    print("Confirmed :", signal.candle_confirmed)
                     print("----------------------------------------")
 
                 else:
@@ -864,8 +688,7 @@ class TradingEngine:
 
                 # Candle direction MUST agree with signal direction
                 direction_matches = (
-                    signal.candle_confirmed
-                    and closed_direction == candidate_action
+                    signal.candle_confirmed and closed_direction == candidate_action
                 )
 
                 print("----------------------------------------")
@@ -879,8 +702,7 @@ class TradingEngine:
                 print("Agreement       :", signal.agreement_score)
                 print(
                     "Confirmations   :",
-                    f"{signal.confirmation_count}/"
-                    f"{signal.confirmation_total}"
+                    f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
                 )
                 print("Candle Confirmed:", signal.candle_confirmed)
                 print("Candle Pattern  :", signal.candle_pattern)
@@ -919,16 +741,10 @@ class TradingEngine:
                         print(
                             "Confirmations:",
                             f"{signal.confirmation_count}/"
-                            f"{signal.confirmation_total}"
+                            f"{signal.confirmation_total}",
                         )
-                        print(
-                            "Closed Candle:",
-                            closed_direction
-                        )
-                        print(
-                            "Pattern      :",
-                            signal.candle_pattern
-                        )
+                        print("Closed Candle:", closed_direction)
+                        print("Pattern      :", signal.candle_pattern)
                         print("Expiration   : 60 seconds")
                         print("ENTER NEXT 1-MINUTE CANDLE")
                         print("----------------------------------------")
@@ -954,10 +770,7 @@ class TradingEngine:
                         if signal.agreement_score < MIN_AGREEMENT:
                             print("Agreement too weak")
 
-                        if (
-                            signal.confirmation_count
-                            < MIN_CONFIRMATIONS
-                        ):
+                        if signal.confirmation_count < MIN_CONFIRMATIONS:
                             print("Not enough confirmations")
 
                         if not signal.candle_confirmed:
@@ -968,7 +781,7 @@ class TradingEngine:
                                 "Candle direction mismatch:",
                                 closed_direction,
                                 "vs",
-                                candidate_action
+                                candidate_action,
                             )
 
                         print("----------------------------------------")
@@ -981,17 +794,12 @@ class TradingEngine:
 
                     state = EntryState.WAITING
 
-                    signal.reasons.append(
-                        "No valid binary CALL/PUT direction"
-                    )
+                    signal.reasons.append("No valid binary CALL/PUT direction")
 
                     print("----------------------------------------")
                     print("BINARY ENTRY BLOCKED")
                     print("----------------------------------------")
-                    print(
-                        "Candidate :",
-                        candidate_action
-                    )
+                    print("Candidate :", candidate_action)
                     print("Action    : WAIT")
                     print("----------------------------------------")
 
@@ -1012,24 +820,18 @@ class TradingEngine:
                 print("BINARY ENTRY BLOCKED")
                 print("----------------------------------------")
 
-          
-
         # ----------------------------------------
         # Confirm Entry
         # ----------------------------------------
 
         signal.market_state = state.value
 
-        self.entry_engine.confirm(
-           signal,
-           state
-        )
+        self.entry_engine.confirm(signal, state)
 
         signal = self.presentation.build(signal)
 
         print("ENTRY STATE :", state)
 
-        
         print("========================================")
         print("SIGNAL FLOW")
         print("========================================")
@@ -1055,21 +857,17 @@ class TradingEngine:
 
         if filter_block_reason and state != EntryState.ENTRY:
 
-           signal.action = "WAIT"
+            signal.action = "WAIT"
 
-           signal.can_enter = False
+            signal.can_enter = False
 
-           signal.reasons.append(filter_block_reason)
+            signal.reasons.append(filter_block_reason)
 
         # ----------------------------------------
         # AI Explanation
         # ----------------------------------------
 
-        formatted = self.ai.format(
-
-        signal
-
-        )
+        formatted = self.ai.format(signal)
 
         # ----------------------------------------
         # Save Trade
@@ -1086,10 +884,7 @@ class TradingEngine:
 
         MIN_CONFIDENCE = 70
 
-        if (
-            signal.can_enter
-            and signal.confidence < MIN_CONFIDENCE
-        ):
+        if signal.can_enter and signal.confidence < MIN_CONFIDENCE:
             print("----------------------------------------")
             print("❌ BLOCKED: Confidence too low")
             print("Confidence :", signal.confidence)
@@ -1099,157 +894,142 @@ class TradingEngine:
             signal.action = "WAIT"
             signal.can_enter = False
             signal.market_state = EntryState.WAITING.value
-            signal.reasons.append(
-                f"Confidence below {MIN_CONFIDENCE}%"
-            )
+            signal.reasons.append(f"Confidence below {MIN_CONFIDENCE}%")
 
-   
         # ========================================
         # TRADE CREATION CHECK
         # ========================================
 
-        if (
-            new_candle_opened
-            and signal.can_enter
-            and signal.action in ["CALL", "PUT"]
-        ):
-          print("========================================")
-          print("TRADE CREATION CHECK")
-          print("========================================")
+        if new_candle_opened and signal.can_enter and signal.action in ["CALL", "PUT"]:
+            print("========================================")
+            print("TRADE CREATION CHECK")
+            print("========================================")
 
-          # ----------------------------------------
-          # HARD OPEN TRADE PROTECTION
-          # ----------------------------------------
+            # ----------------------------------------
+            # HARD OPEN TRADE PROTECTION
+            # ----------------------------------------
 
-          open_trades = self.trade_storage.open_trades()
+            open_trades = self.trade_storage.open_trades()
 
-          if open_trades:
+            if open_trades:
 
-               existing = open_trades[0]
+                existing = open_trades[0]
 
-               print("🛑 TRADE CREATION BLOCKED")
-               print("An OPEN trade already exists.")
-               print("Trade ID :", existing.id)
-               print("Asset    :", existing.asset)
-               print("Action   :", existing.action)
-               print("Status   :", existing.status)
-               print("----------------------------------------")
+                print("🛑 TRADE CREATION BLOCKED")
+                print("An OPEN trade already exists.")
+                print("Trade ID :", existing.id)
+                print("Asset    :", existing.asset)
+                print("Action   :", existing.action)
+                print("Status   :", existing.status)
+                print("----------------------------------------")
 
-               signal.action = "WAIT"
-               signal.can_enter = False
-               signal.market_state = EntryState.WAITING.value
-               signal.reason = "OPEN_TRADE_EXISTS"
-               signal.instruction = (
-                   "A trade is already active. "
-                   "Wait for it to finish."
+                signal.action = "WAIT"
+                signal.can_enter = False
+                signal.market_state = EntryState.WAITING.value
+                signal.reason = "OPEN_TRADE_EXISTS"
+                signal.instruction = (
+                    "A trade is already active. " "Wait for it to finish."
                 )
 
-          else:
+            else:
 
-              print("✅ NO OPEN TRADE")
-              print("Creating new trade...")
-              print("----------------------------------------")
- 
-             # ----------------------------------------
-             # Final Signal Information
-             # ----------------------------------------
+                print("✅ NO OPEN TRADE")
+                print("Creating new trade...")
+                print("----------------------------------------")
 
-              signal.asset = market.asset
-              signal.timeframe = market.timeframe
-              signal.entry_price = market.candles[-1].close
-              signal.timestamp = datetime.now()
+                # ----------------------------------------
+                # Final Signal Information
+                # ----------------------------------------
 
-              if not signal.expiration:
-                  signal.expiration = "Next Candle"
+                signal.asset = market.asset
+                signal.timeframe = market.timeframe
+                signal.entry_price = market.candles[-1].close
+                signal.timestamp = datetime.now()
 
-             # ----------------------------------------
-             # Binary Entry Timestamp
-             # ----------------------------------------
+                if not signal.expiration:
+                    signal.expiration = "Next Candle"
 
-        entry_time = datetime.fromisoformat(
-            latest_candle.timestamp
-        ).astimezone(timezone.utc)
+            # ----------------------------------------
+            # Binary Entry Timestamp
+            # ----------------------------------------
 
-              # ----------------------------------------
-              # Create Trade
-              # ----------------------------------------
+        entry_time = datetime.fromisoformat(latest_candle.timestamp).astimezone(
+            timezone.utc
+        )
+
+        # ----------------------------------------
+        # Create Trade
+        # ----------------------------------------
 
         try:
 
-                 from uuid import uuid4
-                 from app.models.trade import Trade
- 
-                 trade = Trade(
-                     id=str(uuid4()),
-                     asset=signal.asset,
-                     timeframe=signal.timeframe,
-                     confidence=signal.confidence,
-                     probability=signal.probability,
-                     agreement_score=signal.agreement_score,
-                     session=signal.session,
-                     action=signal.action,
-                     regime=signal.regime,
-                     indicator_mode=indicator_result.mode,
-                     grade=signal.grade,
-                     risk=signal.risk,
-                     trend=signal.trend,
-                     entry_price=signal.entry_price,
-                     exit_price=None,
-                     entry_time=entry_time,
-                     exit_time=None,
-                     expiration_seconds=60,
-                     status="OPEN",
-                     result="",
-                     profit=0.0,
-                     payout=0.0,
-                     reasons=signal.reasons,
-                     pattern=signal.pattern
-                )
+            from uuid import uuid4
+            from app.models.trade import Trade
 
-                 self.trade_storage.add(trade)
+            trade = Trade(
+                id=str(uuid4()),
+                asset=signal.asset,
+                timeframe=signal.timeframe,
+                confidence=signal.confidence,
+                probability=signal.probability,
+                agreement_score=signal.agreement_score,
+                session=signal.session,
+                action=signal.action,
+                regime=signal.regime,
+                indicator_mode=indicator_result.mode,
+                grade=signal.grade,
+                risk=signal.risk,
+                trend=signal.trend,
+                entry_price=signal.entry_price,
+                exit_price=None,
+                entry_time=entry_time,
+                exit_time=None,
+                expiration_seconds=60,
+                status="OPEN",
+                result="",
+                profit=0.0,
+                payout=0.0,
+                reasons=signal.reasons,
+                pattern=signal.pattern,
+            )
 
-                 print("----------------------------------------")
-                 print("🚀 TRADE CREATED")
-                 print("----------------------------------------")
-                 print("Trade ID :", trade.id)
-                 print("Asset    :", trade.asset)
-                 print("Action   :", trade.action)
-                 print("Entry    :", trade.entry_price)
-                 print("Expiration: 60 seconds")
-                 print("Status   :", trade.status)
-                 print("----------------------------------------")
+            self.trade_storage.add(trade)
 
-                 # ----------------------------------------
-                 # Lock Active Trade
-                 # ----------------------------------------
+            print("----------------------------------------")
+            print("🚀 TRADE CREATED")
+            print("----------------------------------------")
+            print("Trade ID :", trade.id)
+            print("Asset    :", trade.asset)
+            print("Action   :", trade.action)
+            print("Entry    :", trade.entry_price)
+            print("Expiration: 60 seconds")
+            print("Status   :", trade.status)
+            print("----------------------------------------")
 
-                 self.signal_lock.lock(
-                      signal,
-                      reason="ACTIVE",
-                      trade_id=trade.id
-                )
+            # ----------------------------------------
+            # Lock Active Trade
+            # ----------------------------------------
 
-                 self.signal_lock.activate(
-                     trade.id
-                )
+            self.signal_lock.lock(signal, reason="ACTIVE", trade_id=trade.id)
 
-                 print("----------------------------------------")
-                 print("🔒 ACTIVE TRADE LOCKED")
-                 print("----------------------------------------")
-                 print("Trade ID :", trade.id)
-                 print("Asset    :", trade.asset)
-                 print("Action   :", trade.action)
-                 print("Status   :", trade.status)
-                 print("----------------------------------------")
+            self.signal_lock.activate(trade.id)
+
+            print("----------------------------------------")
+            print("🔒 ACTIVE TRADE LOCKED")
+            print("----------------------------------------")
+            print("Trade ID :", trade.id)
+            print("Asset    :", trade.asset)
+            print("Action   :", trade.action)
+            print("Status   :", trade.status)
+            print("----------------------------------------")
 
         except Exception as e:
 
-                 print("----------------------------------------")
-                 print("Trade Logger Error")
-                 print("----------------------------------------")
-                 print(e)
-                 print("----------------------------------------")
-        
+            print("----------------------------------------")
+            print("Trade Logger Error")
+            print("----------------------------------------")
+            print(e)
+            print("----------------------------------------")
 
         # ----------------------------------------
         # Final Console Output

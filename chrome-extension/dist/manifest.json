@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-CmrNLn6A.js"
+        "assets/content.js-BzGF-OGF.js"
       ],
       "matches": [
         "https://*.pocketoption.com/*"
@@ -38,7 +38,7 @@
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-CmrNLn6A.js"
+        "assets/content.js-BzGF-OGF.js"
       ],
       "use_dynamic_url": false
     }

@@ -7,7 +7,7 @@ window.WebSocket = function (...args) {
     console.log("Opening WebSocket:", args[0]);
 
     const socket = new NativeWebSocket(...args);
-
+    socket.binaryType = "arraybuffer";
     socket.addEventListener("message", (event) => {
 
         // Binary messages

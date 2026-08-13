@@ -3,6 +3,8 @@ from app.services.session_ranking import SessionRanking
 from app.services.asset_ranking import AssetRanking
 from app.services.asset_learning import AssetLearning
 from app.services.pattern_learning import PatternLearning
+
+
 class ProbabilityEngine:
 
     def __init__(self):
@@ -12,6 +14,7 @@ class ProbabilityEngine:
         self.assets = AssetRanking()
         self.asset_learning = AssetLearning()
         self.pattern_learning = PatternLearning()
+
     # ========================================
     # Safe Win Rate
     # ========================================
@@ -21,26 +24,237 @@ class ProbabilityEngine:
         if not row:
             return None
 
-        total = row["total"] or 0
-        wins = row["wins"] or 0
+        total = row.get("total", 0) or 0
+        wins = row.get("wins", 0) or 0
 
-        if total == 0:
+        if total <= 0:
             return None
 
         return (wins / total) * 100
 
     # ========================================
-    # Calculate Win Probability
+    # Calculate Probability
     # ========================================
 
     def calculate(self, signal, indicator_mode):
 
-        probability = signal.confidence
+        print("----------------------------------------")
+        print("PROBABILITY ENGINE")
+        print("----------------------------------------")
 
-        print("----------------------------------------")
-        print("Probability Engine")
-        print("----------------------------------------")
-        print("Starting Confidence :", probability)
+        # ========================================
+        # CURRENT MARKET EVIDENCE
+        # ========================================
+
+        probability = 50.0
+
+        agreement = float(getattr(signal, "agreement_score", 0) or 0)
+
+        confirmation_count = int(getattr(signal, "confirmation_count", 0) or 0)
+
+        confirmation_total = int(getattr(signal, "confirmation_total", 0) or 0)
+
+        candle_confirmed = bool(getattr(signal, "candle_confirmed", False))
+
+        candle_strength = float(getattr(signal, "candle_strength", 0) or 0)
+
+        trend = str(getattr(signal, "trend", "") or "").upper()
+
+        bias = str(getattr(signal, "bias", "") or "").upper()
+
+        risk = str(getattr(signal, "risk", "") or "").upper()
+
+        # ========================================
+        # AGREEMENT
+        # ========================================
+
+        if agreement >= 90:
+
+            probability += 15
+
+        elif agreement >= 80:
+
+            probability += 12
+
+        elif agreement >= 70:
+
+            probability += 8
+
+        elif agreement >= 60:
+
+            probability += 4
+
+        else:
+
+            probability -= 5
+
+        # ========================================
+        # CONFIRMATIONS
+        # ========================================
+
+        if confirmation_total > 0:
+
+            confirmation_ratio = (confirmation_count / confirmation_total) * 100
+
+            if confirmation_ratio >= 75:
+
+                probability += 12
+
+            elif confirmation_ratio >= 65:
+
+                probability += 9
+
+            elif confirmation_ratio >= 55:
+
+                probability += 6
+
+            elif confirmation_ratio >= 45:
+
+                probability += 2
+
+            else:
+
+                probability -= 5
+
+        # ========================================
+        # CANDLE CONFIRMATION
+        # ========================================
+
+        if candle_confirmed:
+
+            probability += 8
+
+        # ========================================
+        # CANDLE STRENGTH
+        # ========================================
+
+        if candle_strength >= 90:
+
+            probability += 8
+
+        elif candle_strength >= 75:
+
+            probability += 6
+
+        elif candle_strength >= 60:
+
+            probability += 4
+
+        elif candle_strength > 0 and candle_strength < 40:
+
+            probability -= 3
+
+        # ========================================
+        # TREND / BIAS ALIGNMENT
+        # ========================================
+
+        bullish_alignment = bias == "CALL" and trend == "BULLISH"
+
+        bearish_alignment = bias == "PUT" and trend == "BEARISH"
+
+        if bullish_alignment or bearish_alignment:
+
+            probability += 7
+
+        elif bias in ("CALL", "PUT") and trend not in (
+            "",
+            "UNKNOWN",
+            "NEUTRAL",
+        ):
+
+            probability -= 3
+
+        # ========================================
+        # SIGNAL CONFIRMATION FLAGS
+        # ========================================
+
+        confirmation_flags = [
+            "ema_confirmed",
+            "macd_confirmed",
+            "rsi_confirmed",
+            "structure_confirmed",
+            "zone_confirmed",
+            "adx_confirmed",
+            "atr_confirmed",
+            "candle_confirmed",
+            "pullback_confirmed",
+        ]
+
+        confirmed_flags = 0
+
+        for name in confirmation_flags:
+
+            if bool(getattr(signal, name, False)):
+
+                confirmed_flags += 1
+
+        if confirmed_flags >= 7:
+
+            probability += 10
+
+        elif confirmed_flags >= 6:
+
+            probability += 8
+
+        elif confirmed_flags >= 5:
+
+            probability += 6
+
+        elif confirmed_flags >= 4:
+
+            probability += 3
+
+        elif confirmed_flags <= 2:
+
+            probability -= 5
+
+        # ========================================
+        # RISK
+        # ========================================
+
+        if risk == "LOW":
+
+            probability += 5
+
+        elif risk == "MEDIUM":
+
+            probability += 1
+
+        elif risk == "HIGH":
+
+            probability -= 8
+
+        elif risk in ("VERY HIGH", "EXTREME"):
+
+            probability -= 15
+
+        # ========================================
+        # CURRENT MARKET EVIDENCE CLAMP
+        # ========================================
+
+        probability = max(
+            0,
+            min(probability, 100),
+        )
+
+        print(
+            "Current Market Probability :",
+            round(
+                probability,
+                2,
+            ),
+        )
+
+        # ========================================
+        # HISTORICAL LEARNING
+        #
+        # Historical data is intentionally used
+        # as a SMALL adjustment rather than allowing
+        # old performance to destroy a strong current
+        # market setup.
+        # ========================================
+
+        historical_adjustment = 0.0
 
         # ========================================
         # Asset History
@@ -48,15 +262,32 @@ class ProbabilityEngine:
 
         asset = self.learning.asset_stats(signal.asset)
 
-        if asset and (asset["total"] or 0) >= 10:
+        if asset and (asset.get("total", 0) or 0) >= 10:
 
             asset_rate = self._win_rate(asset)
 
             if asset_rate is not None:
 
-                print("Asset Win Rate :", round(asset_rate, 2))
+                print(
+                    "Asset Win Rate :",
+                    round(asset_rate, 2),
+                )
 
-                probability = probability * 0.75 + asset_rate * 0.25
+                if asset_rate >= 70:
+
+                    historical_adjustment += 4
+
+                elif asset_rate >= 60:
+
+                    historical_adjustment += 2
+
+                elif asset_rate <= 40:
+
+                    historical_adjustment -= 4
+
+                elif asset_rate <= 50:
+
+                    historical_adjustment -= 2
 
         # ========================================
         # Regime History
@@ -64,15 +295,32 @@ class ProbabilityEngine:
 
         regime = self.learning.regime_stats(signal.regime)
 
-        if regime and (regime["total"] or 0) >= 10:
+        if regime and (regime.get("total", 0) or 0) >= 10:
 
             regime_rate = self._win_rate(regime)
 
             if regime_rate is not None:
 
-                print("Regime Win Rate :", round(regime_rate, 2))
+                print(
+                    "Regime Win Rate :",
+                    round(regime_rate, 2),
+                )
 
-                probability = probability * 0.85 + regime_rate * 0.15
+                if regime_rate >= 70:
+
+                    historical_adjustment += 3
+
+                elif regime_rate >= 60:
+
+                    historical_adjustment += 1
+
+                elif regime_rate <= 40:
+
+                    historical_adjustment -= 3
+
+                elif regime_rate <= 50:
+
+                    historical_adjustment -= 1
 
         # ========================================
         # Session Statistics
@@ -80,15 +328,32 @@ class ProbabilityEngine:
 
         session = self.learning.session_stats(signal.session)
 
-        if session and (session["total"] or 0) >= 10:
+        if session and (session.get("total", 0) or 0) >= 10:
 
             session_rate = self._win_rate(session)
 
             if session_rate is not None:
 
-                print("Session Win Rate :", round(session_rate, 2))
+                print(
+                    "Session Win Rate :",
+                    round(session_rate, 2),
+                )
 
-                probability = probability * 0.90 + session_rate * 0.10
+                if session_rate >= 70:
+
+                    historical_adjustment += 2
+
+                elif session_rate >= 60:
+
+                    historical_adjustment += 1
+
+                elif session_rate <= 40:
+
+                    historical_adjustment -= 2
+
+                elif session_rate <= 50:
+
+                    historical_adjustment -= 1
 
         # ========================================
         # Indicator Mode
@@ -96,15 +361,32 @@ class ProbabilityEngine:
 
         mode = self.learning.mode_stats(indicator_mode)
 
-        if mode and (mode["total"] or 0) >= 10:
+        if mode and (mode.get("total", 0) or 0) >= 10:
 
             mode_rate = self._win_rate(mode)
 
             if mode_rate is not None:
 
-                print("Mode Win Rate :", round(mode_rate, 2))
+                print(
+                    "Mode Win Rate :",
+                    round(mode_rate, 2),
+                )
 
-                probability = probability * 0.90 + mode_rate * 0.10
+                if mode_rate >= 70:
+
+                    historical_adjustment += 2
+
+                elif mode_rate >= 60:
+
+                    historical_adjustment += 1
+
+                elif mode_rate <= 40:
+
+                    historical_adjustment -= 2
+
+                elif mode_rate <= 50:
+
+                    historical_adjustment -= 1
 
         # ========================================
         # Overall Performance
@@ -112,15 +394,32 @@ class ProbabilityEngine:
 
         overall = self.learning.overall_stats()
 
-        if overall and (overall["total"] or 0) >= 50:
+        if overall and (overall.get("total", 0) or 0) >= 50:
 
             overall_rate = self._win_rate(overall)
 
             if overall_rate is not None:
 
-                print("Overall Win Rate :", round(overall_rate, 2))
+                print(
+                    "Overall Win Rate :",
+                    round(overall_rate, 2),
+                )
 
-                probability = probability * 0.90 + overall_rate * 0.10
+                if overall_rate >= 70:
+
+                    historical_adjustment += 2
+
+                elif overall_rate >= 60:
+
+                    historical_adjustment += 1
+
+                elif overall_rate <= 40:
+
+                    historical_adjustment -= 2
+
+                elif overall_rate <= 50:
+
+                    historical_adjustment -= 1
 
         # ========================================
         # Recent Performance
@@ -128,15 +427,32 @@ class ProbabilityEngine:
 
         recent = self.learning.recent_stats(50)
 
-        if recent and (recent["total"] or 0) >= 20:
+        if recent and (recent.get("total", 0) or 0) >= 20:
 
             recent_rate = self._win_rate(recent)
 
             if recent_rate is not None:
 
-                print("Recent Win Rate :", round(recent_rate, 2))
+                print(
+                    "Recent Win Rate :",
+                    round(recent_rate, 2),
+                )
 
-                probability = probability * 0.80 + recent_rate * 0.20
+                if recent_rate >= 70:
+
+                    historical_adjustment += 3
+
+                elif recent_rate >= 60:
+
+                    historical_adjustment += 1
+
+                elif recent_rate <= 40:
+
+                    historical_adjustment -= 3
+
+                elif recent_rate <= 50:
+
+                    historical_adjustment -= 1
 
         # ========================================
         # Session Ranking
@@ -148,7 +464,7 @@ class ProbabilityEngine:
 
         for item in session_rankings:
 
-            if item["session"] == signal.session:
+            if item.get("session") == signal.session:
 
                 current_session = item
 
@@ -156,81 +472,109 @@ class ProbabilityEngine:
 
         if current_session:
 
-            trades = current_session["trades"]
-            rate = current_session["win_rate"]
+            trades = current_session.get(
+                "trades",
+                0,
+            )
+
+            rate = current_session.get(
+                "win_rate",
+                0,
+            )
 
             if trades >= 20:
 
                 print("----------------------------------------")
                 print("Session Ranking")
                 print("----------------------------------------")
-                print("Session :", current_session["session"])
-                print("Trades  :", trades)
-                print("Win Rate:", rate)
+                print(
+                    "Session :",
+                    current_session.get("session"),
+                )
+                print(
+                    "Trades  :",
+                    trades,
+                )
+                print(
+                    "Win Rate:",
+                    rate,
+                )
 
                 if rate >= 70:
 
-                    probability += 5
-
-                    print("Bonus : +5")
+                    historical_adjustment += 3
 
                 elif rate >= 60:
 
-                    probability += 3
+                    historical_adjustment += 1
 
-                    print("Bonus : +3")
+                elif rate <= 40:
 
-                elif rate <= 45:
-
-                    probability -= 5
-
-                    print("Penalty : -5")
+                    historical_adjustment -= 3
 
                 elif rate <= 50:
 
-                    probability -= 2
+                    historical_adjustment -= 1
 
-                    print("Penalty : -2")
-                
         # ========================================
         # Asset Learning
         # ========================================
 
         learning = self.asset_learning.evaluate(
-
             signal,
-
-            indicator_mode
-
+            indicator_mode,
         )
 
         if learning:
 
+            rate = (
+                learning.get(
+                    "win_rate",
+                    0,
+                )
+                or 0
+            )
+
             print("----------------------------------------")
             print("Asset Learning")
             print("----------------------------------------")
-            print("Asset   :", learning.get("asset"))
-            print("Session :", learning.get("session"))
-            print("Regime  :", learning.get("regime"))
-            print("Mode    :", learning.get("mode"))
             print(
-    "Win Rate:",
-    learning.get("win_rate", 0)
-)
-
-            rate = learning.get("win_rate", 0)
+                "Asset   :",
+                learning.get("asset"),
+            )
+            print(
+                "Session :",
+                learning.get("session"),
+            )
+            print(
+                "Regime  :",
+                learning.get("regime"),
+            )
+            print(
+                "Mode    :",
+                learning.get("mode"),
+            )
+            print(
+                "Win Rate:",
+                rate,
+            )
 
             if rate >= 80:
 
-                probability += 4
+                historical_adjustment += 3
 
-                print("Learning Bonus : +4")
+            elif rate >= 70:
 
-            elif rate <= 45:
+                historical_adjustment += 2
 
-                probability -= 4
+            elif rate <= 40:
 
-                print("Learning Penalty : -4")
+                historical_adjustment -= 3
+
+            elif rate <= 50:
+
+                historical_adjustment -= 1
+
         # ========================================
         # Asset Ranking
         # ========================================
@@ -241,7 +585,7 @@ class ProbabilityEngine:
 
         for item in asset_rankings:
 
-            if item["asset"] == signal.asset:
+            if item.get("asset") == signal.asset:
 
                 current_asset = item
 
@@ -249,105 +593,159 @@ class ProbabilityEngine:
 
         if current_asset:
 
-            trades = current_asset["trades"]
-            rate = current_asset["win_rate"]
+            trades = current_asset.get(
+                "trades",
+                0,
+            )
+
+            rate = (
+                current_asset.get(
+                    "win_rate",
+                    0,
+                )
+                or 0
+            )
 
             if trades >= 20:
 
                 print("----------------------------------------")
                 print("Asset Ranking")
                 print("----------------------------------------")
-                print("Asset    :", current_asset["asset"])
-                print("Trades   :", trades)
-                print("Win Rate :", rate)
+                print(
+                    "Asset    :",
+                    current_asset.get("asset"),
+                )
+                print(
+                    "Trades   :",
+                    trades,
+                )
+                print(
+                    "Win Rate :",
+                    rate,
+                )
 
                 if rate >= 75:
 
-                    probability += 5
-
-                    print("Asset Bonus : +5")
+                    historical_adjustment += 3
 
                 elif rate >= 65:
 
-                    probability += 3
+                    historical_adjustment += 1
 
-                    print("Asset Bonus : +3")
+                elif rate <= 40:
 
-                elif rate <= 45:
-
-                    probability -= 5
-
-                    print("Asset Penalty : -5")
+                    historical_adjustment -= 3
 
                 elif rate <= 50:
 
-                    probability -= 2
+                    historical_adjustment -= 1
 
-                    print("Asset Penalty : -2")
-
-                 # ========================================
+        # ========================================
         # Pattern Learning
         # ========================================
 
-        pattern = self.pattern_learning.statistics(
+        pattern = self.pattern_learning.statistics(signal)
 
-            signal
+        if pattern:
 
+            pattern_name = pattern.get(
+                "pattern",
+                "UNKNOWN",
+            )
+
+            total = (
+                pattern.get(
+                    "total",
+                    0,
+                )
+                or 0
+            )
+
+            rate = (
+                pattern.get(
+                    "win_rate",
+                    0,
+                )
+                or 0
+            )
+
+            print("----------------------------------------")
+            print("Pattern Learning")
+            print("----------------------------------------")
+            print(
+                "Pattern :",
+                pattern_name,
+            )
+            print(
+                "Trades  :",
+                total,
+            )
+            print(
+                "Win Rate:",
+                rate,
+            )
+            print("----------------------------------------")
+
+            if total >= 10:
+
+                if rate >= 80:
+
+                    historical_adjustment += 4
+
+                elif rate >= 70:
+
+                    historical_adjustment += 2
+
+                elif rate >= 60:
+
+                    historical_adjustment += 1
+
+                elif rate <= 40:
+
+                    historical_adjustment -= 4
+
+                elif rate <= 50:
+
+                    historical_adjustment -= 2
+
+        # ========================================
+        # Limit Historical Influence
+        # ========================================
+
+        historical_adjustment = max(
+            -15,
+            min(historical_adjustment, 15),
+        )
+
+        print(
+            "Historical Adjustment :",
+            round(
+                historical_adjustment,
+                2,
+            ),
+        )
+
+        # ========================================
+        # Final Probability
+        # ========================================
+
+        probability += historical_adjustment
+
+        probability = max(
+            0,
+            min(probability, 100),
+        )
+
+        probability = round(
+            probability,
+            2,
         )
 
         print("----------------------------------------")
-        print("Pattern Learning")
-        print("----------------------------------------")
-        print("Pattern :", pattern["pattern"])
-        print("Trades  :", pattern["total"])
-        print("Win Rate:", pattern["win_rate"])
-        print("----------------------------------------")
-
-        if pattern["total"] >= 10:
-
-            rate = pattern["win_rate"]
-
-            if rate >= 80:
-
-                probability += 8
-
-                print("Pattern Bonus : +8")
-
-            elif rate >= 70:
-
-                probability += 5
-
-                print("Pattern Bonus : +5")
-
-            elif rate >= 60:
-
-                probability += 3
-
-                print("Pattern Bonus : +3")
-
-            elif rate <= 40:
-
-                probability -= 8
-
-                print("Pattern Penalty : -8")
-
-            elif rate <= 50:
-
-                probability -= 5
-
-                print("Pattern Penalty : -5")
-
-        # ========================================
-        # Clamp
-        # ========================================
-
-        probability = max(0, min(probability, 100))
-
-        probability = round(probability, 2)
-
-        print("----------------------------------------")
-        print("Final Probability :", probability)
+        print(
+            "Final Probability :",
+            probability,
+        )
         print("----------------------------------------")
 
         return probability
- 
