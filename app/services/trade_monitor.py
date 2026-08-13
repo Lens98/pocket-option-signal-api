@@ -88,6 +88,23 @@ class TradeMonitor:
 
         trades = self.trade_storage.open_trades()
 
+        print("----------------------------------------")
+        print("🔎 TRADE MONITOR CHECK")
+        print("Open trades:", len(trades))
+        print("----------------------------------------")
+
+        for trade in trades:
+            print(
+                "Trade:",
+                trade.id,
+                "| Status:",
+                trade.status,
+                "| Entry:",
+                trade.entry_time,
+                "| Expiration:",
+                trade.expiration_seconds
+           )
+
         if not trades:
             return
 
@@ -110,10 +127,24 @@ class TradeMonitor:
             )
 
             if market is None:
+
+                print("----------------------------------------")
+                print("⚠️ CLOSE BLOCKED: MARKET NOT FOUND")
+                print("Trade ID:", trade.id)
+                print("Asset:", trade.asset)
+                print("----------------------------------------")
+
                 continue
 
             if len(market.candles) == 0:
-                continue
+
+               print("----------------------------------------")
+               print("⚠️ CLOSE BLOCKED: NO CANDLES")
+               print("Trade ID:", trade.id)
+               print("Asset:", trade.asset)
+               print("----------------------------------------")
+
+               continue
 
             latest = market.candles[-1]
 
@@ -128,15 +159,22 @@ class TradeMonitor:
             # ----------------------------------------
             # Close Trade
             # ----------------------------------------
-
             closed_trade = self.tracker.close_trade(
                 trade,
-                exit_price
+                exit_price 
             )
 
             if not closed_trade:
-                continue
 
+                print("----------------------------------------")
+                print("❌ CLOSE_TRADE FAILED")
+                print("Trade ID:", trade.id)
+                print("Asset:", trade.asset)
+                print("Entry:", trade.entry_price)
+                print("Exit:", exit_price)
+                print("----------------------------------------")
+
+                continue
             # ----------------------------------------
             # Save Learning Record
             # ----------------------------------------
