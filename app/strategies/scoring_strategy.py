@@ -92,7 +92,7 @@ class ScoringStrategy:
             trend = "BULLISH"
             reasons = bullish_reasons
 
-        elif difference <= -8:
+        elif difference <= -18:
 
             bias = "PUT"
             trend = "BEARISH"
