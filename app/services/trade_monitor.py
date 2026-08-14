@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta, timezone
 import threading
 import time
+
 from app.models.trade_learning import TradeLearning
 from app.storage.learning_storage import LearningStorage
 from app.services.win_loss_tracker import WinLossTracker
-from app.storage.trade_storage import TradeStorage
 from app.database.pattern_metadata_repository import PatternMetadataRepository
 from app.services.pattern_learning import PatternLearning
 from app.storage.shared import (
@@ -12,11 +12,11 @@ from app.storage.shared import (
     trade_storage,
 )
 
+
 class TradeMonitor:
 
     def __init__(self):
 
-        self.trade_storage = TradeStorage()
         self.market_storage = market_storage
         self.trade_storage = trade_storage
         self.tracker = WinLossTracker()
@@ -37,10 +37,7 @@ class TradeMonitor:
 
         self.running = True
 
-        self.thread = threading.Thread(
-            target=self.run,
-            daemon=True
-        )
+        self.thread = threading.Thread(target=self.run, daemon=True)
 
         self.thread.start()
 
@@ -80,7 +77,8 @@ class TradeMonitor:
                 print("----------------------------------------")
 
             time.sleep(1)
-        # ----------------------------------------
+
+    # ----------------------------------------
     # Check Open Trades
     # ----------------------------------------
 
@@ -94,6 +92,7 @@ class TradeMonitor:
         print("----------------------------------------")
 
         for trade in trades:
+
             print(
                 "Trade:",
                 trade.id,
@@ -102,29 +101,56 @@ class TradeMonitor:
                 "| Entry:",
                 trade.entry_time,
                 "| Expiration:",
-                trade.expiration_seconds
-           )
+                trade.expiration_seconds,
+            )
 
         if not trades:
             return
 
+        # Always use timezone-aware UTC
         now = datetime.now(timezone.utc)
 
         for trade in trades:
 
-            expire_time = (
-                trade.entry_time +
-                timedelta(
-                    seconds=trade.expiration_seconds
-                )
-            )
+            # ----------------------------------------
+            # Normalize Entry Time to UTC
+            # ----------------------------------------
 
+            entry_time = trade.entry_time
+
+            if entry_time.tzinfo is None:
+
+                # SQLite may return a naive datetime.
+                # Treat stored timestamps as UTC.
+                entry_time = entry_time.replace(tzinfo=timezone.utc)
+
+            else:
+
+                entry_time = entry_time.astimezone(timezone.utc)
+
+            # ----------------------------------------
+            # Calculate Expiration
+            # ----------------------------------------
+
+            expire_time = entry_time + timedelta(seconds=trade.expiration_seconds)
+
+            print("----------------------------------------")
+            print("Trade Timing")
+            print("Trade ID :", trade.id)
+            print("Entry    :", entry_time)
+            print("Expires  :", expire_time)
+            print("Now      :", now)
+            print("----------------------------------------")
+
+            # Trade has not expired yet
             if now < expire_time:
                 continue
 
-            market = self.market_storage.get(
-                trade.asset
-            )
+            # ----------------------------------------
+            # Get Market
+            # ----------------------------------------
+
+            market = self.market_storage.get(trade.asset)
 
             if market is None:
 
@@ -136,15 +162,23 @@ class TradeMonitor:
 
                 continue
 
+            # ----------------------------------------
+            # Make Sure Candles Exist
+            # ----------------------------------------
+
             if len(market.candles) == 0:
 
-               print("----------------------------------------")
-               print("⚠️ CLOSE BLOCKED: NO CANDLES")
-               print("Trade ID:", trade.id)
-               print("Asset:", trade.asset)
-               print("----------------------------------------")
+                print("----------------------------------------")
+                print("⚠️ CLOSE BLOCKED: NO CANDLES")
+                print("Trade ID:", trade.id)
+                print("Asset:", trade.asset)
+                print("----------------------------------------")
 
-               continue
+                continue
+
+            # ----------------------------------------
+            # Exit Price
+            # ----------------------------------------
 
             latest = market.candles[-1]
 
@@ -159,10 +193,8 @@ class TradeMonitor:
             # ----------------------------------------
             # Close Trade
             # ----------------------------------------
-            closed_trade = self.tracker.close_trade(
-                trade,
-                exit_price 
-            )
+
+            closed_trade = self.tracker.close_trade(trade, exit_price)
 
             if not closed_trade:
 
@@ -175,103 +207,55 @@ class TradeMonitor:
                 print("----------------------------------------")
 
                 continue
+
             # ----------------------------------------
             # Save Learning Record
             # ----------------------------------------
 
             learning = TradeLearning(
-
                 trade_id=closed_trade.id,
-
                 asset=closed_trade.asset,
-
                 timeframe=closed_trade.timeframe,
-
                 session="UNKNOWN",
-
                 action=closed_trade.action,
-
                 indicator_mode="UNKNOWN",
-
                 regime="UNKNOWN",
-
                 trend=closed_trade.trend,
-
                 confidence=closed_trade.confidence,
-
                 probability=0.0,
-
                 risk=closed_trade.risk,
-
                 grade=closed_trade.grade,
-
                 ema20=None,
-
                 ema50=None,
-
                 ema200=None,
-
                 rsi=None,
-
                 macd=None,
-
                 signal_line=None,
-
                 histogram=None,
-
                 adx=None,
-
                 atr=None,
-                ema_used=any(
-               "EMA" in reason
-                for reason in closed_trade.reasons
-              ),
-
-rsi_used=any(
-    "RSI" in reason
-    for reason in closed_trade.reasons
-),
-
-macd_used=any(
-    "MACD" in reason
-    for reason in closed_trade.reasons
-),
-
-adx_used=any(
-    "ADX" in reason
-    for reason in closed_trade.reasons
-),
-
-atr_used=any(
-    "ATR" in reason
-    for reason in closed_trade.reasons
-),
-
+                ema_used=any("EMA" in reason for reason in closed_trade.reasons),
+                rsi_used=any("RSI" in reason for reason in closed_trade.reasons),
+                macd_used=any("MACD" in reason for reason in closed_trade.reasons),
+                adx_used=any("ADX" in reason for reason in closed_trade.reasons),
+                atr_used=any("ATR" in reason for reason in closed_trade.reasons),
                 entry_price=closed_trade.entry_price,
-
                 exit_price=closed_trade.exit_price,
-
                 payout=closed_trade.payout,
-
                 profit=closed_trade.profit,
-
                 result=closed_trade.result,
-
                 entry_time=closed_trade.entry_time,
-
                 exit_time=closed_trade.exit_time,
-
                 duration=(
-
-                    closed_trade.exit_time -
-
-                    closed_trade.entry_time
-
+                    closed_trade.exit_time - closed_trade.entry_time
                 ).total_seconds(),
-
-                reasons=closed_trade.reasons
-
+                reasons=closed_trade.reasons,
             )
+
+            # ----------------------------------------
+            # Indicator Flags
+            # ----------------------------------------
+
             print("========================================")
             print("INDICATOR FLAGS")
             print("EMA :", learning.ema_used)
@@ -281,31 +265,28 @@ atr_used=any(
             print("ATR :", learning.atr_used)
             print("Reasons:", learning.reasons)
             print("========================================")
+
             self.learning.add(learning)
+
             # ----------------------------------------
             # Learn Pattern
             # ----------------------------------------
 
-            self.pattern_learning.learn(
+            self.pattern_learning.learn(closed_trade.pattern, closed_trade.result)
 
-                closed_trade.pattern,
-
-                closed_trade.result
-
-            )
             # ----------------------------------------
             # Save Metadata
             # ----------------------------------------
 
-            self.pattern_metadata.save(
-
-                closed_trade
-
-            )
+            self.pattern_metadata.save(closed_trade)
 
             print("----------------------------------------")
             print("📊 Pattern Metadata Saved")
             print("----------------------------------------")
+
+            # ----------------------------------------
+            # Pattern Learning Log
+            # ----------------------------------------
 
             print("========================================")
             print("🧠 PATTERN LEARNING")
@@ -314,6 +295,10 @@ atr_used=any(
             print("Result  :", closed_trade.result)
             print("Trade   :", closed_trade.id)
             print("========================================")
+
+            # ----------------------------------------
+            # Learning Record Log
+            # ----------------------------------------
 
             print("----------------------------------------")
             print("🧠 Learning Record Saved")
