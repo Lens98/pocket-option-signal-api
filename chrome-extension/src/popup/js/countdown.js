@@ -13,13 +13,119 @@ export function stopCountdown() {
         countdownInterval = null;
 
     }
+
+}
+
+// ========================================
+// Parse Candle Timestamp
+// ========================================
+
+function getCandleTime(candle) {
+
+    if (!candle || candle.timestamp == null) {
+        return null;
+    }
+
+    const value = candle.timestamp;
+
+    // Unix timestamp
+    if (
+        typeof value === "number" ||
+        !isNaN(Number(value))
+    ) {
+
+        let timestamp = Number(value);
+
+        // Milliseconds
+        if (timestamp > 10000000000) {
+            timestamp = timestamp / 1000;
+        }
+
+        return timestamp * 1000;
+    }
+
+    // ISO timestamp
+    const parsed = Date.parse(String(value));
+
+    if (!isNaN(parsed)) {
+        return parsed;
+    }
+
+    return null;
+}
+
+// ========================================
+// Get Time Remaining
+// ========================================
+
+function getRemainingSeconds(candle) {
+
+    const candleStart = getCandleTime(candle);
+
+    if (candleStart === null) {
+        return null;
+    }
+
+    // Backend timeframe
+    const timeframe =
+        Number(window.marketTimeframe) || 60;
+
+    if (timeframe <= 0) {
+        return null;
+    }
+
+    const now = Date.now();
+
+    const elapsed =
+        Math.floor(
+            (now - candleStart) / 1000
+        );
+
+    let remaining =
+        timeframe - (elapsed % timeframe);
+
+    if (remaining > timeframe) {
+        remaining = timeframe;
+    }
+
+    if (remaining <= 0) {
+        remaining = timeframe;
+    }
+
+    return remaining;
+}
+
+// ========================================
+// Format Countdown
+// ========================================
+
+function formatTime(seconds) {
+
+    if (seconds === null) {
+        return "--:--";
+    }
+
+    const minutes =
+        Math.floor(seconds / 60);
+
+    const remainingSeconds =
+        seconds % 60;
+
+    return (
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(remainingSeconds).padStart(2, "0")
+    );
 }
 
 // ========================================
 // Start Dashboard State Display
 // ========================================
 
-export function startCountdown(getMarketState,getLatestCandle) {
+export function startCountdown(
+    getMarketState,
+    getLatestCandle
+) {
 
     stopCountdown();
 
@@ -40,13 +146,40 @@ export function startCountdown(getMarketState,getLatestCandle) {
         const marketState =
             getMarketState();
 
+        const latestCandle =
+            getLatestCandle();
+
+        const remaining =
+            getRemainingSeconds(
+                latestCandle
+            );
+
+        const countdownText =
+            formatTime(remaining);
+
+        const signal =
+            window.latestSignal || {};
+
+        const bias =
+            String(
+                signal.bias ||
+                signal.action ||
+                "WAIT"
+            ).toUpperCase();
+
+        const confidence =
+            Number(
+                signal.confidence || 0
+            );
+
         // ========================================
         // WAITING
         // ========================================
 
         if (marketState === "WAITING") {
 
-            timer.innerHTML = "--:--";
+            timer.innerHTML =
+                countdownText;
 
             banner.innerHTML =
                 "🟡 WAITING FOR SETUP";
@@ -61,21 +194,36 @@ export function startCountdown(getMarketState,getLatestCandle) {
         }
 
         // ========================================
-        // ANALYZING
+        // ANALYZING CURRENT CANDLE
         // ========================================
 
         if (marketState === "ANALYZING") {
 
-            timer.innerHTML = "--:--";
+            timer.innerHTML =
+                countdownText;
 
             banner.innerHTML =
-                "🔍 ANALYZING";
+                "🔍 ANALYZING CURRENT CANDLE";
 
-            action.innerHTML =
-                "WAIT";
+            if (
+                (bias === "CALL" || bias === "PUT") &&
+                confidence > 0
+            ) {
 
-            entryMessage.innerHTML =
-                "Analyzing the current market setup.";
+                action.innerHTML =
+                    bias;
+
+                entryMessage.innerHTML =
+                    `${bias} detected • Confidence ${Math.round(confidence)}% • Enter on the next candle.`;
+
+            } else {
+
+                action.innerHTML =
+                    "WAIT";
+
+                entryMessage.innerHTML =
+                    "AI is analyzing the current candle.";
+            }
 
             return;
         }
@@ -86,16 +234,28 @@ export function startCountdown(getMarketState,getLatestCandle) {
 
         if (marketState === "CONFIRMING") {
 
-            timer.innerHTML = "--:--";
+            timer.innerHTML =
+                countdownText;
 
             banner.innerHTML =
-                "🟡 CONFIRMING";
+                "🟡 CONFIRMING CURRENT CANDLE";
 
-            action.innerHTML =
-                "WAIT";
+            if (
+                bias === "CALL" ||
+                bias === "PUT"
+            ) {
+
+                action.innerHTML =
+                    bias;
+
+            } else {
+
+                action.innerHTML =
+                    "WAIT";
+            }
 
             entryMessage.innerHTML =
-                "Waiting for stronger confirmation.";
+                "AI is confirming the direction for the next candle.";
 
             return;
         }
@@ -106,16 +266,31 @@ export function startCountdown(getMarketState,getLatestCandle) {
 
         if (marketState === "READY") {
 
-            timer.innerHTML = "--:--";
+            timer.innerHTML =
+                countdownText;
 
             banner.innerHTML =
-                "🟢 PREPARING ENTRY";
+                "🟢 NEXT CANDLE SETUP READY";
 
-            action.innerHTML =
-                "READY";
+            if (
+                bias === "CALL" ||
+                bias === "PUT"
+            ) {
 
-            entryMessage.innerHTML =
-                "Setup detected. Waiting for confirmation.";
+                action.innerHTML =
+                    bias;
+
+                entryMessage.innerHTML =
+                    `${bias} • Enter when the new candle opens.`;
+
+            } else {
+
+                action.innerHTML =
+                    "READY";
+
+                entryMessage.innerHTML =
+                    "Setup detected. Waiting for the new candle.";
+            }
 
             return;
         }
@@ -129,16 +304,31 @@ export function startCountdown(getMarketState,getLatestCandle) {
             "WAITING_FOR_CANDLE_CLOSE"
         ) {
 
-            timer.innerHTML = "--:--";
+            timer.innerHTML =
+                countdownText;
 
             banner.innerHTML =
-                "⏳ WAITING FOR CANDLE CLOSE";
+                "⏳ ENTER ON NEXT CANDLE";
 
-            action.innerHTML =
-                "WAIT";
+            if (
+                bias === "CALL" ||
+                bias === "PUT"
+            ) {
 
-            entryMessage.innerHTML =
-                "Analyzing the current candle. Final signal will be confirmed when it closes.";
+                action.innerHTML =
+                    bias;
+
+                entryMessage.innerHTML =
+                    `${bias} • Enter in ${countdownText} when the new candle opens.`;
+
+            } else {
+
+                action.innerHTML =
+                    "WAIT";
+
+                entryMessage.innerHTML =
+                    "AI is analyzing the current candle.";
+            }
 
             return;
         }
@@ -147,21 +337,24 @@ export function startCountdown(getMarketState,getLatestCandle) {
         // ENTRY
         // ========================================
 
-       if (marketState === "ENTRY") {
+        if (marketState === "ENTRY") {
 
-          timer.innerHTML = "NOW";
+            timer.innerHTML =
+                "NOW";
 
-         banner.innerHTML =
-        "🚀 ENTER NOW";
+            banner.innerHTML =
+                "🚀 ENTER NOW";
 
-        action.innerHTML =
-        "🚀 ENTER NOW";
+            action.innerHTML =
+                signal.action ||
+                signal.bias ||
+                "ENTER";
 
-       entryMessage.innerHTML =
-        "Final signal confirmed. Enter immediately on the new candle.";
+            entryMessage.innerHTML =
+                "Final signal confirmed. Enter immediately on the new candle.";
 
-      return;
-     }
+            return;
+        }
 
         // ========================================
         // ACTIVE
@@ -169,7 +362,8 @@ export function startCountdown(getMarketState,getLatestCandle) {
 
         if (marketState === "ACTIVE") {
 
-            timer.innerHTML = "--:--";
+            timer.innerHTML =
+                "--:--";
 
             banner.innerHTML =
                 "🟢 TRADE ACTIVE";
@@ -188,7 +382,10 @@ export function startCountdown(getMarketState,getLatestCandle) {
         // ========================================
 
         if (marketState === "RESULT") {
-            timer.innerHTML = "--:--";
+
+            timer.innerHTML =
+                "--:--";
+
             banner.innerHTML =
                 "🏁 TRADE COMPLETE";
 
@@ -202,10 +399,11 @@ export function startCountdown(getMarketState,getLatestCandle) {
         }
 
         // ========================================
-        // UNKNOWN STATE
+        // UNKNOWN
         // ========================================
 
-        timer.innerHTML = "--:--";
+        timer.innerHTML =
+            countdownText;
 
         banner.innerHTML =
             "⚪ WAITING";
@@ -220,5 +418,8 @@ export function startCountdown(getMarketState,getLatestCandle) {
     update();
 
     countdownInterval =
-        setInterval(update, 1000);
+        setInterval(
+            update,
+            250
+        );
 }

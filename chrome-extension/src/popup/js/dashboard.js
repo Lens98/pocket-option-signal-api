@@ -111,12 +111,21 @@ async function refreshDashboard() {
 
     try {
 
-        signal =
-            await getSignal();
+    signal =
+        await getSignal();
 
-        updateConnectionStatus(true);
+    // ======================================
+    // SHARE AI SIGNAL WITH COUNTDOWN
+    // ======================================
 
-    }
+    window.latestSignal = signal;
+
+    window.marketTimeframe =
+        Number(signal?.timeframe) || 60;
+
+    updateConnectionStatus(true);
+
+}
 
     catch (error) {
 
