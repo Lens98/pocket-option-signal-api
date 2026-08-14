@@ -60,41 +60,37 @@ function getCandleTime(candle) {
 
 function getRemainingSeconds(candle) {
 
-    const candleStart = getCandleTime(candle);
+    const candleStart =
+        getCandleTime(candle);
 
     if (candleStart === null) {
         return null;
     }
 
-    // Backend timeframe
     const timeframe =
-        Number(window.marketTimeframe) || 60;
+        Number(window.marketTimeframe);
 
-    if (timeframe <= 0) {
+    if (!Number.isFinite(timeframe) || timeframe <= 0) {
         return null;
     }
 
-    const now = Date.now();
+    const now =
+        Date.now();
 
     const elapsed =
         Math.floor(
             (now - candleStart) / 1000
         );
 
-    let remaining =
-        timeframe - (elapsed % timeframe);
+    const remaining =
+        timeframe -
+        (elapsed % timeframe);
 
-    if (remaining > timeframe) {
-        remaining = timeframe;
-    }
-
-    if (remaining <= 0) {
-        remaining = timeframe;
-    }
-
-    return remaining;
+    return Math.max(
+        0,
+        remaining
+    );
 }
-
 // ========================================
 // Format Countdown
 // ========================================

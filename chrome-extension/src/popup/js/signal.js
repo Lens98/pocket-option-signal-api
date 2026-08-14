@@ -2,7 +2,7 @@
    UPDATE SIGNAL CARD
 ========================================== */
 
-export function updateSignal(signal) {
+export function updateSignal(signal = {}) {
 
     updateAction(signal);
     updateConfidence(signal);
@@ -18,60 +18,132 @@ export function updateSignal(signal) {
 
 function updateAction(signal) {
 
-    const action = document.getElementById("action");
+    const action =
+        document.getElementById("action");
 
     if (!action) return;
 
-    const rawAction = String(signal.action || "WAIT").toUpperCase();
-    const bias = String(signal.bias || "").toUpperCase();
-    const marketState = String(signal.market_state || "").toUpperCase();
-    const tradeStatus = String(signal.trade_status || "").toUpperCase();
+    const rawAction =
+        String(
+            signal.action || "WAIT"
+        ).toUpperCase();
+
+    const bias =
+        String(
+            signal.bias || ""
+        ).toUpperCase();
+
+    const marketState =
+        String(
+            signal.market_state || ""
+        ).toUpperCase();
+
+    const tradeStatus =
+        String(
+            signal.trade_status || ""
+        ).toUpperCase();
+
 
     /*
+       ========================================
+       ACTIVE TRADE
+       ========================================
+
        IMPORTANT:
-       When a trade is already active, the backend may
-       intentionally return:
 
-           bias   = CALL
-           action = WAIT
-           state  = ACTIVE
+       The backend may return:
 
-       WAIT means "do not enter another trade".
-       It does NOT mean the existing trade direction is WAIT.
+           bias         = CALL
+           action       = WAIT
+           market_state = ACTIVE
+           trade_status = ACTIVE
+
+       That means the CALL trade is already
+       running.
+
+       We MUST NOT present CALL as a new
+       entry signal.
+
+       The direction is displayed separately
+       in the status area.
     */
-
-    let displayAction = rawAction;
 
     const activeTrade =
         marketState === "ACTIVE" ||
         tradeStatus === "ACTIVE";
 
-    if (
-        activeTrade &&
-        rawAction === "WAIT" &&
-        (bias === "CALL" || bias === "PUT")
-    ) {
-        displayAction = bias;
+
+    let displayAction;
+
+
+    if (activeTrade) {
+
+        displayAction = "ACTIVE";
+
     }
 
-    action.textContent = displayAction;
+    else {
 
-    action.className = "signal-action";
+        displayAction = rawAction;
+
+    }
+
+
+    /* ========================================
+       UPDATE ACTION TEXT
+    ======================================== */
+
+    action.textContent =
+        displayAction;
+
+
+    action.className =
+        "signal-action";
+
+
+    /* ========================================
+       ACTION STYLE
+    ======================================== */
 
     switch (displayAction) {
 
         case "CALL":
-            action.classList.add("call");
+
+            action.classList.add(
+                "call"
+            );
+
             break;
+
 
         case "PUT":
-            action.classList.add("put");
+
+            action.classList.add(
+                "put"
+            );
+
             break;
 
-        case "WAIT":
-        default:
-            action.classList.add("wait");
+
+        case "ACTIVE":
+
+            action.classList.add(
+                "wait"
+            );
+
             break;
+
+
+        case "WAIT":
+
+        default:
+
+            action.classList.add(
+                "wait"
+            );
+
+            break;
+
     }
 
 }
@@ -83,16 +155,34 @@ function updateAction(signal) {
 
 function updateConfidence(signal) {
 
-    const confidence = document.getElementById("confidence");
+    const confidence =
+        document.getElementById(
+            "confidence"
+        );
 
     if (!confidence) return;
 
-    const value = Number(signal.confidence);
 
-    if (Number.isFinite(value)) {
-        confidence.textContent = `${Math.round(value)}%`;
-    } else {
-        confidence.textContent = "--";
+    const value =
+        Number(
+            signal.confidence
+        );
+
+
+    if (
+        Number.isFinite(value)
+    ) {
+
+        confidence.textContent =
+            `${Math.round(value)}%`;
+
+    }
+
+    else {
+
+        confidence.textContent =
+            "--";
+
     }
 
 }
@@ -104,20 +194,43 @@ function updateConfidence(signal) {
 
 function updateInfo(signal) {
 
-    const trend = document.getElementById("trend");
-    const risk = document.getElementById("risk");
-    const expiration = document.getElementById("expiration");
+    const trend =
+        document.getElementById(
+            "trend"
+        );
+
+    const risk =
+        document.getElementById(
+            "risk"
+        );
+
+    const expiration =
+        document.getElementById(
+            "expiration"
+        );
+
 
     if (trend) {
-        trend.textContent = signal.trend ?? "--";
+
+        trend.textContent =
+            signal.trend ?? "--";
+
     }
+
 
     if (risk) {
-        risk.textContent = signal.risk ?? "--";
+
+        risk.textContent =
+            signal.risk ?? "--";
+
     }
 
+
     if (expiration) {
-        expiration.textContent = signal.expiration ?? "--";
+
+        expiration.textContent =
+            signal.expiration ?? "--";
+
     }
 
 }
@@ -129,61 +242,86 @@ function updateInfo(signal) {
 
 function updateStatus(signal) {
 
-    const status = document.getElementById("signalStatus");
+    const status =
+        document.getElementById(
+            "signalStatus"
+        );
 
     if (!status) return;
 
-    const marketState = String(
-        signal.market_state || ""
-    ).toUpperCase();
 
-    const tradeStatus = String(
-        signal.trade_status || ""
-    ).toUpperCase();
+    const marketState =
+        String(
+            signal.market_state || ""
+        ).toUpperCase();
 
-    const bias = String(
-        signal.bias || ""
-    ).toUpperCase();
 
-    /*
+    const tradeStatus =
+        String(
+            signal.trade_status || ""
+        ).toUpperCase();
+
+
+    const bias =
+        String(
+            signal.bias || ""
+        ).toUpperCase();
+
+
+    /* ========================================
        ACTIVE TRADE
-    */
+    ======================================== */
 
     if (
-        (marketState === "ACTIVE" || tradeStatus === "ACTIVE") &&
-        (bias === "CALL" || bias === "PUT")
+        (
+            marketState === "ACTIVE" ||
+            tradeStatus === "ACTIVE"
+        ) &&
+        (
+            bias === "CALL" ||
+            bias === "PUT"
+        )
     ) {
 
         status.textContent =
             `ACTIVE TRADE — ${bias}`;
 
-        status.className = "active";
+
+        status.className =
+            "active";
+
 
         return;
+
     }
 
 
-    /*
-       Backend reason
-    */
+    /* ========================================
+       BACKEND REASON
+    ======================================== */
 
     if (
         signal.reason &&
-        String(signal.reason).trim() !== ""
+        String(
+            signal.reason
+        ).trim() !== ""
     ) {
 
-        status.textContent = signal.reason;
+        status.textContent =
+            signal.reason;
 
         return;
+
     }
 
 
-    /*
-       Normal state
-    */
+    /* ========================================
+       NORMAL STATE
+    ======================================== */
 
     status.textContent =
-        signal.market_state || "Waiting...";
+        signal.market_state ||
+        "Waiting...";
 
 }
 
@@ -192,58 +330,104 @@ function updateStatus(signal) {
    CONNECTION STATUS
 ========================================== */
 
-export function updateConnectionStatus(online) {
+export function updateConnectionStatus(
+    online
+) {
 
-    const header = document.getElementById("status");
+    const header =
+        document.getElementById(
+            "status"
+        );
 
-    const footer = document.getElementById("statusText");
+    const footer =
+        document.getElementById(
+            "statusText"
+        );
 
-    const updated = document.getElementById("updated");
+    const updated =
+        document.getElementById(
+            "updated"
+        );
 
-    const engine = document.getElementById("engineStatus");
+    const engine =
+        document.getElementById(
+            "engineStatus"
+        );
 
-    if (!header || !footer) return;
 
+    if (!header || !footer) {
+
+        return;
+
+    }
+
+
+    /* ========================================
+       ONLINE
+    ======================================== */
 
     if (online) {
 
-        // Header
-        header.textContent = "🟢 Online";
-        header.className = "status online";
+        header.textContent =
+            "🟢 Online";
+
+        header.className =
+            "status online";
 
 
-        // Footer
-        footer.textContent = "🟢 Connected";
-        footer.className = "online";
+        footer.textContent =
+            "🟢 Connected";
+
+        footer.className =
+            "online";
 
 
-        // Last updated time
         if (updated) {
+
             updated.textContent =
-                new Date().toLocaleTimeString();
+                new Date()
+                    .toLocaleTimeString();
+
         }
 
 
         if (engine) {
-            engine.textContent = "Running";
+
+            engine.textContent =
+                "Running";
+
         }
 
-
-    } else {
-
-        // Header
-        header.textContent = "🔴 Offline";
-        header.className = "status offline";
+    }
 
 
-        // Footer
-        footer.textContent = "🔴 Disconnected";
-        footer.className = "offline";
+    /* ========================================
+       OFFLINE
+    ======================================== */
+
+    else {
+
+        header.textContent =
+            "🔴 Offline";
+
+        header.className =
+            "status offline";
+
+
+        footer.textContent =
+            "🔴 Disconnected";
+
+        footer.className =
+            "offline";
 
 
         if (engine) {
-            engine.textContent = "Offline";
+
+            engine.textContent =
+                "Offline";
+
         }
+
     }
 
 }
