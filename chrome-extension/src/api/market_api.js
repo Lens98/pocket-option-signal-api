@@ -1,96 +1,46 @@
-const API = "https://pocket-option-signal-api-production.up.railway.app";
+export function sendMarket(asset, timeframe, candles) {
+    return new Promise((resolve) => {
+        const payload = {
+            asset,
+            timeframe: String(timeframe),
 
-export async function sendMarket(asset, timeframe, candles) {
+            candles: candles.map((candle) => ({
+                timestamp: String(candle.timestamp),
+                open: candle.open,
+                high: candle.high,
+                low: candle.low,
+                close: candle.close,
+                volume: candle.volume ?? 0,
+            })),
+        };
 
-    const payload = {
+        console.log("======================================");
+        console.log("📤 Sending Candle History");
+        console.log("Asset:", asset);
+        console.log("Timeframe:", timeframe);
+        console.log("Candles:", payload.candles.length);
+        console.log("======================================");
 
-        asset,
-
-        timeframe: String(timeframe),
-
-        candles: candles.map(candle => ({
-
-            timestamp: String(candle.timestamp),
-
-            open: candle.open,
-
-            high: candle.high,
-
-            low: candle.low,
-
-            close: candle.close,
-
-            volume: candle.volume
-
-        }))
-
-    };
-
-    console.log("======================================");
-    console.log("📤 Sending Candle History");
-    console.log("Asset:", asset);
-    console.log("Candles:", payload.candles.length);
-
-    console.log(
-        "Unique:",
-        new Set(
-            payload.candles.map(c => c.timestamp)
-        ).size
-    );
-
-    if (payload.candles.length > 0) {
-
-        console.log(
-            "First:",
-            payload.candles[0].timestamp
-        );
-
-        console.log(
-            "Last:",
-            payload.candles[payload.candles.length - 1].timestamp
-        );
-
-    }
-
-    console.log(payload);
-
-    console.log("======================================");
-
-    try {
-
-        const response = await fetch(
-            `${API}/market/update`,
+        chrome.runtime.sendMessage(
             {
-                method: "POST",
+                type: "SEND_MARKET",
+                payload,
+            },
+            (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error(
+                        "❌ Background communication error:",
+                        chrome.runtime.lastError.message
+                    );
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                    resolve(null);
+                    return;
+                }
 
-                body: JSON.stringify(payload)
+                console.log("📥 Market API response:", response);
+
+                resolve(response || null);
             }
         );
-
-        console.log(
-            "HTTP Status:",
-            response.status
-        );
-
-        const result = await response.json();
-
-        console.log(
-            "Server Response:",
-            result
-        );
-
-        return result;
-
-    } catch (err) {
-
-        console.error("❌ FastAPI Error");
-        console.error(err);
-
-        return null;
-
-    }
+    });
 }

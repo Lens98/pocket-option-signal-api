@@ -2,84 +2,180 @@
    MARKET INFORMATION
 ========================================== */
 
-export function updateMarket(signal) {
+export function updateMarket(
+    signal = {},
+    market = {}
+) {
+
+    const asset =
+        signal.asset ||
+        market.asset ||
+        "---";
+
+
+    const candles =
+        Array.isArray(market.candles)
+            ? market.candles
+            : [];
+
+
+    const latestCandle =
+        candles.length > 0
+            ? candles[candles.length - 1]
+            : null;
+
+
+    const price =
+        signal.entry_price ??
+        latestCandle?.close ??
+        0;
+
 
     // ======================================
     // Dashboard
     // ======================================
 
-    set("asset", signal.asset);
+    set(
+        "asset",
+        asset
+    );
 
-    set("trend", signal.trend);
+    set(
+        "trend",
+        signal.trend
+    );
 
-    set("risk", signal.risk);
+    set(
+        "risk",
+        signal.risk
+    );
 
-    set("expiration", signal.expiration);
+    set(
+        "expiration",
+        signal.expiration
+    );
 
     set(
         "probability",
-        `${Number(signal.probability ?? 0).toFixed(1)}%`
+        `${Number(
+            signal.probability ?? 0
+        ).toFixed(1)}%`
     );
 
-    set("grade", signal.grade);
+    set(
+        "grade",
+        signal.grade
+    );
 
-    set("session", signal.session);
+    set(
+        "session",
+        signal.session
+    );
 
-    set("regime", signal.regime);
+    set(
+        "regime",
+        signal.regime
+    );
+
 
     // ======================================
     // Live Market Card
     // ======================================
 
-    set("chartAsset", signal.asset);
+    set(
+        "chartAsset",
+        asset
+    );
+
 
     set(
         "chartPrice",
-        Number(signal.entry_price ?? 0).toFixed(5)
+        Number(price).toFixed(5)
     );
 
+
     const chartChange =
-        document.getElementById("chartChange");
+        document.getElementById(
+            "chartChange"
+        );
+
 
     if (chartChange) {
 
+        const trend =
+            signal.trend ||
+            "---";
+
+
+        const session =
+            signal.session ||
+            "---";
+
+
         chartChange.textContent =
-            `${signal.trend} • ${signal.session}`;
+            `${trend} • ${session}`;
 
-        chartChange.className = "market-change";
 
-        if (signal.trend === "BULLISH") {
+        chartChange.className =
+            "market-change";
 
-            chartChange.classList.add("bullish");
+
+        if (
+            trend === "BULLISH"
+        ) {
+
+            chartChange.classList.add(
+                "bullish"
+            );
 
         }
 
-        else if (signal.trend === "BEARISH") {
+        else if (
+            trend === "BEARISH"
+        ) {
 
-            chartChange.classList.add("bearish");
+            chartChange.classList.add(
+                "bearish"
+            );
 
         }
 
         else {
 
-            chartChange.classList.add("neutral");
+            chartChange.classList.add(
+                "neutral"
+            );
 
         }
 
     }
 
 }
+
+
 /* ==========================================
    HELPER
 ========================================== */
 
-function set(id, value) {
+function set(
+    id,
+    value
+) {
 
-    const element = document.getElementById(id);
+    const element =
+        document.getElementById(id);
 
-    if (!element) return;
 
-    element.textContent = value ?? "---";
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.textContent =
+        value ?? "---";
+
 
     element.classList.remove(
         "BULLISH",
@@ -90,20 +186,39 @@ function set(id, value) {
         "HIGH"
     );
 
+
     const colorValues = [
+
         "BULLISH",
+
         "BEARISH",
+
         "SIDEWAYS",
+
         "LOW",
+
         "MEDIUM",
+
         "HIGH"
+
     ];
 
-    const upper = String(value ?? "").toUpperCase();
 
-    if (colorValues.includes(upper)) {
+    const upper =
+        String(
+            value ?? ""
+        ).toUpperCase();
 
-        element.classList.add(upper);
+
+    if (
+        colorValues.includes(
+            upper
+        )
+    ) {
+
+        element.classList.add(
+            upper
+        );
 
     }
 

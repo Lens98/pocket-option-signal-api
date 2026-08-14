@@ -2,10 +2,9 @@ import { getSignal } from "./api.js";
 import { updateGauge } from "./gauge.js";
 import { loadTradeStatistics } from "./statistics.js";
 import { loadTradeHistory } from "./history.js";
-import { initChart } from "./chart.js";
+import { initChart, setCandles } from "./chart.js";
 import { startCountdown } from "./countdown.js";
 import { getCandles } from "./api.js";
-import { setCandles } from "./chart.js";
 import { updateInstruction } from "./instruction.js";
 import { updateAnalysis } from "./analysis.js";
 import { updateMarket } from "./market.js";
@@ -14,9 +13,47 @@ import {
     updateConnectionStatus
 } from "./signal.js";
 
+
+/* ==========================================
+   GET EXTENSION MARKET STATE
+========================================== */
+
+async function getExtensionState() {
+
+    return new Promise((resolve) => {
+
+        chrome.runtime.sendMessage(
+            {
+                type: "GET_STATE"
+            },
+            (state) => {
+
+                if (chrome.runtime.lastError) {
+
+                    console.error(
+                        "Extension state error:",
+                        chrome.runtime.lastError.message
+                    );
+
+                    resolve({});
+
+                    return;
+                }
+
+                resolve(state || {});
+
+            }
+        );
+
+    });
+
+}
+
+
 /* ==========================================
    DASHBOARD INITIALIZATION
 ========================================== */
+
 export async function initializeDashboard() {
 
     console.log("Dashboard initialized");
@@ -31,21 +68,31 @@ export async function initializeDashboard() {
 
         console.log("First refresh complete");
 
-       startCountdown(() => window.marketState,() => window.latestCandle);
+        startCountdown(
+            () => window.marketState,
+            () => window.latestCandle
+        );
 
         console.log("Countdown started");
 
-        setInterval(refreshDashboard, 1000);
+        setInterval(
+            refreshDashboard,
+            1000
+        );
 
     }
 
     catch (error) {
 
-        console.error("Dashboard Error:", error);
+        console.error(
+            "Dashboard Error:",
+            error
+        );
 
     }
 
 }
+
 
 /* ==========================================
    REFRESH EVERYTHING
@@ -55,83 +102,300 @@ async function refreshDashboard() {
 
     let signal;
 
+    let extensionState;
+
+
+    /* ======================================
+       GET AI SIGNAL
+    ====================================== */
+
     try {
 
-        signal = await getSignal();
+        signal =
+            await getSignal();
 
         updateConnectionStatus(true);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         updateConnectionStatus(false);
 
-        console.error("API Connection Error:", error);
+        console.error(
+            "API Connection Error:",
+            error
+        );
 
-        return;
+        signal = {
+            status: "No signal yet"
+        };
 
     }
 
 
-    // Everything below is UI only
+    /* ======================================
+       GET LIVE MARKET STATE
+    ====================================== */
+
     try {
 
-        window.marketState = signal.market_state ?? "WAITING";
+        extensionState =
+            await getExtensionState();
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Unable to get extension market state:",
+            error
+        );
+
+        extensionState = {};
+
+    }
+
+
+    /* ======================================
+       MARKET DATA
+    ====================================== */
+
+    const marketAsset =
+        signal?.asset ||
+        extensionState.marketAsset ||
+        null;
+
+    let candles =
+        Array.isArray(extensionState.marketCandles)
+            ? extensionState.marketCandles
+            : [];
+
+
+    console.log(
+        "======================================"
+    );
+
+    console.log(
+        "LIVE MARKET STATE"
+    );
+
+    console.log(
+        "Asset:",
+        marketAsset
+    );
+
+    console.log(
+        "Candles:",
+        candles.length
+    );
+
+    console.log(
+        "======================================"
+    );
+
+
+    /* ======================================
+       SIGNAL STATE
+    ====================================== */
+
+    window.marketState =
+        signal?.market_state ||
+        "WAITING";
+
+
+    /* ======================================
+       UPDATE AI UI
+    ====================================== */
+
+    try {
 
         updateSignal(signal);
+
         updateInstruction(signal);
+
         updateAnalysis(signal);
 
-updateMarket(signal);
+    }
 
-console.log("Requesting candles for:", signal.asset);
+    catch (error) {
 
-if (!signal.asset) {
+        console.error(
+            "AI UI update error:",
+            error
+        );
 
-    console.warn("No asset available for candles");
-
-    return;
-
-}
-
-    const candles = await getCandles(signal.asset);
-        
-window.latestCandle =
-    candles[candles.length - 1] ?? null;
-console.log("Candles from backend:", candles);
-console.log("Number of candles:", candles.length);
-
-if (candles.length > 0) {
-
-    console.log("First candle:", candles[0]);
-
-}
-
-setCandles(candles);
-        updateGauge(signal.confidence || 0);
-
-   // Refresh trade data every 5 seconds
-if (!window.tradeRefreshTimer) {
-
-    window.tradeRefreshTimer = Date.now();
-
-}
+    }
 
 
-if (Date.now() - window.tradeRefreshTimer > 5000) {
+    /* ======================================
+       UPDATE MARKET UI
+    ====================================== */
 
-    await loadTradeStatistics();
+    try {
 
-    await loadTradeHistory();
+        updateMarket(
+            signal,
+            {
+                asset: marketAsset,
+                candles
+            }
+        );
 
-    window.tradeRefreshTimer = Date.now();
+    }
 
-}
+    catch (error) {
 
-    } catch (error) {
+        console.error(
+            "Market UI update error:",
+            error
+        );
 
-        console.error("Dashboard Error:", error);
+    }
 
-        // DON'T change the online status here
+
+    /* ======================================
+       LOAD CANDLES
+    ====================================== */
+
+    try {
+
+        /*
+         * Live candles should already be coming
+         * from the extension.
+         */
+
+        if (candles.length === 0 && marketAsset) {
+
+            console.log(
+                "No local candles yet. Requesting backend candles for:",
+                marketAsset
+            );
+
+            try {
+
+                candles =
+                    await getCandles(
+                        marketAsset
+                    );
+
+            }
+
+            catch (error) {
+
+                console.warn(
+                    "Backend candle request failed:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        if (candles.length > 0) {
+
+            window.latestCandle =
+                candles[candles.length - 1];
+
+            console.log(
+                "Latest candle:",
+                window.latestCandle
+            );
+
+            console.log(
+                "Total candles:",
+                candles.length
+            );
+
+            setCandles(candles);
+
+        }
+
+        else {
+
+            window.latestCandle =
+                null;
+
+            console.warn(
+                "No candles available yet."
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Candle UI error:",
+            error
+        );
+
+    }
+
+
+    /* ======================================
+       CONFIDENCE
+    ====================================== */
+
+    try {
+
+        updateGauge(
+            Number(
+                signal?.confidence ?? 0
+            )
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Confidence UI error:",
+            error
+        );
+
+    }
+
+
+    /* ======================================
+       TRADE DATA
+    ====================================== */
+
+    if (!window.tradeRefreshTimer) {
+
+        window.tradeRefreshTimer =
+            Date.now();
+
+    }
+
+
+    if (
+        Date.now() -
+        window.tradeRefreshTimer >
+        5000
+    ) {
+
+        try {
+
+            await loadTradeStatistics();
+
+            await loadTradeHistory();
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "Trade data refresh error:",
+                error
+            );
+
+        }
+
+        window.tradeRefreshTimer =
+            Date.now();
 
     }
 

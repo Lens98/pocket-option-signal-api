@@ -7,7 +7,6 @@ const API_URL =
     "https://pocket-option-signal-api-production.up.railway.app";
 
 const state = {
-
     connected: false,
 
     tradeState: "WAITING",
@@ -17,6 +16,9 @@ const state = {
     lastSignalKey: "",
 
     history: [],
+    marketAsset: null,
+
+    marketCandles: [],
 
     stats: {
         CALL: 0,
@@ -44,7 +46,6 @@ async function restoreState() {
         );
 
         console.log("✅ Session restored.");
-
     }
 }
 
@@ -93,6 +94,7 @@ async function refresh() {
             await fetch(`${API_URL}/signal`);
 
         if (!signalResponse.ok) {
+
             throw new Error(
                 `/signal returned ${signalResponse.status}`
             );
@@ -111,6 +113,7 @@ async function refresh() {
             await fetch(`${API_URL}/trade/state`);
 
         if (!tradeResponse.ok) {
+
             throw new Error(
                 `/trade/state returned ${tradeResponse.status}`
             );
@@ -130,6 +133,7 @@ async function refresh() {
             await fetch(`${API_URL}/trade/all`);
 
         if (!historyResponse.ok) {
+
             throw new Error(
                 `/trade/all returned ${historyResponse.status}`
             );
@@ -166,7 +170,6 @@ async function refresh() {
             ) {
 
                 state.stats[signal.action]++;
-
             }
 
             state.lastSignalKey =
@@ -190,7 +193,6 @@ async function refresh() {
             "❌ Background refresh failed:",
             err.message
         );
-
     }
 }
 
@@ -213,16 +215,148 @@ async function initialize() {
 initialize();
 
 // ========================================
-// Popup Communication
+// Popup / Content Script Communication
 // ========================================
 
 chrome.runtime.onMessage.addListener(
     (message, sender, sendResponse) => {
 
+        // ========================================
+        // GET STATE
+        // ========================================
+
         if (message.type === "GET_STATE") {
 
             sendResponse(state);
 
+            return true;
+        }
+
+        // ========================================
+        // SEND MARKET DATA TO RAILWAY
+        // ========================================
+
+        if (message.type === "SEND_MARKET") {
+
+            console.log(
+                "📡 Sending market data to Railway..."
+            );
+        // ----------------------------------------
+        // Save latest live market data
+        // ----------------------------------------
+
+        if (message.payload) {
+
+            if (message.payload.asset) {
+
+                state.marketAsset =
+                    message.payload.asset;
+
+            }
+
+            if (Array.isArray(message.payload.candles)) {
+
+                state.marketCandles =
+                    message.payload.candles;
+
+            }
+
+            saveState();
+
+        }
+
+            console.log(
+                "Asset:",
+                message.payload?.asset
+            );
+
+            console.log(
+                "Candles:",
+                message.payload?.candles?.length
+            );
+
+            fetch(
+                `${API_URL}/market/update`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify(
+                        message.payload
+                    )
+                }
+            )
+
+                .then(
+                    async (response) => {
+
+                        console.log(
+                            "📡 MARKET UPDATE STATUS:",
+                            response.status
+                        );
+
+                        const text =
+                            await response.text();
+
+                        let result;
+
+                        try {
+
+                            result =
+                                JSON.parse(text);
+
+                        }
+
+                        catch {
+
+                            result = {
+                                raw: text
+                            };
+                        }
+
+                        console.log(
+                            "📡 MARKET UPDATE RESPONSE:",
+                            result
+                        );
+
+                        sendResponse({
+
+                            ok: response.ok,
+
+                            status:
+                                response.status,
+
+                            result
+                        });
+                    }
+                )
+
+                .catch(
+                    (error) => {
+
+                        console.error(
+                            "❌ MARKET UPDATE FAILED:",
+                            error
+                        );
+
+                        sendResponse({
+
+                            ok: false,
+
+                            error:
+                                error.message
+                        });
+                    }
+                );
+
+            // IMPORTANT:
+            // Keep the message channel open
+            // for the asynchronous fetch above.
+
+            return true;
         }
 
         return true;
