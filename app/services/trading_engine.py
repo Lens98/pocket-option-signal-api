@@ -532,7 +532,10 @@ class TradingEngine:
 
         signal.asset = market.asset
         signal.timeframe = market.timeframe
-        signal.entry_price = market.candles[-1].close
+
+        # Binary entry price = OPEN of the newly opened candle
+        signal.entry_price = market.candles[-1].open
+
         signal.timestamp = datetime.now()
         signal.expiration = "Next Candle"
 
@@ -937,17 +940,35 @@ class TradingEngine:
                 print("Creating new trade...")
                 print("----------------------------------------")
 
-                # ----------------------------------------
-                # Final Signal Information
-                # ----------------------------------------
+            # ----------------------------------------
+            # Final Signal Information
+            # ----------------------------------------
 
-                signal.asset = market.asset
-                signal.timeframe = market.timeframe
-                signal.entry_price = market.candles[-1].close
-                signal.timestamp = datetime.now()
+            signal.asset = market.asset
+            signal.timeframe = market.timeframe
 
-                if not signal.expiration:
-                    signal.expiration = "Next Candle"
+            latest_entry_candle = market.candles[-1]
+
+            # Binary trade enters at the OPEN of the new candle
+            signal.entry_price = latest_entry_candle.open
+            signal.timestamp = datetime.now()
+
+            if not signal.expiration:
+                signal.expiration = "Next Candle"
+
+            print("----------------------------------------")
+            print("🎯 BINARY NEXT-CANDLE ENTRY")
+            print("----------------------------------------")
+            print("Prediction :", signal.bias)
+            print("Candle     :", latest_entry_candle.timestamp)
+            print("Entry Open :", latest_entry_candle.open)
+            print("Current    :", latest_entry_candle.close)
+            print("Confidence :", signal.confidence)
+            print("Probability:", signal.probability)
+            print("Agreement  :", signal.agreement_score)
+            print("Action     :", signal.action)
+            print("Expiration :", "60 seconds")
+            print("----------------------------------------")
 
             # ----------------------------------------
             # Binary Entry Timestamp

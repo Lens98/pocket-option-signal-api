@@ -11,6 +11,7 @@ export function updateSignal(signal) {
 
 }
 
+
 /* ==========================================
    ACTION
 ========================================== */
@@ -21,13 +22,43 @@ function updateAction(signal) {
 
     if (!action) return;
 
-    const value = (signal.action || "WAIT").toUpperCase();
+    const rawAction = String(signal.action || "WAIT").toUpperCase();
+    const bias = String(signal.bias || "").toUpperCase();
+    const marketState = String(signal.market_state || "").toUpperCase();
+    const tradeStatus = String(signal.trade_status || "").toUpperCase();
 
-    action.textContent = value;
+    /*
+       IMPORTANT:
+       When a trade is already active, the backend may
+       intentionally return:
+
+           bias   = CALL
+           action = WAIT
+           state  = ACTIVE
+
+       WAIT means "do not enter another trade".
+       It does NOT mean the existing trade direction is WAIT.
+    */
+
+    let displayAction = rawAction;
+
+    const activeTrade =
+        marketState === "ACTIVE" ||
+        tradeStatus === "ACTIVE";
+
+    if (
+        activeTrade &&
+        rawAction === "WAIT" &&
+        (bias === "CALL" || bias === "PUT")
+    ) {
+        displayAction = bias;
+    }
+
+    action.textContent = displayAction;
 
     action.className = "signal-action";
 
-    switch (value) {
+    switch (displayAction) {
 
         case "CALL":
             action.classList.add("call");
@@ -41,10 +72,10 @@ function updateAction(signal) {
         default:
             action.classList.add("wait");
             break;
-
     }
 
 }
+
 
 /* ==========================================
    CONFIDENCE
@@ -56,9 +87,16 @@ function updateConfidence(signal) {
 
     if (!confidence) return;
 
-    confidence.textContent = `${Math.round(signal.confidence ?? 0)}%`;
+    const value = Number(signal.confidence);
+
+    if (Number.isFinite(value)) {
+        confidence.textContent = `${Math.round(value)}%`;
+    } else {
+        confidence.textContent = "--";
+    }
 
 }
+
 
 /* ==========================================
    SIGNAL INFO
@@ -70,16 +108,20 @@ function updateInfo(signal) {
     const risk = document.getElementById("risk");
     const expiration = document.getElementById("expiration");
 
-    if (trend)
+    if (trend) {
         trend.textContent = signal.trend ?? "--";
+    }
 
-    if (risk)
+    if (risk) {
         risk.textContent = signal.risk ?? "--";
+    }
 
-    if (expiration)
+    if (expiration) {
         expiration.textContent = signal.expiration ?? "--";
+    }
 
 }
+
 
 /* ==========================================
    STATUS
@@ -91,15 +133,57 @@ function updateStatus(signal) {
 
     if (!status) return;
 
-    if (signal.reason && signal.reason.trim() !== "") {
+    const marketState = String(
+        signal.market_state || ""
+    ).toUpperCase();
+
+    const tradeStatus = String(
+        signal.trade_status || ""
+    ).toUpperCase();
+
+    const bias = String(
+        signal.bias || ""
+    ).toUpperCase();
+
+    /*
+       ACTIVE TRADE
+    */
+
+    if (
+        (marketState === "ACTIVE" || tradeStatus === "ACTIVE") &&
+        (bias === "CALL" || bias === "PUT")
+    ) {
+
+        status.textContent =
+            `ACTIVE TRADE — ${bias}`;
+
+        status.className = "active";
+
+        return;
+    }
+
+
+    /*
+       Backend reason
+    */
+
+    if (
+        signal.reason &&
+        String(signal.reason).trim() !== ""
+    ) {
 
         status.textContent = signal.reason;
 
-    } else {
-
-        status.textContent = signal.market_state || "Waiting...";
-
+        return;
     }
+
+
+    /*
+       Normal state
+    */
+
+    status.textContent =
+        signal.market_state || "Waiting...";
 
 }
 
@@ -115,38 +199,51 @@ export function updateConnectionStatus(online) {
     const footer = document.getElementById("statusText");
 
     const updated = document.getElementById("updated");
+
     const engine = document.getElementById("engineStatus");
 
     if (!header || !footer) return;
 
+
     if (online) {
 
         // Header
-        header.innerHTML = "🟢 Online";
+        header.textContent = "🟢 Online";
         header.className = "status online";
+
 
         // Footer
         footer.textContent = "🟢 Connected";
         footer.className = "online";
 
+
         // Last updated time
         if (updated) {
-            updated.textContent = new Date().toLocaleTimeString();
+            updated.textContent =
+                new Date().toLocaleTimeString();
         }
+
+
         if (engine) {
+            engine.textContent = "Running";
+        }
 
-           engine.textContent = "Running";
-
-           }
 
     } else {
 
         // Header
-        header.innerHTML = "🔴 Offline";
+        header.textContent = "🔴 Offline";
         header.className = "status offline";
+
 
         // Footer
         footer.textContent = "🔴 Disconnected";
         footer.className = "offline";
+
+
+        if (engine) {
+            engine.textContent = "Offline";
+        }
     }
+
 }
