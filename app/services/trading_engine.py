@@ -898,7 +898,6 @@ class TradingEngine:
             signal.can_enter = False
             signal.market_state = EntryState.WAITING.value
             signal.reasons.append(f"Confidence below {MIN_CONFIDENCE}%")
-
         # ========================================
         # TRADE CREATION CHECK
         # ========================================
@@ -918,92 +917,94 @@ class TradingEngine:
 
                 existing = open_trades[0]
 
+                print("========================================")
                 print("🛑 TRADE CREATION BLOCKED")
+                print("========================================")
                 print("An OPEN trade already exists.")
                 print("Trade ID :", existing.id)
                 print("Asset    :", existing.asset)
                 print("Action   :", existing.action)
                 print("Status   :", existing.status)
-                print("----------------------------------------")
+                print("========================================")
 
                 signal.action = "WAIT"
                 signal.can_enter = False
                 signal.market_state = EntryState.WAITING.value
                 signal.reason = "OPEN_TRADE_EXISTS"
-                signal.instruction = (
-                    "A trade is already active. " "Wait for it to finish."
-                )
+                signal.instruction = "A trade is already active. Wait for it to finish."
 
             else:
 
+                print("========================================")
                 print("✅ NO OPEN TRADE")
                 print("Creating new trade...")
-                print("----------------------------------------")
+                print("========================================")
 
-            # ----------------------------------------
-            # Final Signal Information
-            # ----------------------------------------
+                # ----------------------------------------
+                # Final Signal Information
+                # ----------------------------------------
 
-            signal.asset = market.asset
-            signal.timeframe = market.timeframe
+                signal.asset = market.asset
+                signal.timeframe = market.timeframe
 
-            latest_entry_candle = market.candles[-1]
+                latest_entry_candle = market.candles[-1]
 
-            # Binary trade enters at the OPEN of the new candle
-            signal.entry_price = latest_entry_candle.open
-            signal.timestamp = datetime.now()
+                # Binary entry = OPEN of newly opened candle
+                signal.entry_price = latest_entry_candle.open
 
-            if not signal.expiration:
-                signal.expiration = "Next Candle"
+                # ----------------------------------------
+                # Entry Timestamp
+                # ----------------------------------------
 
-            print("----------------------------------------")
-            print("🎯 BINARY NEXT-CANDLE ENTRY")
-            print("----------------------------------------")
-            print("Prediction :", signal.bias)
-            print("Candle     :", latest_entry_candle.timestamp)
-            print("Entry Open :", latest_entry_candle.open)
-            print("Current    :", latest_entry_candle.close)
-            print("Confidence :", signal.confidence)
-            print("Probability:", signal.probability)
-            print("Agreement  :", signal.agreement_score)
-            print("Action     :", signal.action)
-            print("Expiration :", "60 seconds")
-            print("----------------------------------------")
+                timestamp_value = latest_entry_candle.timestamp
 
-            # ----------------------------------------
-            # Binary Entry Timestamp
-            # ----------------------------------------
+                try:
 
-        timestamp_value = latest_candle.timestamp
+                    timestamp_number = float(timestamp_value)
 
-        try:
-            timestamp_number = float(timestamp_value)
+                    # Unix milliseconds
+                    if timestamp_number > 10_000_000_000:
 
-            # Pocket Option may provide Unix seconds or milliseconds.
-            if timestamp_number > 10_000_000_000:
-                entry_time = datetime.fromtimestamp(
-                    timestamp_number / 1000,
-                    tz=timezone.utc,
-                )
-            else:
-                entry_time = datetime.fromtimestamp(
-                    timestamp_number,
-                    tz=timezone.utc,
-                )
+                        entry_time = datetime.fromtimestamp(
+                            timestamp_number / 1000,
+                            tz=timezone.utc,
+                        )
 
-        except (TypeError, ValueError, OverflowError):
+                    # Unix seconds
+                    else:
 
-            entry_time = datetime.fromisoformat(
-                str(timestamp_value).replace("Z", "+00:00")
-            )
+                        entry_time = datetime.fromtimestamp(
+                            timestamp_number,
+                            tz=timezone.utc,
+                        )
+
+                except (TypeError, ValueError, OverflowError):
+
+                    entry_time = datetime.fromisoformat(
+                        str(timestamp_value).replace("Z", "+00:00")
+                    )
 
             if entry_time.tzinfo is None:
                 entry_time = entry_time.replace(tzinfo=timezone.utc)
             else:
                 entry_time = entry_time.astimezone(timezone.utc)
 
+        print("----------------------------------------")
+        print("🎯 BINARY NEXT-CANDLE ENTRY")
+        print("----------------------------------------")
+        print("Prediction :", signal.bias)
+        print("Candle     :", latest_entry_candle.timestamp)
+        print("Entry Open :", latest_entry_candle.open)
+        print("Entry Time :", entry_time.isoformat())
+        print("Confidence :", signal.confidence)
+        print("Probability:", signal.probability)
+        print("Agreement  :", signal.agreement_score)
+        print("Action     :", signal.action)
+        print("Expiration :", "60 seconds")
+        print("----------------------------------------")
+
         # ----------------------------------------
-        # Create Trade
+        # CREATE TRADE
         # ----------------------------------------
 
         try:
@@ -1047,15 +1048,20 @@ class TradingEngine:
             print("Asset    :", trade.asset)
             print("Action   :", trade.action)
             print("Entry    :", trade.entry_price)
+            print("Entry Time:", trade.entry_time)
             print("Expiration: 60 seconds")
             print("Status   :", trade.status)
             print("----------------------------------------")
 
             # ----------------------------------------
-            # Lock Active Trade
+            # LOCK ACTIVE TRADE
             # ----------------------------------------
 
-            self.signal_lock.lock(signal, reason="ACTIVE", trade_id=trade.id)
+            self.signal_lock.lock(
+                signal,
+                reason="ACTIVE",
+                trade_id=trade.id,
+            )
 
             self.signal_lock.activate(trade.id)
 
@@ -1071,11 +1077,10 @@ class TradingEngine:
         except Exception as e:
 
             print("----------------------------------------")
-            print("Trade Logger Error")
+            print("❌ TRADE CREATION ERROR")
             print("----------------------------------------")
             print(e)
             print("----------------------------------------")
-
         # ----------------------------------------
         # Final Console Output
         # ----------------------------------------

@@ -30,18 +30,11 @@ class SignalLock:
     # Lock Signal
     # ----------------------------------------
 
-    def lock(
-        self,
-        signal: Signal,
-        reason="ENTRY",
-        trade_id=None
-    ):
+    def lock(self, signal: Signal, reason="ENTRY", trade_id=None):
 
         self.locked = True
 
-        self.signal = signal.model_copy(
-            deep=True
-        )
+        self.signal = signal.model_copy(deep=True)
 
         self.lock_reason = reason
         self.trade_id = trade_id
@@ -62,57 +55,43 @@ class SignalLock:
 
     def is_trade_locked(self) -> bool:
 
-        return (
-            self.locked
-            and self.lock_reason == "ACTIVE"
-        )
+        return self.locked and self.lock_reason == "ACTIVE"
 
     # ----------------------------------------
     # Activate Locked Signal
-    # ----------------------------------------
+    # ---------------------------------------
 
-    def activate(
-        self,
-        trade_id: str
-    ):
 
-        if not self.locked:
-            return
+def activate(self, trade_id: str):
 
-        self.lock_reason = "ACTIVE"
-        self.trade_id = trade_id
+    if not self.locked:
+        return
 
-        if self.signal is not None:
+    self.lock_reason = "ACTIVE"
+    self.trade_id = trade_id
 
-            self.signal.market_state = "ACTIVE"
-            self.signal.trade_status = "ACTIVE"
-            self.signal.can_enter = False
-            self.signal.entry_window = 0
-            self.signal.countdown = 0
-            self.signal.reason = "TRADE_ACTIVE"
-            self.signal.instruction = (
-                "Trade is currently active."
-            )
+    if self.signal is not None:
 
-        print("----------------------------------------")
-        print("🔒 TRADE SIGNAL LOCKED")
-        print("----------------------------------------")
-        print("Trade ID:", trade_id)
-        print("Bias    :", self.signal.bias if self.signal else "UNKNOWN")
-        print("State   :", "ACTIVE")
-        print("----------------------------------------")
+        self.signal.market_state = "ACTIVE"
+        self.signal.trade_status = "ACTIVE"
 
-    # ----------------------------------------
-    # Unlock
-    # ----------------------------------------
+        # Never allow another entry
+        self.signal.can_enter = False
+        self.signal.entry_window = 0
+        self.signal.countdown = 0
 
-    def unlock(self):
+        # Keep the original direction for display/history
+        original_bias = self.signal.bias
 
-        print("----------------------------------------")
-        print("🔓 SIGNAL UNLOCKED")
-        print("----------------------------------------")
+        self.signal.reason = "TRADE_ACTIVE"
 
-        self.locked = False
-        self.signal = None
-        self.lock_reason = ""
-        self.trade_id = None
+        self.signal.instruction = f"Trade is currently active — {original_bias}."
+
+    print("----------------------------------------")
+    print("🔒 TRADE SIGNAL LOCKED")
+    print("----------------------------------------")
+    print("Trade ID:", trade_id)
+    print("Bias    :", self.signal.bias if self.signal else "UNKNOWN")
+    print("Action  :", self.signal.action if self.signal else "UNKNOWN")
+    print("State   :", "ACTIVE")
+    print("----------------------------------------")
