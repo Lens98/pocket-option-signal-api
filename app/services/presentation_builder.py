@@ -31,8 +31,8 @@ class PresentationBuilder:
 
         if signal.can_enter:
 
-            if signal.entry_window < 0:
-                signal.entry_window = 0
+            if signal.entry_window <= 0:
+                signal.entry_window = 5
 
         else:
 
@@ -44,8 +44,8 @@ class PresentationBuilder:
 
         if signal.can_enter:
 
-            if signal.countdown < 0:
-                signal.countdown = 0
+            if signal.countdown <= 0:
+                signal.countdown = signal.entry_window
 
         else:
 
