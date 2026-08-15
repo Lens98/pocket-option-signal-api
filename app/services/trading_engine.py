@@ -81,7 +81,7 @@ class TradingEngine:
         # Candle Tracking
         # ----------------------------------------
 
-        self.last_candle_timestamp = None
+        self.last_minute_bucket = None
 
         # ----------------------------------------
         # Multi Timeframe
@@ -100,6 +100,28 @@ class TradingEngine:
     # =====================================================
     # Generate Trading Signal
     # =====================================================
+    @staticmethod
+    def get_minute_bucket(timestamp):
+
+        try:
+            value = float(timestamp)
+
+        except (TypeError, ValueError):
+
+            try:
+                value = datetime.fromisoformat(
+                    str(timestamp).replace("Z", "+00:00")
+                ).timestamp()
+
+            except (TypeError, ValueError):
+
+                return None
+
+        # Milliseconds
+        if value > 10_000_000_000:
+            value = value / 1000
+
+        return int(value) - (int(value) % 60)
 
     def generate_signal(self, market, indicator_result=None):
 
@@ -589,7 +611,7 @@ class TradingEngine:
             state = self.entry_manager.determine(signal)
 
         # ----------------------------------------
-        # LOCK VALID CALL / PUT PREDICTION
+        # LOCK CALL / PUT FOR NEXT 1-MINUTE CANDLE
         # ----------------------------------------
 
         if (
@@ -598,69 +620,101 @@ class TradingEngine:
             and signal.bias in ["CALL", "PUT"]
         ):
 
-            # The AI has made a valid prediction.
-            # Do NOT wait for the candle to close
-            # before showing the prediction.
-
             signal.action = signal.bias
             signal.can_enter = False
+
             signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
 
-            signal.reason = f"NEXT CANDLE PREDICTION — {signal.bias}"
+        signal.reason = f"NEXT 1-MINUTE CANDLE — {signal.bias}"
 
-            signal.instruction = (
-                f"{signal.bias} predicted for the next candle. "
-                "Wait for the new candle to open."
-            )
+        signal.instruction = (
+            f"{signal.bias} CONFIRMED FOR "
+            "NEXT 1-MINUTE CANDLE. "
+            "WAIT FOR CANDLE OPEN."
+        )
 
-            self.signal_lock.lock(
-                signal,
-                reason="WAITING FOR NEW CANDLE",
-            )
+        self.signal_lock.lock(
+            signal,
+            reason="WAITING FOR NEXT 1-MINUTE CANDLE",
+        )
 
-            print("----------------------------------------")
-            print("🔒 NEXT-CANDLE PREDICTION LOCKED")
-            print("----------------------------------------")
-            print("Prediction :", signal.bias)
-            print("Confidence :", signal.confidence)
-            print("Probability:", signal.probability)
-            print("Agreement  :", signal.agreement_score)
-            print(
-                "Confirmations:",
-                f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
-            )
-            print("Action     :", signal.action)
-            print("Can Enter  :", signal.can_enter)
-            print("State      :", signal.market_state)
-            print("----------------------------------------")
-
+        print("========================================")
+        print("🔒 1-MINUTE PREDICTION LOCKED")
+        print("========================================")
+        print("Prediction :", signal.bias)
+        print("Confidence :", signal.confidence)
+        print("Probability:", signal.probability)
+        print("Agreement  :", signal.agreement_score)
+        print(
+            "Confirmations:",
+            f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
+        )
+        print("State      :", signal.market_state)
+        print("----------------------------------------")
+        print(f"🎯 NEXT CANDLE: {signal.bias}")
+        print("========================================")
         # ----------------------------------------
-        # DETECT NEW CANDLE
+        # DETECT NEW 1-MINUTE CANDLE
         # ----------------------------------------
 
         new_candle_opened = False
 
         latest_candle = market.candles[-1]
 
-        if self.last_candle_timestamp is None:
+        current_minute_bucket = self.get_minute_bucket(latest_candle.timestamp)
 
-            self.last_candle_timestamp = latest_candle.timestamp
+        print("----------------------------------------")
+        print("1-MINUTE CANDLE CHECK")
+        print("----------------------------------------")
+        print("Latest Timestamp :", latest_candle.timestamp)
+        print("Current Bucket   :", current_minute_bucket)
+        print("Previous Bucket  :", self.last_minute_bucket)
+        print("----------------------------------------")
 
-        elif latest_candle.timestamp != self.last_candle_timestamp:
+        if current_minute_bucket is None:
+
+            print("----------------------------------------")
+            print("⚠️ INVALID CANDLE TIMESTAMP")
+            print("----------------------------------------")
+
+        elif self.last_minute_bucket is None:
+
+            # First candle received.
+            # Establish the current minute.
+            # Do NOT enter immediately.
+
+            self.last_minute_bucket = current_minute_bucket
+
+            print("----------------------------------------")
+            print("INITIAL 1-MINUTE BUCKET")
+            print("----------------------------------------")
+            print("Bucket :", current_minute_bucket)
+            print("Waiting for next 1-minute candle...")
+            print("----------------------------------------")
+
+        elif current_minute_bucket != self.last_minute_bucket:
 
             new_candle_opened = True
 
+            previous_bucket = self.last_minute_bucket
+
+            self.last_minute_bucket = current_minute_bucket
+
             print("========================================")
-            print("🟢 NEW CANDLE OPENED")
+            print("🟢 NEW 1-MINUTE CANDLE OPENED")
             print("========================================")
-            print("Previous :", self.last_candle_timestamp)
-            print("Current  :", latest_candle.timestamp)
+            print("Previous Bucket :", previous_bucket)
+            print("Current Bucket  :", current_minute_bucket)
+            print("Timestamp       :", latest_candle.timestamp)
+            print("Entry Open      :", latest_candle.open)
             print("========================================")
 
-            self.last_candle_timestamp = latest_candle.timestamp
+        else:
+
+            print("Same 1-minute candle - " "no new binary entry.")
 
         # ----------------------------------------
-        # NEW CANDLE = USE LOCKED PREDICTION
+        # NEW 1-MINUTE CANDLE = USE LOCKED PREDICTION
         # ----------------------------------------
 
         if new_candle_opened:
@@ -675,9 +729,9 @@ class TradingEngine:
 
                 candidate_action = str(locked.bias or locked.action or "").upper()
 
-                print("----------------------------------------")
-                print("🎯 NEXT-CANDLE PREDICTION")
-                print("----------------------------------------")
+                print("========================================")
+                print("🎯 1-MINUTE ENTRY CHECK")
+                print("========================================")
                 print("Prediction :", candidate_action)
                 print("New Candle :", latest_candle.timestamp)
                 print("Entry Open :", latest_candle.open)
@@ -687,7 +741,7 @@ class TradingEngine:
                 print("----------------------------------------")
 
                 # ----------------------------------------
-                # VALIDATE PREDICTION
+                # VALIDATE LOCKED CALL / PUT
                 # ----------------------------------------
 
                 if candidate_action in ["CALL", "PUT"]:
@@ -696,69 +750,83 @@ class TradingEngine:
 
                     signal.action = candidate_action
                     signal.can_enter = True
+
                     signal.market_state = EntryState.ENTRY.value
+
                     signal.entry_price = latest_candle.open
                     signal.timestamp = datetime.now()
 
-                    signal.reason = f"ENTER {candidate_action} ON NEW CANDLE"
-
-                    signal.instruction = (
-                        f"Enter {candidate_action} at the " "open of the new candle."
+                    signal.reason = (
+                        f"ENTER {candidate_action} " "ON NEW 1-MINUTE CANDLE"
                     )
+
+                    signal.instruction = f"🚀 ENTER {candidate_action} NOW"
+
+                    signal.expiration = "60 seconds"
 
                     state = EntryState.ENTRY
 
+                    print("========================================")
+                    print("🚀 BINARY ENTRY CONFIRMED")
+                    print("========================================")
+                    print("ACTION      :", signal.action)
+                    print("CAN ENTER   :", signal.can_enter)
+                    print("ENTRY PRICE :", signal.entry_price)
+                    print("CANDLE      :", latest_candle.timestamp)
+                    print("CONFIDENCE  :", signal.confidence)
+                    print("PROBABILITY :", signal.probability)
+                    print("AGREEMENT   :", signal.agreement_score)
+                    print("EXPIRATION  : 60 SECONDS")
                     print("----------------------------------------")
-                    print("🚀 BINARY ENTRY READY")
-                    print("----------------------------------------")
-                    print("Prediction :", signal.bias)
-                    print("Action     :", signal.action)
-                    print("Entry Open :", signal.entry_price)
-                    print("Candle     :", latest_candle.timestamp)
-                    print("Confidence :", signal.confidence)
-                    print("Probability:", signal.probability)
-                    print("Agreement  :", signal.agreement_score)
-                    print("Expiration :", "60 seconds")
-                    print("----------------------------------------")
+                    print(f"🚀 ENTER {candidate_action} NOW")
+                    print("========================================")
 
-                    # ----------------------------------------
-                    # IMPORTANT
-                    # ----------------------------------------
-                    # Do NOT unlock before trade creation.
+                    # IMPORTANT:
+                    # Do NOT unlock here.
                     #
-                    # The signal remains locked until the
-                    # trade becomes ACTIVE.
+                    # The lock remains until the trade
+                    # is actually created and activated.
 
                 else:
 
-                    print("----------------------------------------")
-                    print("❌ LOCKED PREDICTION INVALID")
-                    print("----------------------------------------")
+                    print("========================================")
+                    print("❌ INVALID LOCKED PREDICTION")
+                    print("========================================")
                     print("Prediction :", candidate_action)
                     print("Action     : WAIT")
-                    print("----------------------------------------")
+                    print("========================================")
 
                     self.signal_lock.unlock()
 
                     signal.action = "WAIT"
                     signal.can_enter = False
                     signal.market_state = EntryState.WAITING.value
+                    signal.trade_status = "IDLE"
+
                     signal.reason = "INVALID_LOCKED_PREDICTION"
+
+                    signal.instruction = (
+                        "Waiting for a new valid CALL " "or PUT prediction."
+                    )
 
                     state = EntryState.WAITING
 
-            else:
+        else:
 
-                print("----------------------------------------")
-                print("NO LOCKED NEXT-CANDLE PREDICTION")
-                print("----------------------------------------")
+            print("========================================")
+            print("NO LOCKED 1-MINUTE PREDICTION")
+            print("========================================")
+            print("No CALL/PUT prediction was prepared.")
+            print("Waiting for next AI setup.")
+            print("========================================")
 
-                signal.action = "WAIT"
-                signal.can_enter = False
-                signal.market_state = EntryState.WAITING.value
+            signal.action = "WAIT"
+            signal.can_enter = False
 
-                state = EntryState.WAITING
+            signal.market_state = EntryState.WAITING.value
+            signal.trade_status = "IDLE"
 
+            state = EntryState.WAITING
         # ----------------------------------------
         # CONFIRM ENTRY
         # ----------------------------------------
