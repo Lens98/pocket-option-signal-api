@@ -514,16 +514,25 @@ class TradingEngine:
         print("Probability :", signal.probability)
         print("----------------------------------------")
         # ----------------------------------------
-        # Confidence Cap by Mode
+        # Confidence
         # ----------------------------------------
+        # Do not artificially cap confidence because
+        # the indicator engine is still in STARTUP mode.
+        # The confidence engine already evaluates the
+        # available confirmations, agreement, quality,
+        # and probability.
 
-        caps = {"STARTUP": 70, "STANDARD": 80, "ADVANCED": 90, "FULL": 100}
+        signal.confidence = max(0.0, min(float(signal.confidence), 100.0))
 
-        max_confidence = caps.get(indicator_result.mode, 70)
+        max_confidence = 100
 
-        if signal.confidence > max_confidence:
-
-            signal.confidence = max_confidence
+        print("----------------------------------------")
+        print("Confidence Final")
+        print("----------------------------------------")
+        print("Mode       :", indicator_result.mode)
+        print("Confidence :", signal.confidence)
+        print("Cap        :", max_confidence)
+        print("----------------------------------------")
 
         # ----------------------------------------
         # Multi-Timeframe Bonus
