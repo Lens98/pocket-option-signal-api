@@ -16,7 +16,6 @@ class ScoringStrategy:
         # ========================================
 
         BULLISH_KEYWORDS = [
-
             "Bullish",
             "Higher High",
             "Demand Zone",
@@ -24,31 +23,21 @@ class ScoringStrategy:
             "EMA50 Above",
             "MACD Above",
             "Oversold",
-            "Hammer"
-
+            "Hammer",
         ]
 
         BEARISH_KEYWORDS = [
-
-           "Bearish",
-           "Lower High",
-           "Supply Zone",
-           "EMA20 Below",
+            "Bearish",
+            "Lower High",
+            "Supply Zone",
+            "EMA20 Below",
             "EMA50 Below",
             "MACD Below",
             "Overbought",
-            "Shooting Star"
-
+            "Shooting Star",
         ]
 
-        NEUTRAL_KEYWORDS = [
-
-            "ATR",
-            "ADX",
-            "Volatility",
-            "Regime"
-
-]
+        NEUTRAL_KEYWORDS = ["ATR", "ADX", "Volatility", "Regime"]
 
         for result in results:
 
@@ -59,11 +48,11 @@ class ScoringStrategy:
 
                 if any(word in reason for word in BULLISH_KEYWORDS):
 
-                   bullish_reasons.append(reason)
+                    bullish_reasons.append(reason)
 
                 elif any(word in reason for word in BEARISH_KEYWORDS):
 
-                   bearish_reasons.append(reason)
+                    bearish_reasons.append(reason)
 
                 elif any(word in reason for word in NEUTRAL_KEYWORDS):
 
@@ -86,13 +75,13 @@ class ScoringStrategy:
         # Market Bias
         # ========================================
 
-        if difference >= 18:
+        if difference > 0:
 
             bias = "CALL"
             trend = "BULLISH"
             reasons = bullish_reasons
 
-        elif difference <= -18:
+        elif difference < 0:
 
             bias = "PUT"
             trend = "BEARISH"
@@ -102,38 +91,17 @@ class ScoringStrategy:
 
             bias = "WAIT"
             trend = "SIDEWAYS"
-            reasons = (
-                bullish_reasons +
-                bearish_reasons
-        )
+            reasons = bullish_reasons + bearish_reasons
 
         # ========================================
         # Confidence
         # ========================================
 
-        winning_score = max(
-            bullish_score,
-            bearish_score
-        )
+        winning_score = max(bullish_score, bearish_score)
 
-        confidence = round(
+        confidence = round((winning_score * 0.70) + (abs(difference) * 0.30), 2)
 
-            (
-                winning_score * 0.70
-            ) +
-
-            (
-                abs(difference) * 0.30
-            ),
-
-            2
-
-        )
-
-        confidence = min(
-            confidence,
-            100
-        )
+        confidence = min(confidence, 100)
 
         # ========================================
         # Probability
@@ -147,13 +115,7 @@ class ScoringStrategy:
 
         else:
 
-            probability = round(
-
-                (winning_score / total) * 100,
-
-                2
-
-            )
+            probability = round((winning_score / total) * 100, 2)
 
         # ========================================
         # Debug
@@ -173,21 +135,12 @@ class ScoringStrategy:
         print()
 
         return {
-
             "bias": bias,
-
             "action": bias,
-
             "trend": trend,
-
             "confidence": confidence,
-
             "probability": probability,
-
             "bullish_score": bullish_score,
-
             "bearish_score": bearish_score,
-
-            "reasons": reasons
-
+            "reasons": reasons,
         }
