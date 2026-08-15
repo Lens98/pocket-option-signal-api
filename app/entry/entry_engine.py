@@ -30,9 +30,7 @@ class EntryEngine:
         if state == EntryState.WAITING:
 
             signal.reason = "NO_MARKET_BIAS"
-            signal.instruction = (
-                "No trade. Waiting for a clear market direction."
-            )
+            signal.instruction = "No trade. Waiting for a clear market direction."
 
             print("❌ WAITING")
             return False
@@ -44,9 +42,7 @@ class EntryEngine:
         if state == EntryState.ANALYZING:
 
             signal.reason = "LOW_PROBABILITY"
-            signal.instruction = (
-                "Analyzing market. Waiting for stronger confirmation."
-            )
+            signal.instruction = "Analyzing market. Waiting for stronger confirmation."
 
             print("🟡 ANALYZING")
             return False
@@ -58,9 +54,7 @@ class EntryEngine:
         if state == EntryState.READY:
 
             signal.reason = "WAITING_PULLBACK"
-            signal.instruction = (
-                "Setup detected. Waiting for a pullback."
-            )
+            signal.instruction = "Setup detected. Waiting for a pullback."
 
             print("🟡 READY")
             return False
@@ -71,12 +65,54 @@ class EntryEngine:
 
         if state == EntryState.WAITING_FOR_CANDLE_CLOSE:
 
-            signal.reason = "WAITING_CANDLE_CLOSE"
-            signal.instruction = (
-                "Wait for the current candle to close."
-            )
+            signal.can_enter = False
 
-            print("🟡 WAITING FOR CANDLE CLOSE")
+            # Preserve the AI prediction.
+            # This is NOT an entry yet.
+            if signal.bias in ["CALL", "PUT"]:
+
+                signal.action = signal.bias
+
+                signal.trade_status = "WAITING_FOR_CANDLE"
+
+                signal.reason = f"NEXT CANDLE PREDICTION — {signal.bias}"
+
+                signal.instruction = (
+                    f"{signal.bias} predicted for the next "
+                    "1-minute candle. Wait for the new candle "
+                    "to open."
+                )
+
+            else:
+
+                signal.action = "WAIT"
+
+                signal.trade_status = "IDLE"
+
+                signal.reason = "NO_MARKET_BIAS"
+
+                signal.instruction = (
+                    "No CALL/PUT prediction. Waiting for " "a clear market direction."
+                )
+
+            signal.entry_window = 0
+            signal.countdown = 0
+
+            print("----------------------------------------")
+            print("🔒 NEXT 1-MINUTE PREDICTION READY")
+            print("----------------------------------------")
+            print("Prediction :", signal.action)
+            print("Confidence :", signal.confidence)
+            print("Probability:", signal.probability)
+            print("Agreement  :", signal.agreement_score)
+            print(
+                "Confirmations:",
+                f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
+            )
+            print("Can Enter  :", signal.can_enter)
+            print("Instruction:", signal.instruction)
+            print("----------------------------------------")
+
             return False
 
         # ==========================================
@@ -90,9 +126,7 @@ class EntryEngine:
             signal.trade_status = "ENTRY"
 
             signal.reason = "ENTRY_CONFIRMED"
-            signal.instruction = (
-                f"ENTER {signal.bias} NOW"
-            )
+            signal.instruction = f"ENTER {signal.bias} NOW"
 
             # New candle = immediate entry.
             # No 5-second countdown.
@@ -122,9 +156,7 @@ class EntryEngine:
             signal.trade_status = "ACTIVE"
 
             signal.reason = "TRADE_ACTIVE"
-            signal.instruction = (
-                "Trade is currently active."
-            )
+            signal.instruction = "Trade is currently active."
 
             print("🔵 TRADE ACTIVE")
             return False
@@ -140,9 +172,7 @@ class EntryEngine:
             signal.trade_status = "RESULT"
 
             signal.reason = "TRADE_FINISHED"
-            signal.instruction = (
-                "Trade completed."
-            )
+            signal.instruction = "Trade completed."
 
             print("🏁 TRADE FINISHED")
             return False
