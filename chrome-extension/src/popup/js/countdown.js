@@ -1,5 +1,19 @@
 let countdownInterval = null;
 
+
+// ========================================
+// BINARY TIMEFRAME
+// ========================================
+//
+// Your market feed may be 10-second candles,
+// but the binary trade expiration is 60 seconds.
+//
+// The countdown therefore follows the actual
+// 1-minute candle clock.
+//
+const BINARY_TIMEFRAME_SECONDS = 60;
+
+
 // ========================================
 // Stop Countdown
 // ========================================
@@ -16,6 +30,7 @@ export function stopCountdown() {
 
 }
 
+
 // ========================================
 // Parse Candle Timestamp
 // ========================================
@@ -28,7 +43,10 @@ function getCandleTime(candle) {
 
     const value = candle.timestamp;
 
+    // ========================================
     // Unix timestamp
+    // ========================================
+
     if (
         typeof value === "number" ||
         !isNaN(Number(value))
@@ -36,7 +54,7 @@ function getCandleTime(candle) {
 
         let timestamp = Number(value);
 
-        // Milliseconds
+        // Unix milliseconds
         if (timestamp > 10000000000) {
             timestamp = timestamp / 1000;
         }
@@ -44,8 +62,12 @@ function getCandleTime(candle) {
         return timestamp * 1000;
     }
 
+    // ========================================
     // ISO timestamp
-    const parsed = Date.parse(String(value));
+    // ========================================
+
+    const parsed =
+        Date.parse(String(value));
 
     if (!isNaN(parsed)) {
         return parsed;
@@ -54,58 +76,85 @@ function getCandleTime(candle) {
     return null;
 }
 
+
 // ========================================
-// Get Time Remaining
+// Get Binary Candle Remaining Time
+// ========================================
+//
+// IMPORTANT:
+//
+// We do NOT count from the moment the API
+// responded.
+//
+// We use the real 1-minute clock:
+//
+// 08:17:00 -> 08:18:00
+// 08:18:00 -> 08:19:00
+//
 // ========================================
 
-function getRemainingSeconds(candle) {
+function getRemainingSeconds() {
 
-    const candleStart =
-        getCandleTime(candle);
+    const now = Date.now();
 
-    if (candleStart === null) {
-        return null;
-    }
+    const timeframeMs =
+        BINARY_TIMEFRAME_SECONDS * 1000;
 
-    const timeframe =
-        Number(window.marketTimeframe);
+    const nextCandle =
+        Math.ceil(
+            now / timeframeMs
+        ) * timeframeMs;
 
-    if (!Number.isFinite(timeframe) || timeframe <= 0) {
-        return null;
-    }
-
-    const now =
-        Date.now();
-
-    const elapsed =
-        Math.floor(
-            (now - candleStart) / 1000
+    let remaining =
+        Math.ceil(
+            (nextCandle - now) / 1000
         );
 
-    const remaining =
-        timeframe -
-        (elapsed % timeframe);
+    /*
+     * At the exact candle boundary,
+     * show the new 60-second candle rather
+     * than showing 00.
+     */
 
-    return Math.max(
-        0,
+    if (remaining <= 0) {
+        remaining = BINARY_TIMEFRAME_SECONDS;
+    }
+
+    return Math.min(
+        BINARY_TIMEFRAME_SECONDS,
         remaining
     );
 }
+
+
 // ========================================
 // Format Countdown
 // ========================================
 
 function formatTime(seconds) {
 
-    if (seconds === null) {
+    if (
+        seconds === null ||
+        seconds === undefined ||
+        !Number.isFinite(seconds)
+    ) {
+
         return "--:--";
     }
 
+    const safeSeconds =
+        Math.max(
+            0,
+            Math.floor(seconds)
+        );
+
     const minutes =
-        Math.floor(seconds / 60);
+        Math.floor(
+            safeSeconds / 60
+        );
 
     const remainingSeconds =
-        seconds % 60;
+        safeSeconds % 60;
 
     return (
         String(minutes).padStart(2, "0") +
@@ -113,6 +162,7 @@ function formatTime(seconds) {
         String(remainingSeconds).padStart(2, "0")
     );
 }
+
 
 // ========================================
 // Start Dashboard State Display
@@ -137,18 +187,39 @@ export function startCountdown(
     const entryMessage =
         document.getElementById("entryMessage");
 
+    if (!timer || !banner || !action || !entryMessage) {
+        return;
+    }
+
+
     function update() {
 
         const marketState =
-            getMarketState();
+            String(
+                getMarketState() || "WAITING"
+            ).toUpperCase();
 
         const latestCandle =
             getLatestCandle();
 
+        /*
+         * Keep this call so the countdown remains
+         * synchronized with the live candle source.
+         *
+         * We intentionally do not calculate the
+         * countdown from the API response time.
+         */
+
+        const candleTime =
+            getCandleTime(latestCandle);
+
+        const hasCandle =
+            candleTime !== null;
+
         const remaining =
-            getRemainingSeconds(
-                latestCandle
-            );
+            hasCandle
+                ? getRemainingSeconds()
+                : null;
 
         const countdownText =
             formatTime(remaining);
@@ -168,37 +239,39 @@ export function startCountdown(
                 signal.confidence || 0
             );
 
+
         // ========================================
         // WAITING
         // ========================================
 
         if (marketState === "WAITING") {
 
-            timer.innerHTML =
+            timer.textContent =
                 countdownText;
 
-            banner.innerHTML =
+            banner.textContent =
                 "🟡 WAITING FOR SETUP";
 
-            action.innerHTML =
+            action.textContent =
                 "WAIT";
 
-            entryMessage.innerHTML =
+            entryMessage.textContent =
                 "Waiting for a valid trade setup.";
 
             return;
         }
 
+
         // ========================================
-        // ANALYZING CURRENT CANDLE
+        // ANALYZING
         // ========================================
 
         if (marketState === "ANALYZING") {
 
-            timer.innerHTML =
+            timer.textContent =
                 countdownText;
 
-            banner.innerHTML =
+            banner.textContent =
                 "🔍 ANALYZING CURRENT CANDLE";
 
             if (
@@ -206,23 +279,26 @@ export function startCountdown(
                 confidence > 0
             ) {
 
-                action.innerHTML =
+                action.textContent =
                     bias;
 
-                entryMessage.innerHTML =
-                    `${bias} detected • Confidence ${Math.round(confidence)}% • Enter on the next candle.`;
+                entryMessage.textContent =
+                    `${bias} detected • Confidence ${Math.round(
+                        confidence
+                    )}% • Enter on the next candle.`;
 
             } else {
 
-                action.innerHTML =
+                action.textContent =
                     "WAIT";
 
-                entryMessage.innerHTML =
+                entryMessage.textContent =
                     "AI is analyzing the current candle.";
             }
 
             return;
         }
+
 
         // ========================================
         // CONFIRMING
@@ -230,10 +306,10 @@ export function startCountdown(
 
         if (marketState === "CONFIRMING") {
 
-            timer.innerHTML =
+            timer.textContent =
                 countdownText;
 
-            banner.innerHTML =
+            banner.textContent =
                 "🟡 CONFIRMING CURRENT CANDLE";
 
             if (
@@ -241,20 +317,25 @@ export function startCountdown(
                 bias === "PUT"
             ) {
 
-                action.innerHTML =
+                action.textContent =
                     bias;
 
             } else {
 
-                action.innerHTML =
+                action.textContent =
                     "WAIT";
             }
 
-            entryMessage.innerHTML =
-                "AI is confirming the direction for the next candle.";
+            entryMessage.textContent =
+                `AI is confirming the direction for the next candle. ${
+                    hasCandle
+                        ? `Next candle in ${countdownText}.`
+                        : ""
+                }`;
 
             return;
         }
+
 
         // ========================================
         // READY
@@ -262,10 +343,10 @@ export function startCountdown(
 
         if (marketState === "READY") {
 
-            timer.innerHTML =
+            timer.textContent =
                 countdownText;
 
-            banner.innerHTML =
+            banner.textContent =
                 "🟢 NEXT CANDLE SETUP READY";
 
             if (
@@ -273,23 +354,24 @@ export function startCountdown(
                 bias === "PUT"
             ) {
 
-                action.innerHTML =
+                action.textContent =
                     bias;
 
-                entryMessage.innerHTML =
-                    `${bias} • Enter when the new candle opens.`;
+                entryMessage.textContent =
+                    `${bias} • Next candle in ${countdownText}.`;
 
             } else {
 
-                action.innerHTML =
+                action.textContent =
                     "READY";
 
-                entryMessage.innerHTML =
-                    "Setup detected. Waiting for the new candle.";
+                entryMessage.textContent =
+                    `Setup detected. Next candle in ${countdownText}.`;
             }
 
             return;
         }
+
 
         // ========================================
         // WAITING FOR CANDLE CLOSE
@@ -300,34 +382,39 @@ export function startCountdown(
             "WAITING_FOR_CANDLE_CLOSE"
         ) {
 
-            timer.innerHTML =
+            timer.textContent =
                 countdownText;
 
-            banner.innerHTML =
-                "⏳ ENTER ON NEXT CANDLE";
+            banner.textContent =
+                "⏳ NEXT CANDLE ENTRY";
 
             if (
                 bias === "CALL" ||
                 bias === "PUT"
             ) {
 
-                action.innerHTML =
+                action.textContent =
                     bias;
 
-                entryMessage.innerHTML =
-                    `${bias} • Enter in ${countdownText} when the new candle opens.`;
+                entryMessage.textContent =
+                    `${bias} • Enter when the new candle opens in ${countdownText}.`;
 
             } else {
 
-                action.innerHTML =
+                action.textContent =
                     "WAIT";
 
-                entryMessage.innerHTML =
-                    "AI is analyzing the current candle.";
+                entryMessage.textContent =
+                    `AI is analyzing the current candle. ${
+                        hasCandle
+                            ? `Next candle in ${countdownText}.`
+                            : ""
+                    }`;
             }
 
             return;
         }
+
 
         // ========================================
         // ENTRY
@@ -335,22 +422,25 @@ export function startCountdown(
 
         if (marketState === "ENTRY") {
 
-            timer.innerHTML =
+            timer.textContent =
                 "NOW";
 
-            banner.innerHTML =
+            banner.textContent =
                 "🚀 ENTER NOW";
 
-            action.innerHTML =
-                signal.action ||
-                signal.bias ||
-                "ENTER";
+            action.textContent =
+                (
+                    signal.action ||
+                    signal.bias ||
+                    "ENTER"
+                );
 
-            entryMessage.innerHTML =
+            entryMessage.textContent =
                 "Final signal confirmed. Enter immediately on the new candle.";
 
             return;
         }
+
 
         // ========================================
         // ACTIVE
@@ -358,20 +448,21 @@ export function startCountdown(
 
         if (marketState === "ACTIVE") {
 
-            timer.innerHTML =
+            timer.textContent =
                 "--:--";
 
-            banner.innerHTML =
+            banner.textContent =
                 "🟢 TRADE ACTIVE";
 
-            action.innerHTML =
+            action.textContent =
                 "ACTIVE";
 
-            entryMessage.innerHTML =
+            entryMessage.textContent =
                 "Trade is currently running.";
 
             return;
         }
+
 
         // ========================================
         // RESULT
@@ -379,40 +470,55 @@ export function startCountdown(
 
         if (marketState === "RESULT") {
 
-            timer.innerHTML =
+            timer.textContent =
                 "--:--";
 
-            banner.innerHTML =
+            banner.textContent =
                 "🏁 TRADE COMPLETE";
 
-            action.innerHTML =
+            action.textContent =
                 "RESULT";
 
-            entryMessage.innerHTML =
+            entryMessage.textContent =
                 "Trade completed. Waiting for the next setup.";
 
             return;
         }
 
+
         // ========================================
         // UNKNOWN
         // ========================================
 
-        timer.innerHTML =
+        timer.textContent =
             countdownText;
 
-        banner.innerHTML =
+        banner.textContent =
             "⚪ WAITING";
 
-        action.innerHTML =
+        action.textContent =
             "WAIT";
 
-        entryMessage.innerHTML =
+        entryMessage.textContent =
             "Waiting for the next valid setup.";
     }
 
+
+    // ========================================
+    // First Update
+    // ========================================
+
     update();
 
+
+    // ========================================
+    // Update Frequently
+    // ========================================
+    //
+    // 250ms keeps the display synchronized.
+    // The actual calculation always comes from
+    // Date.now(), so it does not drift.
+    //
     countdownInterval =
         setInterval(
             update,
