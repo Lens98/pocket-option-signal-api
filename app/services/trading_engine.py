@@ -568,6 +568,505 @@ class TradingEngine:
         print("========================================")
 
         # ----------------------------------------
+        # WAITING FOR CANDLE CLOSE / NEXT CANDLE
+        # ----------------------------------------
+
+        if self.signal_lock.is_locked():
+
+            locked = self.signal_lock.current()
+
+            print("----------------------------------------")
+            print("🔒 USING LOCKED SIGNAL")
+            print("----------------------------------------")
+
+            if locked is not None:
+
+                state = EntryState(locked.market_state)
+                signal = locked
+
+        else:
+
+            state = self.entry_manager.determine(signal)
+
+        # ----------------------------------------
+        # LOCK VALID CALL / PUT PREDICTION
+        # ----------------------------------------
+
+        if (
+            state == EntryState.WAITING_FOR_CANDLE_CLOSE
+            and not self.signal_lock.is_locked()
+            and signal.bias in ["CALL", "PUT"]
+        ):
+
+            # The AI has made a valid prediction.
+            # Do NOT wait for the candle to close
+            # before showing the prediction.
+
+            signal.action = signal.bias
+            signal.can_enter = False
+            signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
+
+            signal.reason = f"NEXT CANDLE PREDICTION — {signal.bias}"
+
+            signal.instruction = (
+                f"{signal.bias} predicted for the next candle. "
+                "Wait for the new candle to open."
+            )
+
+            self.signal_lock.lock(
+                signal,
+                reason="WAITING FOR NEW CANDLE",
+            )
+
+            print("----------------------------------------")
+            print("🔒 NEXT-CANDLE PREDICTION LOCKED")
+            print("----------------------------------------")
+            print("Prediction :", signal.bias)
+            print("Confidence :", signal.confidence)
+            print("Probability:", signal.probability)
+            print("Agreement  :", signal.agreement_score)
+            print(
+                "Confirmations:",
+                f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
+            )
+            print("Action     :", signal.action)
+            print("Can Enter  :", signal.can_enter)
+            print("State      :", signal.market_state)
+            print("----------------------------------------")
+
+        # ----------------------------------------
+        # DETECT NEW CANDLE
+        # ----------------------------------------
+
+        new_candle_opened = False
+
+        latest_candle = market.candles[-1]
+
+        if self.last_candle_timestamp is None:
+
+            self.last_candle_timestamp = latest_candle.timestamp
+
+        elif latest_candle.timestamp != self.last_candle_timestamp:
+
+            new_candle_opened = True
+
+            print("========================================")
+            print("🟢 NEW CANDLE OPENED")
+            print("========================================")
+            print("Previous :", self.last_candle_timestamp)
+            print("Current  :", latest_candle.timestamp)
+            print("========================================")
+
+            self.last_candle_timestamp = latest_candle.timestamp
+
+        # ----------------------------------------
+        # NEW CANDLE = USE LOCKED PREDICTION
+        # ----------------------------------------
+
+        if new_candle_opened:
+
+            locked = None
+
+            if self.signal_lock.is_locked():
+
+                locked = self.signal_lock.current()
+
+            if locked is not None:
+
+                candidate_action = str(locked.bias or locked.action or "").upper()
+
+                print("----------------------------------------")
+                print("🎯 NEXT-CANDLE PREDICTION")
+                print("----------------------------------------")
+                print("Prediction :", candidate_action)
+                print("New Candle :", latest_candle.timestamp)
+                print("Entry Open :", latest_candle.open)
+                print("Confidence :", locked.confidence)
+                print("Probability:", locked.probability)
+                print("Agreement  :", locked.agreement_score)
+                print("----------------------------------------")
+
+                # ----------------------------------------
+                # VALIDATE PREDICTION
+                # ----------------------------------------
+
+                if candidate_action in ["CALL", "PUT"]:
+
+                    signal = locked
+
+                    signal.action = candidate_action
+                    signal.can_enter = True
+                    signal.market_state = EntryState.ENTRY.value
+                    signal.entry_price = latest_candle.open
+                    signal.timestamp = datetime.now()
+
+                    signal.reason = f"ENTER {candidate_action} ON NEW CANDLE"
+
+                    signal.instruction = (
+                        f"Enter {candidate_action} at the " "open of the new candle."
+                    )
+
+                    state = EntryState.ENTRY
+
+                    print("----------------------------------------")
+                    print("🚀 BINARY ENTRY READY")
+                    print("----------------------------------------")
+                    print("Prediction :", signal.bias)
+                    print("Action     :", signal.action)
+                    print("Entry Open :", signal.entry_price)
+                    print("Candle     :", latest_candle.timestamp)
+                    print("Confidence :", signal.confidence)
+                    print("Probability:", signal.probability)
+                    print("Agreement  :", signal.agreement_score)
+                    print("Expiration :", "60 seconds")
+                    print("----------------------------------------")
+
+                    # ----------------------------------------
+                    # IMPORTANT
+                    # ----------------------------------------
+                    # Do NOT unlock before trade creation.
+                    #
+                    # The signal remains locked until the
+                    # trade becomes ACTIVE.
+
+                else:
+
+                    print("----------------------------------------")
+                    print("❌ LOCKED PREDICTION INVALID")
+                    print("----------------------------------------")
+                    print("Prediction :", candidate_action)
+                    print("Action     : WAIT")
+                    print("----------------------------------------")
+
+                    self.signal_lock.unlock()
+
+                    signal.action = "WAIT"
+                    signal.can_enter = False
+                    signal.market_state = EntryState.WAITING.value
+                    signal.reason = "INVALID_LOCKED_PREDICTION"
+
+                    state = EntryState.WAITING
+
+            else:
+
+                print("----------------------------------------")
+                print("NO LOCKED NEXT-CANDLE PREDICTION")
+                print("----------------------------------------")
+
+                signal.action = "WAIT"
+                signal.can_enter = False
+                signal.market_state = EntryState.WAITING.value
+
+                state = EntryState.WAITING
+
+        # ----------------------------------------
+        # CONFIRM ENTRY
+        # ----------------------------------------
+
+        signal.market_state = state.value
+
+        self.entry_engine.confirm(signal, state)
+
+        signal = self.presentation.build(signal)
+
+        print("ENTRY STATE :", state)
+
+        print("========================================")
+        print("SIGNAL FLOW")
+        print("========================================")
+        print("Bias      :", signal.bias)
+        print("State     :", signal.market_state)
+        print("Action    :", signal.action)
+        print("Can Enter :", signal.can_enter)
+        print("========================================")
+        print()
+
+        # ----------------------------------------
+        # RISK MANAGER OVERRIDE
+        # ----------------------------------------
+
+        if not risk["allowed"] and state != EntryState.ENTRY:
+
+            signal.action = "WAIT"
+            signal.market_state = EntryState.WAITING.value
+            signal.can_enter = False
+
+            signal.reasons.extend(risk["reasons"])
+
+        # ----------------------------------------
+        # FILTER OVERRIDE
+        # ----------------------------------------
+
+        if filter_block_reason and state != EntryState.ENTRY:
+
+            signal.action = "WAIT"
+            signal.can_enter = False
+
+            signal.reasons.append(filter_block_reason)
+
+        # ----------------------------------------
+        # AI EXPLANATION
+        # ----------------------------------------
+
+        formatted = self.ai.format(signal)
+
+        # ----------------------------------------
+        # SAVE TRADE
+        # ----------------------------------------
+
+        if signal.action == "WAIT":
+
+            print("❌ BLOCKED: WAIT signal cannot create trade")
+
+            signal.can_enter = False
+
+        # ----------------------------------------
+        # MINIMUM CONFIDENCE FILTER
+        # ----------------------------------------
+
+        MIN_CONFIDENCE = 70
+
+        if signal.can_enter and signal.confidence < MIN_CONFIDENCE:
+
+            print("----------------------------------------")
+            print("❌ BLOCKED: Confidence too low")
+            print("Confidence :", signal.confidence)
+            print("Minimum    :", MIN_CONFIDENCE)
+            print("----------------------------------------")
+
+            signal.action = "WAIT"
+            signal.can_enter = False
+            signal.market_state = EntryState.WAITING.value
+
+            signal.reasons.append(f"Confidence below {MIN_CONFIDENCE}%")
+
+        # ----------------------------------------
+        # TRADE CREATION
+        # ----------------------------------------
+
+        if (
+            new_candle_opened
+            and signal.can_enter
+            and signal.action in ["CALL", "PUT"]
+            and state == EntryState.ENTRY
+        ):
+
+            print("========================================")
+            print("TRADE CREATION CHECK")
+            print("========================================")
+
+            # ----------------------------------------
+            # HARD OPEN TRADE PROTECTION
+            # ----------------------------------------
+
+            open_trades = self.trade_storage.open_trades()
+
+            if open_trades:
+
+                existing = open_trades[0]
+
+                print("========================================")
+                print("🛑 TRADE CREATION BLOCKED")
+                print("========================================")
+                print("An OPEN trade already exists.")
+                print("Trade ID :", existing.id)
+                print("Asset    :", existing.asset)
+                print("Action   :", existing.action)
+                print("Status   :", existing.status)
+                print("========================================")
+
+                signal.action = "WAIT"
+                signal.can_enter = False
+                signal.market_state = EntryState.WAITING.value
+
+                signal.reason = "OPEN_TRADE_EXISTS"
+
+                signal.instruction = (
+                    "A trade is already active. " "Wait for it to finish."
+                )
+
+            else:
+
+                print("========================================")
+                print("✅ NO OPEN TRADE")
+                print("Creating new binary trade...")
+                print("========================================")
+
+                # ----------------------------------------
+                # FINAL SIGNAL INFORMATION
+                # ----------------------------------------
+
+                signal.asset = market.asset
+                signal.timeframe = market.timeframe
+
+                latest_entry_candle = market.candles[-1]
+
+                signal.entry_price = latest_entry_candle.open
+
+                # ----------------------------------------
+                # ENTRY TIME
+                # ----------------------------------------
+
+                timestamp_value = latest_entry_candle.timestamp
+
+                try:
+
+                    timestamp_number = float(timestamp_value)
+
+                    if timestamp_number > 10_000_000_000:
+
+                        entry_time = datetime.fromtimestamp(
+                            timestamp_number / 1000,
+                            tz=timezone.utc,
+                        )
+
+                    else:
+
+                        entry_time = datetime.fromtimestamp(
+                            timestamp_number,
+                            tz=timezone.utc,
+                        )
+
+                except (
+                    TypeError,
+                    ValueError,
+                    OverflowError,
+                ):
+
+                    entry_time = datetime.fromisoformat(
+                        str(timestamp_value).replace("Z", "+00:00")
+                    )
+
+                if entry_time.tzinfo is None:
+
+                    entry_time = entry_time.replace(tzinfo=timezone.utc)
+
+                else:
+
+                    entry_time = entry_time.astimezone(timezone.utc)
+
+                # ----------------------------------------
+                # BINARY ENTRY LOG
+                # ----------------------------------------
+
+                print("----------------------------------------")
+                print("🎯 BINARY NEXT-CANDLE ENTRY")
+                print("----------------------------------------")
+                print("Prediction :", signal.bias)
+                print(
+                    "Candle     :",
+                    latest_entry_candle.timestamp,
+                )
+                print(
+                    "Entry Open :",
+                    latest_entry_candle.open,
+                )
+                print(
+                    "Entry Time :",
+                    entry_time.isoformat(),
+                )
+                print(
+                    "Confidence :",
+                    signal.confidence,
+                )
+                print(
+                    "Probability:",
+                    signal.probability,
+                )
+                print(
+                    "Agreement  :",
+                    signal.agreement_score,
+                )
+                print(
+                    "Action     :",
+                    signal.action,
+                )
+                print(
+                    "Expiration :",
+                    "60 seconds",
+                )
+                print("----------------------------------------")
+
+                # ----------------------------------------
+                # CREATE TRADE
+                # ----------------------------------------
+
+                try:
+
+                    from uuid import uuid4
+                    from app.models.trade import Trade
+
+                    trade = Trade(
+                        id=str(uuid4()),
+                        asset=signal.asset,
+                        timeframe=signal.timeframe,
+                        confidence=signal.confidence,
+                        probability=signal.probability,
+                        agreement_score=signal.agreement_score,
+                        session=signal.session,
+                        action=signal.action,
+                        regime=signal.regime,
+                        indicator_mode=indicator_result.mode,
+                        grade=signal.grade,
+                        risk=signal.risk,
+                        trend=signal.trend,
+                        entry_price=signal.entry_price,
+                        exit_price=None,
+                        entry_time=entry_time,
+                        exit_time=None,
+                        expiration_seconds=60,
+                        status="OPEN",
+                        result="",
+                        profit=0.0,
+                        payout=0.0,
+                        reasons=signal.reasons,
+                        pattern=signal.pattern,
+                    )
+
+                    self.trade_storage.add(trade)
+
+                    print("----------------------------------------")
+                    print("🚀 TRADE CREATED")
+                    print("----------------------------------------")
+                    print("Trade ID :", trade.id)
+                    print("Asset    :", trade.asset)
+                    print("Action   :", trade.action)
+                    print("Entry    :", trade.entry_price)
+                    print("Entry Time:", trade.entry_time)
+                    print("Expiration: 60 seconds")
+                    print("Status   :", trade.status)
+                    print("----------------------------------------")
+
+                    # ----------------------------------------
+                    # ACTIVE TRADE LOCK
+                    # ----------------------------------------
+
+                    self.signal_lock.lock(
+                        signal,
+                        reason="ACTIVE",
+                        trade_id=trade.id,
+                    )
+
+                    self.signal_lock.activate(trade.id)
+
+                    print("----------------------------------------")
+                    print("🔒 ACTIVE TRADE LOCKED")
+                    print("----------------------------------------")
+                    print("Trade ID :", trade.id)
+                    print("Asset    :", trade.asset)
+                    print("Action   :", trade.action)
+                    print("Status   :", trade.status)
+                    print("----------------------------------------")
+
+                except Exception as e:
+
+                    print("----------------------------------------")
+                    print("❌ TRADE CREATION ERROR")
+                    print("----------------------------------------")
+                    print(e)
+                    print(
+                        "----------------------------------------"
+                    )  # ----------------------------------------
         # Final Console Output
         # ----------------------------------------
 
