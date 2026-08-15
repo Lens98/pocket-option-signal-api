@@ -58,7 +58,17 @@ def update_market(data: MarketUpdate):
     market = market_storage.get(data.asset)
 
     print("----------------------------------------")
-    print("Stored Candles:", market_storage.size(data.asset))
+    print("SIGNAL GENERATION INPUT")
+    print("----------------------------------------")
+    print("Asset:", market.asset)
+    print("Timeframe:", market.timeframe)
+    print("Market candles:", len(market.candles))
+    print("Storage candles:", market_storage.size(data.asset))
+
+    if market.candles:
+        print("First candle:", market.candles[0].timestamp)
+        print("Last candle :", market.candles[-1].timestamp)
+
     print("----------------------------------------")
 
     # Generate signal
