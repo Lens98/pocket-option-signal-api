@@ -130,6 +130,8 @@ class Signal(BaseModel):
 
     pullback_confirmed: bool = False
 
+    locked_candle_bucket: int | None = None
+
     # ========================================
     # Signal Agreement
     # ========================================

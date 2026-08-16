@@ -599,28 +599,83 @@ class TradingEngine:
         print("========================================")
 
         # ----------------------------------------
-        # WAITING FOR CANDLE CLOSE / NEXT CANDLE
+        # CHECK WAITING PREDICTION LOCK
         # ----------------------------------------
+
+        locked = None
 
         if self.signal_lock.is_locked():
 
             locked = self.signal_lock.current()
 
-            print("----------------------------------------")
-            print("🔒 USING LOCKED SIGNAL")
-            print("----------------------------------------")
-
             if locked is not None:
 
-                state = EntryState(locked.market_state)
-                signal = locked
+                locked_bucket = getattr(locked, "locked_candle_bucket", None)
+
+                current_bucket = self.get_minute_bucket(market.candles[-1].timestamp)
+
+                print("----------------------------------------")
+                print("🔒 CHECKING PREDICTION LOCK")
+                print("----------------------------------------")
+                print("Locked Bucket :", locked_bucket)
+                print("Current Bucket:", current_bucket)
+                print("Bias          :", locked.bias)
+                print("Action        :", locked.action)
+                print("----------------------------------------")
+
+                # ----------------------------------------
+                # EXPIRE OLD PREDICTION
+                # ----------------------------------------
+
+                if (
+                    locked_bucket is not None
+                    and current_bucket is not None
+                    and current_bucket > locked_bucket + 1
+                ):
+
+                    print("----------------------------------------")
+                    print("🔓 PREDICTION LOCK EXPIRED")
+                    print("----------------------------------------")
+
+                    self.signal_lock.unlock()
+
+                    locked = None
+
+                else:
+
+                    print("----------------------------------------")
+                    print("🔒 USING CURRENT PREDICTION")
+                    print("----------------------------------------")
+
+                    signal = locked
+
+        # ----------------------------------------
+        # DETERMINE ENTRY STATE
+        # ----------------------------------------
+
+        if locked is not None:
+
+            state = EntryState(signal.market_state)
 
         else:
 
             state = self.entry_manager.determine(signal)
 
+        if (
+            state == EntryState.WAITING_FOR_CANDLE_CLOSE
+            and not self.signal_lock.is_locked()
+            and signal.bias in ["CALL", "PUT"]
+        ):
+
+            signal.action = signal.bias
+
+            signal.can_enter = False
+
+            signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
+
         # ----------------------------------------
-        # LOCK CALL / PUT FOR NEXT 1-MINUTE CANDLE
+        # PREPARE CALL / PUT PREDICTION
+        # FOR NEXT 1-MINUTE CANDLE
         # ----------------------------------------
 
         if (
@@ -630,39 +685,31 @@ class TradingEngine:
         ):
 
             signal.action = signal.bias
+
             signal.can_enter = False
 
             signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
 
-        signal.reason = f"NEXT 1-MINUTE CANDLE — {signal.bias}"
+            # Lock this prediction to the CURRENT candle.
+            # It will be used when the NEXT candle opens.
+            signal.locked_candle_bucket = self.get_minute_bucket(
+                market.candles[-1].timestamp
+            )
 
-        signal.instruction = (
-            f"{signal.bias} CONFIRMED FOR "
-            "NEXT 1-MINUTE CANDLE. "
-            "WAIT FOR CANDLE OPEN."
-        )
-
-        self.signal_lock.lock(
-            signal,
-            reason="WAITING FOR NEXT 1-MINUTE CANDLE",
-        )
-
-        print("========================================")
-        print("🔒 1-MINUTE PREDICTION LOCKED")
-        print("========================================")
-        print("Prediction :", signal.bias)
-        print("Confidence :", signal.confidence)
-        print("Probability:", signal.probability)
-        print("Agreement  :", signal.agreement_score)
-        print(
-            "Confirmations:",
-            f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
-        )
-        print("State      :", signal.market_state)
-        print("----------------------------------------")
-        print(f"🎯 NEXT CANDLE: {signal.bias}")
-        print("========================================")
-        # ----------------------------------------
+            print("========================================")
+            print("🔒 1-MINUTE PREDICTION LOCKED")
+            print("========================================")
+            print("Prediction :", signal.bias)
+            print("Confidence :", signal.confidence)
+            print("Probability:", signal.probability)
+            print("Agreement  :", signal.agreement_score)
+            print(
+                "Confirmations:",
+                f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
+            )
+            print("Locked Bucket:", signal.locked_candle_bucket)
+            print("State       :", signal.market_state)
+            print("========================================")
         # DETECT NEW 1-MINUTE CANDLE
         # ----------------------------------------
 
