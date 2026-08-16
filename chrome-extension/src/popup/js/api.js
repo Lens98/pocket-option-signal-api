@@ -1,4 +1,5 @@
-const API = "https://pocket-option-signal-api-production.up.railway.app";
+const API =
+    "https://pocket-option-signal-api-production.up.railway.app";
 
 /* ==========================================
    GET SIGNAL
@@ -6,18 +7,57 @@ const API = "https://pocket-option-signal-api-production.up.railway.app";
 
 export async function getSignal() {
 
+    console.log(
+        "🌐 UI → RAILWAY /signal:",
+        new Date().toISOString()
+    );
+
+    const url =
+        `${API}/signal?ts=${Date.now()}`;
+
+    console.log(
+        "🌐 REQUEST:",
+        url
+    );
+
     const response =
-       await fetch(`${API}/signal`);
+        await fetch(
+            url,
+            {
+                method: "GET",
+                cache: "no-store",
+                headers: {
+                    "Cache-Control": "no-cache"
+                }
+            }
+        );
+
+    console.log(
+        "🌐 RAILWAY RESPONSE:",
+        response.status
+    );
 
     if (!response.ok) {
 
-        throw new Error("Unable to load signal");
+        throw new Error(
+            `/signal returned ${response.status}`
+        );
 
     }
 
-    return await response.json();
+    const data =
+        await response.json();
 
+    console.log(
+        "🌐 SIGNAL RECEIVED:",
+        data.action,
+        data.confidence,
+        data.timestamp
+    );
+
+    return data;
 }
+
 
 /* ==========================================
    GET STATISTICS
@@ -26,17 +66,21 @@ export async function getSignal() {
 export async function getTradeStatistics() {
 
     const response =
-        await fetch(`${API}/trade/statistics`);
+        await fetch(
+            `${API}/trade/statistics`
+        );
 
     if (!response.ok) {
 
-        throw new Error("Unable to load statistics");
+        throw new Error(
+            "Unable to load statistics"
+        );
 
     }
 
     return await response.json();
-
 }
+
 
 /* ==========================================
    GET HISTORY
@@ -45,17 +89,21 @@ export async function getTradeStatistics() {
 export async function getTradeHistory() {
 
     const response =
-        await fetch(`${API}/trade/all`);
+        await fetch(
+            `${API}/trade/all`
+        );
 
     if (!response.ok) {
 
-        throw new Error("Unable to load history");
+        throw new Error(
+            "Unable to load history"
+        );
 
     }
 
     return await response.json();
-
 }
+
 
 /* ==========================================
    GET TRADE STATE
@@ -64,17 +112,21 @@ export async function getTradeHistory() {
 export async function getTradeState() {
 
     const response =
-        await fetch(`${API}/trade/state`);
+        await fetch(
+            `${API}/trade/state`
+        );
 
     if (!response.ok) {
 
-        throw new Error("Unable to load trade state");
+        throw new Error(
+            "Unable to load trade state"
+        );
 
     }
 
     return await response.json();
-
 }
+
 
 /* ==========================================
    GET LIVE CANDLES
@@ -82,25 +134,46 @@ export async function getTradeState() {
 
 export async function getCandles(asset) {
 
-    const encodedAsset = encodeURIComponent(asset);
+    const encodedAsset =
+        encodeURIComponent(asset);
 
-    console.log("Loading candles for:", asset);
+    console.log(
+        "🌐 Loading candles for:",
+        asset
+    );
 
     const response =
-        await fetch(`${API}/candles/${encodedAsset}`);
+        await fetch(
+            `${API}/candles/${encodedAsset}?ts=${Date.now()}`,
+            {
+                method: "GET",
+                cache: "no-store",
+                headers: {
+                    "Cache-Control": "no-cache"
+                }
+            }
+        );
 
-    console.log("Status:", response.status);
+    console.log(
+        "🌐 CANDLE RESPONSE:",
+        response.status
+    );
 
     if (!response.ok) {
 
-        throw new Error("Unable to load candles");
+        throw new Error(
+            `/candles/${asset} returned ${response.status}`
+        );
 
     }
 
-    const candles = await response.json();
+    const candles =
+        await response.json();
 
-    console.log("Candles returned:", candles.length);
+    console.log(
+        "🌐 CANDLES RECEIVED:",
+        candles.length
+    );
 
     return candles;
-
 }

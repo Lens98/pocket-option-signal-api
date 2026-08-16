@@ -50,34 +50,33 @@ async function getExtensionState() {
 }
 
 
-/* ==========================================
-   DASHBOARD INITIALIZATION
-========================================== */
-
 export async function initializeDashboard() {
 
-    console.log("Dashboard initialized");
+    console.log("🚀 DASHBOARD INITIALIZING");
 
     try {
 
         initChart();
 
-        console.log("Chart initialized");
+        console.log("✅ Chart initialized");
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "❌ Chart initialization failed:",
+            error
+        );
+
+    }
+
+    try {
 
         await refreshDashboard();
 
-        console.log("First refresh complete");
-
-        startCountdown(
-            () => window.marketState,
-            () => window.latestCandle
-        );
-
-        console.log("Countdown started");
-
-        setInterval(
-            refreshDashboard,
-            1000
+        console.log(
+            "✅ First dashboard refresh complete"
         );
 
     }
@@ -85,20 +84,89 @@ export async function initializeDashboard() {
     catch (error) {
 
         console.error(
-            "Dashboard Error:",
+            "❌ First dashboard refresh failed:",
             error
         );
 
     }
 
-}
+    try {
 
+        startCountdown(
+            () => window.marketState,
+            () => window.latestCandle
+        );
+
+        console.log(
+            "✅ Countdown started"
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "❌ Countdown failed:",
+            error
+        );
+
+    }
+
+    // ========================================
+    // CONTINUOUS DASHBOARD REFRESH
+    // ========================================
+
+    if (window.dashboardRefreshTimer) {
+
+        clearInterval(
+            window.dashboardRefreshTimer
+        );
+
+    }
+
+    window.dashboardRefreshTimer =
+        setInterval(
+            async () => {
+
+                console.log(
+                    "🔄 DASHBOARD REFRESH:",
+                    new Date().toISOString()
+                );
+
+                try {
+
+                    await refreshDashboard();
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "❌ Dashboard refresh failed:",
+                        error
+                    );
+
+                }
+
+            },
+            1000
+        );
+
+    console.log(
+        "🟢 DASHBOARD AUTO-REFRESH STARTED"
+    );
+
+}
 
 /* ==========================================
    REFRESH EVERYTHING
 ========================================== */
 
 async function refreshDashboard() {
+    console.log(
+    "🔄 DASHBOARD REFRESH:",
+    new Date().toISOString()
+);
 
     let signal;
 
@@ -111,8 +179,11 @@ async function refreshDashboard() {
 
     try {
 
-    signal =
-        await getSignal();
+        signal = await getSignal();
+        console.log(
+    "📡 NEW SIGNAL FROM RAILWAY:",
+    signal
+);
 
     // ======================================
     // SHARE AI SIGNAL WITH COUNTDOWN
