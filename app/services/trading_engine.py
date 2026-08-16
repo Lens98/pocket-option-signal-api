@@ -649,17 +649,41 @@ class TradingEngine:
 
                     signal = locked
 
-        # ----------------------------------------
+                # ----------------------------------------
         # DETERMINE ENTRY STATE
         # ----------------------------------------
 
         if locked is not None:
 
-            state = EntryState(signal.market_state)
+            # ----------------------------------------
+            # PRESERVE LOCKED PREDICTION
+            # ----------------------------------------
+            #
+            # A locked CALL/PUT is already a valid
+            # next-candle prediction.
+            #
+            # DO NOT send it through EntryManager again.
+            # DO NOT convert it to WAIT.
+            #
+
+            state = EntryState.WAITING_FOR_CANDLE_CLOSE
+
+            signal.action = signal.bias
+
+            signal.can_enter = False
+
+            signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
+
+            signal.trade_status = "WAITING_FOR_CANDLE"
 
         else:
 
             state = self.entry_manager.determine(signal)
+
+        # ----------------------------------------
+        # PREPARE CALL / PUT PREDICTION
+        # FOR NEXT 1-MINUTE CANDLE
+        # ----------------------------------------
 
         if (
             state == EntryState.WAITING_FOR_CANDLE_CLOSE
@@ -672,6 +696,31 @@ class TradingEngine:
             signal.can_enter = False
 
             signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
+
+            signal.trade_status = "WAITING_FOR_CANDLE"
+
+            # ----------------------------------------
+            # LOCK THIS PREDICTION TO CURRENT CANDLE
+            # ----------------------------------------
+
+            signal.locked_candle_bucket = self.get_minute_bucket(
+                market.candles[-1].timestamp
+            )
+
+            print("========================================")
+            print("🔒 1-MINUTE PREDICTION LOCKED")
+            print("========================================")
+            print("Prediction :", signal.bias)
+            print("Confidence :", signal.confidence)
+            print("Probability:", signal.probability)
+            print("Agreement  :", signal.agreement_score)
+            print(
+                "Confirmations:",
+                f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
+            )
+            print("Locked Bucket:", signal.locked_candle_bucket)
+            print("State       :", signal.market_state)
+            print("========================================")
 
         # ----------------------------------------
         # PREPARE CALL / PUT PREDICTION
@@ -867,23 +916,80 @@ class TradingEngine:
 
                     state = EntryState.WAITING
 
-        else:
+            else:
 
-            print("========================================")
-            print("NO LOCKED 1-MINUTE PREDICTION")
-            print("========================================")
-            print("No CALL/PUT prediction was prepared.")
-            print("Waiting for next AI setup.")
-            print("========================================")
+                # ----------------------------------------
+                # NO NEW CANDLE
+                # ----------------------------------------
+                #
+                # There may still be a valid locked
+                # CALL/PUT prediction waiting for the
+                # next candle.
+                #
+                # NEVER convert a locked prediction
+                # into WAIT just because the candle
+                # has not changed yet.
+                #
 
-            signal.action = "WAIT"
-            signal.can_enter = False
+                if self.signal_lock.is_locked():
 
-            signal.market_state = EntryState.WAITING.value
-            signal.trade_status = "IDLE"
+                    locked_prediction = self.signal_lock.current()
 
-            state = EntryState.WAITING
-        # ----------------------------------------
+                    if locked_prediction is not None:
+
+                        signal = locked_prediction
+
+                        signal.action = signal.bias
+
+                        signal.can_enter = False
+
+                        signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
+
+                        signal.trade_status = "WAITING_FOR_CANDLE"
+
+                        state = EntryState.WAITING_FOR_CANDLE_CLOSE
+
+                        print("========================================")
+                        print("🔒 LOCKED PREDICTION PRESERVED")
+                        print("========================================")
+                        print("Prediction :", signal.bias)
+                        print("Action     :", signal.action)
+                        print("Can Enter  :", signal.can_enter)
+                        print("State      :", signal.market_state)
+                        print("========================================")
+
+                    else:
+
+                        signal.action = "WAIT"
+
+                        signal.can_enter = False
+
+                        signal.market_state = EntryState.WAITING.value
+
+                        signal.trade_status = "IDLE"
+
+                        state = EntryState.WAITING
+
+                else:
+
+                    print("========================================")
+                    print("NO LOCKED 1-MINUTE PREDICTION")
+                    print("========================================")
+                    print("No CALL/PUT prediction was prepared.")
+                    print("Waiting for next AI setup.")
+                    print("========================================")
+
+                    signal.action = "WAIT"
+
+                    signal.can_enter = False
+
+                    signal.market_state = EntryState.WAITING.value
+
+                    signal.trade_status = "IDLE"
+
+                    state = (
+                        EntryState.WAITING
+                    )  # ----------------------------------------
         # CONFIRM ENTRY
         # ----------------------------------------
 
