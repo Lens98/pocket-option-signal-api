@@ -49,6 +49,34 @@ async function getExtensionState() {
 
 }
 
+/* ==========================================
+   FETCH TIMEOUT
+========================================== */
+
+function withTimeout(promise, timeout = 5000) {
+
+    return Promise.race([
+
+        promise,
+
+        new Promise((_, reject) => {
+
+            setTimeout(() => {
+
+                reject(
+                    new Error(
+                        "Request timeout after 5 seconds"
+                    )
+                );
+
+            }, timeout);
+
+        })
+
+    ]);
+
+}
+
 
 export async function initializeDashboard() {
 
@@ -113,44 +141,10 @@ export async function initializeDashboard() {
     }
 
     // ========================================
-    // CONTINUOUS DASHBOARD REFRESH
+    // START CONTINUOUS REFRESH
     // ========================================
 
-    if (window.dashboardRefreshTimer) {
-
-        clearInterval(
-            window.dashboardRefreshTimer
-        );
-
-    }
-
-    window.dashboardRefreshTimer =
-        setInterval(
-            async () => {
-
-                console.log(
-                    "🔄 DASHBOARD REFRESH:",
-                    new Date().toISOString()
-                );
-
-                try {
-
-                    await refreshDashboard();
-
-                }
-
-                catch (error) {
-
-                    console.error(
-                        "❌ Dashboard refresh failed:",
-                        error
-                    );
-
-                }
-
-            },
-            1000
-        );
+    startDashboardRefreshLoop();
 
     console.log(
         "🟢 DASHBOARD AUTO-REFRESH STARTED"
@@ -158,6 +152,46 @@ export async function initializeDashboard() {
 
 }
 
+/* ==========================================
+   CONTINUOUS DASHBOARD REFRESH LOOP
+========================================== */
+
+async function startDashboardRefreshLoop() {
+
+    console.log(
+        "🟢 DASHBOARD REFRESH LOOP STARTED"
+    );
+
+    while (true) {
+
+        try {
+
+            console.log(
+                "🔄 DASHBOARD LOOP:",
+                new Date().toISOString()
+            );
+
+            await refreshDashboard();
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ Dashboard loop error:",
+                error
+            );
+
+        }
+
+        await new Promise(
+            resolve =>
+                setTimeout(resolve, 1000)
+        );
+
+    }
+
+}
 /* ==========================================
    REFRESH EVERYTHING
 ========================================== */
@@ -179,7 +213,10 @@ async function refreshDashboard() {
 
     try {
 
-        signal = await getSignal();
+        signal = await withTimeout(
+    getSignal(),
+    5000
+    );
         console.log(
     "📡 NEW SIGNAL FROM RAILWAY:",
     signal
@@ -221,7 +258,10 @@ async function refreshDashboard() {
     try {
 
         extensionState =
-            await getExtensionState();
+                 await withTimeout(
+                 getExtensionState(),
+                3000
+    );
 
     }
 
@@ -242,10 +282,9 @@ async function refreshDashboard() {
     ====================================== */
 
     const marketAsset =
-        signal?.asset ||
-        extensionState.marketAsset ||
-        null;
-
+    extensionState.marketAsset ||
+    signal?.asset ||
+    null;
     let candles =
         Array.isArray(extensionState.marketCandles)
             ? extensionState.marketCandles
@@ -354,10 +393,13 @@ async function refreshDashboard() {
 
             try {
 
-                candles =
-                    await getCandles(
-                        marketAsset
-                    );
+               candles =
+                     await withTimeout(
+                   getCandles(
+                   marketAsset
+           ),
+            5000
+          );
 
             }
 
@@ -459,10 +501,15 @@ async function refreshDashboard() {
 
         try {
 
-            await loadTradeStatistics();
+           await withTimeout(
+    loadTradeStatistics(),
+    5000
+);
 
-            await loadTradeHistory();
-
+await withTimeout(
+    loadTradeHistory(),
+    5000
+);
         }
 
         catch (error) {
