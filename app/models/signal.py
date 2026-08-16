@@ -120,6 +120,8 @@ class Signal(BaseModel):
 
     zone_confirmed: bool = False
 
+    # ADX/ATR are market-quality measurements,
+    # not directional CALL/PUT confirmations.
     adx_confirmed: bool = False
 
     atr_confirmed: bool = False
@@ -127,6 +129,7 @@ class Signal(BaseModel):
     candle_confirmed: bool = False
 
     pullback_confirmed: bool = False
+
     # ========================================
     # Signal Agreement
     # ========================================
@@ -135,20 +138,14 @@ class Signal(BaseModel):
 
     confirmation_count: int = 0
 
-    confirmation_total: int = 8
-    # ========================================
-    # AI Confidence
-    # ========================================
+    confirmation_total: int = 7
 
-    confidence: float
-
-    probability: float = 0.0
+    # ========================================
+    # Pattern Data
+    # ========================================
 
     pattern: str = ""
 
-    trend: str
-
-    regime: str = "UNKNOWN"
     candle_pattern: str = "NONE"
 
     candle_strength: int = 0

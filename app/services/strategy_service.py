@@ -144,14 +144,8 @@ class StrategyService:
             # ADX and ATR measure strength, not direction.
             # Keep them true whenever they contribute any score.
 
-            signal.adx_confirmed = (
-                adx_result.bullish_score > 0 or adx_result.bearish_score > 0
-            )
-
-            signal.atr_confirmed = (
-                atr_result.bullish_score > 0 or atr_result.bearish_score > 0
-            )
-
+            signal.adx_confirmed = False
+            signal.atr_confirmed = False
             signal.candle_confirmed = (
                 candle_result.bullish_score > candle_result.bearish_score
             )
@@ -175,13 +169,8 @@ class StrategyService:
                 zone_result.bearish_score > zone_result.bullish_score
             )
 
-            signal.adx_confirmed = (
-                adx_result.bullish_score > 0 or adx_result.bearish_score > 0
-            )
-
-            signal.atr_confirmed = (
-                atr_result.bullish_score > 0 or atr_result.bearish_score > 0
-            )
+            signal.adx_confirmed = False
+            signal.atr_confirmed = False
 
             signal.candle_confirmed = (
                 candle_result.bearish_score > candle_result.bullish_score

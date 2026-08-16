@@ -41,8 +41,17 @@ class ScoringStrategy:
 
         for result in results:
 
-            bullish_score += result.bullish_score
-            bearish_score += result.bearish_score
+            # ADX and ATR measure market quality,
+            # NOT CALL/PUT direction.
+            is_neutral = any(
+                keyword in reason
+                for reason in result.reasons
+                for keyword in NEUTRAL_KEYWORDS
+            )
+
+            if not is_neutral:
+                bullish_score += result.bullish_score
+                bearish_score += result.bearish_score
 
             for reason in result.reasons:
 
@@ -72,16 +81,18 @@ class ScoringStrategy:
         difference = bullish_score - bearish_score
 
         # ========================================
-        # Market Bias
+        # Binary Direction Threshold
         # ========================================
 
-        if difference > 0:
+        MIN_DIRECTIONAL_EDGE = 10
+
+        if difference >= MIN_DIRECTIONAL_EDGE:
 
             bias = "CALL"
             trend = "BULLISH"
             reasons = bullish_reasons
 
-        elif difference < 0:
+        elif difference <= -MIN_DIRECTIONAL_EDGE:
 
             bias = "PUT"
             trend = "BEARISH"
