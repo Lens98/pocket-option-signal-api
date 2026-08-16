@@ -195,7 +195,163 @@ function findTick(value, visited = new Set()) {
 
     return null;
 }
+/* ==========================================
+   FIND ACTIVE CHART ASSET
+========================================== */
 
+function findActiveChartAsset(value, visited = new Set()) {
+
+    if (
+        value === null ||
+        value === undefined
+    ) {
+        return null;
+    }
+
+    if (
+        typeof value === "object" &&
+        visited.has(value)
+    ) {
+        return null;
+    }
+
+    if (typeof value === "object") {
+        visited.add(value);
+    }
+
+    /* --------------------------------------
+       Pocket Option updateCharts message
+    -------------------------------------- */
+
+    if (
+        typeof value === "object" &&
+        !Array.isArray(value)
+    ) {
+
+        const chartId =
+            value.chart_id;
+
+        let settings =
+            value.settings;
+
+        /*
+         * Pocket Option sends settings as JSON text.
+         */
+        if (
+            chartId === "chart-1" &&
+            typeof settings === "string"
+        ) {
+
+            try {
+
+                settings =
+                    JSON.parse(settings);
+
+            }
+
+            catch {
+
+                settings = null;
+
+            }
+        }
+
+        if (
+            settings &&
+            typeof settings === "object" &&
+            typeof settings.symbol === "string" &&
+            settings.symbol.trim()
+        ) {
+
+            return settings.symbol.trim();
+
+        }
+    }
+
+    /* --------------------------------------
+       Recursive search
+    -------------------------------------- */
+
+    if (Array.isArray(value)) {
+
+        for (const item of value) {
+
+            const result =
+                findActiveChartAsset(
+                    item,
+                    visited
+                );
+
+            if (result) {
+                return result;
+            }
+        }
+
+    }
+
+    else if (typeof value === "object") {
+
+        for (const key of Object.keys(value)) {
+
+            const result =
+                findActiveChartAsset(
+                    value[key],
+                    visited
+                );
+
+            if (result) {
+                return result;
+            }
+        }
+    }
+
+    return null;
+}
+/* ==========================================
+   SEND ACTIVE ASSET
+========================================== */
+
+function sendActiveAsset(asset) {
+
+    if (
+        typeof asset !== "string" ||
+        !asset.trim()
+    ) {
+        return;
+    }
+
+    const normalized =
+        asset.trim();
+
+    console.log(
+        "======================================"
+    );
+
+    console.log(
+        "🎯 ACTIVE POCKET OPTION ASSET"
+    );
+
+    console.log(
+        "Asset:",
+        normalized
+    );
+
+    console.log(
+        "======================================"
+    );
+
+    window.postMessage(
+        {
+            type:
+                "POCKET_OPTION_ACTIVE_ASSET",
+
+            data: {
+                asset: normalized
+            }
+        },
+        "*"
+    );
+}
 /* ==========================================
    PARSE JSON TEXT
 ========================================== */
@@ -209,16 +365,36 @@ function parseTextMessage(text) {
         return;
     }
 
-    const trimmed = text.trim();
+    const trimmed =
+        text.trim();
 
-    /*
-     * Try normal JSON first.
-     */
+    /* ======================================
+       TRY NORMAL JSON
+    ====================================== */
 
     try {
 
         const parsed =
             JSON.parse(trimmed);
+
+        /* ----------------------------------
+           DETECT ACTIVE CHART ASSET
+        ---------------------------------- */
+
+        const activeAsset =
+            findActiveChartAsset(parsed);
+
+        if (activeAsset) {
+
+            sendActiveAsset(
+                activeAsset
+            );
+
+        }
+
+        /* ----------------------------------
+           DETECT NORMAL TICK
+        ---------------------------------- */
 
         const tick =
             findTick(parsed);
@@ -231,18 +407,17 @@ function parseTextMessage(text) {
         }
 
     }
+
     catch (error) {
+
         // Continue with Socket.IO parsing.
+
     }
 
-    /*
-     * Socket.IO / Engine.IO messages can contain
-     * a JSON payload after a numeric prefix.
-     *
-     * Example:
-     *
-     * 42["event", {...}]
-     */
+
+    /* ======================================
+       SOCKET.IO / ENGINE.IO MESSAGE
+    ====================================== */
 
     const jsonStart =
         trimmed.search(/[\[\{]/);
@@ -255,7 +430,30 @@ function parseTextMessage(text) {
         try {
 
             const parsed =
-                JSON.parse(possibleJson);
+                JSON.parse(
+                    possibleJson
+                );
+
+            /* ----------------------------------
+               DETECT ACTIVE CHART ASSET
+            ---------------------------------- */
+
+            const activeAsset =
+                findActiveChartAsset(
+                    parsed
+                );
+
+            if (activeAsset) {
+
+                sendActiveAsset(
+                    activeAsset
+                );
+
+            }
+
+            /* ----------------------------------
+               DETECT NORMAL TICK
+            ---------------------------------- */
 
             const tick =
                 findTick(parsed);
@@ -268,8 +466,11 @@ function parseTextMessage(text) {
             }
 
         }
+
         catch (error) {
+
             // Not a JSON payload.
+
         }
     }
 
