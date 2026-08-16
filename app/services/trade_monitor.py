@@ -155,10 +155,21 @@ class TradeMonitor:
             if market is None:
 
                 print("----------------------------------------")
-                print("⚠️ CLOSE BLOCKED: MARKET NOT FOUND")
+                print("⚠️ EXPIRED TRADE: MARKET NOT FOUND")
                 print("Trade ID:", trade.id)
                 print("Asset:", trade.asset)
+                print("Action:", trade.action)
+                print("Marking trade as UNRESOLVED")
                 print("----------------------------------------")
+
+                trade.status = "CLOSED"
+                trade.result = "UNRESOLVED"
+                trade.exit_price = None
+                trade.exit_time = datetime.now(timezone.utc)
+                trade.profit = 0.0
+                trade.payout = 0.0
+
+                self.trade_storage.update(trade)
 
                 continue
 
@@ -169,25 +180,98 @@ class TradeMonitor:
             if len(market.candles) == 0:
 
                 print("----------------------------------------")
-                print("⚠️ CLOSE BLOCKED: NO CANDLES")
+                print("⚠️ EXPIRED TRADE: NO CANDLES")
                 print("Trade ID:", trade.id)
                 print("Asset:", trade.asset)
+                print("Marking trade as UNRESOLVED")
                 print("----------------------------------------")
+
+                trade.status = "CLOSED"
+                trade.result = "UNRESOLVED"
+                trade.exit_price = None
+                trade.exit_time = datetime.now(timezone.utc)
+                trade.profit = 0.0
+                trade.payout = 0.0
+
+                self.trade_storage.update(trade)
 
                 continue
 
             # ----------------------------------------
-            # Exit Price
+            # Find Candle At Trade Expiration
             # ----------------------------------------
 
-            latest = market.candles[-1]
+            expiration_candle = None
 
-            exit_price = latest.close
+            for candle in market.candles:
+
+                try:
+
+                    candle_time = datetime.fromisoformat(
+                        candle.timestamp.replace("Z", "+00:00")
+                    )
+
+                    if candle_time.tzinfo is None:
+
+                        candle_time = candle_time.replace(tzinfo=timezone.utc)
+
+                    else:
+
+                        candle_time = candle_time.astimezone(timezone.utc)
+
+                    # We want the candle whose timestamp
+                    # is at or immediately after expiration.
+
+                    if candle_time >= expire_time:
+
+                        expiration_candle = candle
+
+                        break
+
+                except Exception as error:
+
+                    print("⚠️ Invalid candle timestamp:", candle.timestamp, error)
+
+            # ----------------------------------------
+            # Expiration Candle Not Available
+            # ----------------------------------------
+
+            if expiration_candle is None:
+
+                print("----------------------------------------")
+                print("⚠️ EXPIRATION CANDLE NOT AVAILABLE")
+                print("Trade ID:", trade.id)
+                print("Asset:", trade.asset)
+                print("Expiration:", expire_time)
+                print("Latest Candle:", market.candles[-1].timestamp)
+                print("Marking trade as UNRESOLVED")
+                print("----------------------------------------")
+
+                trade.status = "CLOSED"
+                trade.result = "UNRESOLVED"
+                trade.exit_price = None
+                trade.exit_time = now
+                trade.profit = 0.0
+                trade.payout = 0.0
+
+                self.trade_storage.update(trade)
+
+                continue
+
+            # ----------------------------------------
+            # Correct Exit Price
+            # ----------------------------------------
+
+            exit_price = expiration_candle.close
 
             print("----------------------------------------")
-            print("Closing Trade:", trade.id)
-            print("Entry :", trade.entry_price)
-            print("Exit  :", exit_price)
+            print("🎯 EXPIRATION CANDLE FOUND")
+            print("----------------------------------------")
+            print("Trade ID:", trade.id)
+            print("Expiration:", expire_time)
+            print("Candle Time:", expiration_candle.timestamp)
+            print("Entry Price:", trade.entry_price)
+            print("Exit Price:", exit_price)
             print("----------------------------------------")
 
             # ----------------------------------------
@@ -302,7 +386,6 @@ class TradeMonitor:
 
             print("----------------------------------------")
             print("🧠 Learning Record Saved")
-            print("----------------------------------------")
             print("Trade :", closed_trade.id)
             print("Result:", closed_trade.result)
             print("----------------------------------------")
