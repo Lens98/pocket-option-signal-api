@@ -24,9 +24,7 @@ def latest_trade():
 
     if trade is None:
 
-        return {
-            "status": "No trades"
-        }
+        return {"status": "No trades"}
 
     return trade
 
@@ -40,19 +38,16 @@ def all_trades():
 @router.post("/trade/result")
 def trade_result(result: TradeResult):
 
-    trade = tracker.update_trade(
-        result.trade_id,
-        result.exit_price
-    )
+    trade = tracker.update_trade(result.trade_id, result.exit_price)
 
     if trade is None:
 
-        return {
-            "status": "Trade not found"
-        }
-    
+        return {"status": "Trade not found"}
+
     return trade
+
+
 @router.get("/trade/statistics")
 def trade_statistics():
 
-    return storage.statistics()
+    return storage.today_statistics()

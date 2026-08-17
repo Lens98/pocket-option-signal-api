@@ -80,6 +80,14 @@ class TradeStorage:
         return self.repository.statistics()
 
     # ----------------------------------------
+    # Today's Statistics
+    # ----------------------------------------
+
+    def today_statistics(self):
+
+        return self.repository.today_statistics()
+
+    # ----------------------------------------
     # Win Count
     # ----------------------------------------
 
