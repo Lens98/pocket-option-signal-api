@@ -669,7 +669,7 @@ class TradingEngine:
 
             state = EntryState.WAITING_FOR_CANDLE_CLOSE
 
-            signal.action = signal.bias
+            signal.action = signal.next_candle_bias
 
             signal.can_enter = False
 
