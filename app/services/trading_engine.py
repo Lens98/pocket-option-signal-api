@@ -722,46 +722,6 @@ class TradingEngine:
             print("State       :", signal.market_state)
             print("========================================")
 
-        # ----------------------------------------
-        # PREPARE CALL / PUT PREDICTION
-        # FOR NEXT 1-MINUTE CANDLE
-        # ----------------------------------------
-
-        if (
-            state == EntryState.WAITING_FOR_CANDLE_CLOSE
-            and not self.signal_lock.is_locked()
-            and signal.bias in ["CALL", "PUT"]
-        ):
-
-            signal.action = signal.bias
-
-            signal.can_enter = False
-
-            signal.market_state = EntryState.WAITING_FOR_CANDLE_CLOSE.value
-
-            # Lock this prediction to the CURRENT candle.
-            # It will be used when the NEXT candle opens.
-            signal.locked_candle_bucket = self.get_minute_bucket(
-                market.candles[-1].timestamp
-            )
-
-            print("========================================")
-            print("🔒 1-MINUTE PREDICTION LOCKED")
-            print("========================================")
-            print("Prediction :", signal.bias)
-            print("Confidence :", signal.confidence)
-            print("Probability:", signal.probability)
-            print("Agreement  :", signal.agreement_score)
-            print(
-                "Confirmations:",
-                f"{signal.confirmation_count}/" f"{signal.confirmation_total}",
-            )
-            print("Locked Bucket:", signal.locked_candle_bucket)
-            print("State       :", signal.market_state)
-            print("========================================")
-        # DETECT NEW 1-MINUTE CANDLE
-        # ----------------------------------------
-
         new_candle_opened = False
 
         latest_candle = market.candles[-1]
@@ -813,10 +773,38 @@ class TradingEngine:
             print("Timestamp       :", latest_candle.timestamp)
             print("Entry Open      :", latest_candle.open)
             print("========================================")
+            print("========================================")
+            print("⏱️ BINARY TIMING DEBUG")
+            print("========================================")
+            print("Current UTC Time :", datetime.now(timezone.utc).isoformat())
+            print("Candle Timestamp :", latest_candle.timestamp)
+            print("Candle Open      :", latest_candle.open)
+            print("Current Bucket   :", current_minute_bucket)
+            print("Previous Bucket  :", previous_bucket)
+            print("New Candle       :", new_candle_opened)
+
+            if locked is not None:
+
+                print("Locked Bucket    :", locked.locked_candle_bucket)
+
+                print("Locked Prediction:", locked.bias)
+
+                if locked.locked_candle_bucket is not None:
+
+                    print(
+                        "Prediction Age   :",
+                        current_minute_bucket - locked.locked_candle_bucket,
+                    )
+
+            else:
+
+                print("Prediction Age   : UNKNOWN")
 
         else:
 
-            print("Same 1-minute candle - " "no new binary entry.")
+            print("Locked Prediction: NONE")
+
+        print("========================================")
 
         # ----------------------------------------
         # NEW 1-MINUTE CANDLE = USE LOCKED PREDICTION
