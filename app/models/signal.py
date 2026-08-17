@@ -23,6 +23,7 @@ class Signal(BaseModel):
     # ========================================
 
     bias: str = "NONE"
+    next_candle_bias: str = "WAIT"
 
     # ========================================
     # Current UI Action

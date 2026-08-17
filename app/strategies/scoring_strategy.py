@@ -10,6 +10,7 @@ class ScoringStrategy:
 
         bullish_reasons = []
         bearish_reasons = []
+        candle_next_bias = "WAIT"
 
         # ========================================
         # Collect Results (Bias Aware)
@@ -40,6 +41,19 @@ class ScoringStrategy:
         NEUTRAL_KEYWORDS = ["ATR", "ADX", "Volatility", "Regime"]
 
         for result in results:
+            # ----------------------------------------
+            # Candlestick next-candle prediction
+            # ----------------------------------------
+
+            result_candle_bias = getattr(
+                result,
+                "next_candle_bias",
+                "WAIT",
+            )
+
+            if result_candle_bias in ["CALL", "PUT"]:
+
+                candle_next_bias = result_candle_bias
 
             # ADX and ATR measure market quality,
             # NOT CALL/PUT direction.
@@ -147,6 +161,7 @@ class ScoringStrategy:
 
         return {
             "bias": bias,
+            "candle_next_bias": candle_next_bias,
             "action": bias,
             "trend": trend,
             "confidence": confidence,

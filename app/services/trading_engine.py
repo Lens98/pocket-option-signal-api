@@ -381,6 +381,7 @@ class TradingEngine:
         signal.candle_pattern = candle_result["pattern"]
 
         signal.candle_strength = candle_result["strength"]
+        signal.next_candle_bias = candle_result["direction"]
         # ----------------------------------------
         # Build Pattern Fingerprint
         # ----------------------------------------
@@ -688,10 +689,10 @@ class TradingEngine:
         if (
             state == EntryState.WAITING_FOR_CANDLE_CLOSE
             and not self.signal_lock.is_locked()
-            and signal.bias in ["CALL", "PUT"]
+            and signal.next_candle_bias in ["CALL", "PUT"]
         ):
 
-            signal.action = signal.bias
+            signal.action = signal.next_candle_bias
 
             signal.can_enter = False
 
@@ -820,7 +821,7 @@ class TradingEngine:
 
             if locked is not None:
 
-                candidate_action = str(locked.bias or locked.action or "").upper()
+                candidate_action = str(locked.next_candle_bias or "").upper()
 
                 print("========================================")
                 print("🎯 1-MINUTE ENTRY CHECK")
@@ -940,7 +941,7 @@ class TradingEngine:
                         print("========================================")
                         print("🔒 LOCKED PREDICTION PRESERVED")
                         print("========================================")
-                        print("Prediction :", signal.bias)
+                        print("Prediction :", signal.next_candle_bias)
                         print("Action     :", signal.action)
                         print("Can Enter  :", signal.can_enter)
                         print("State      :", signal.market_state)

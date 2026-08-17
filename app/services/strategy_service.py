@@ -82,6 +82,10 @@ class StrategyService:
             # Market Direction
             # =====================================
             bias=final["bias"],
+            next_candle_bias=final.get(
+                "candle_next_bias",
+                "WAIT",
+            ),
             # =====================================
             # Current Action
             # (EntryManager will decide this later)

@@ -69,16 +69,18 @@ class EntryEngine:
 
             # Preserve the AI prediction.
             # This is NOT an entry yet.
-            if signal.bias in ["CALL", "PUT"]:
+            if signal.next_candle_bias in ["CALL", "PUT"]:
 
-                signal.action = signal.bias
+                signal.action = signal.next_candle_bias
 
                 signal.trade_status = "WAITING_FOR_CANDLE"
 
-                signal.reason = f"NEXT CANDLE PREDICTION — {signal.bias}"
+                signal.reason = (
+                    f"NEXT CANDLE PREDICTION — " f"{signal.next_candle_bias}"
+                )
 
                 signal.instruction = (
-                    f"{signal.bias} predicted for the next "
+                    f"{signal.next_candle_bias} predicted for the next "
                     "1-minute candle. Wait for the new candle "
                     "to open."
                 )
@@ -121,26 +123,54 @@ class EntryEngine:
 
         if state == EntryState.ENTRY:
 
+            # ----------------------------------------
+            # HARD VALIDATION
+            # ----------------------------------------
+
+            if signal.next_candle_bias not in ["CALL", "PUT"]:
+
+                signal.can_enter = False
+                signal.action = "WAIT"
+                signal.trade_status = "IDLE"
+                signal.entry_window = 0
+                signal.countdown = 0
+
+                signal.reason = "INVALID_ENTRY_BIAS"
+                signal.instruction = "No valid CALL/PUT prediction. Waiting."
+
+                print("----------------------------------------")
+                print("❌ ENTRY BLOCKED")
+                print("----------------------------------------")
+                print("Invalid Next Candle Bias :", signal.next_candle_bias)
+                print("----------------------------------------")
+
+                return False
+
+            # ----------------------------------------
+            # VALID BINARY ENTRY
+            # ----------------------------------------
+
             signal.can_enter = True
-            signal.action = signal.bias
+            signal.action = signal.next_candle_bias
             signal.trade_status = "ENTRY"
 
             signal.reason = "ENTRY_CONFIRMED"
-            signal.instruction = f"ENTER {signal.bias} NOW"
+            signal.instruction = f"ENTER {signal.action} NOW"
 
             # New candle = immediate entry.
-            # No 5-second countdown.
             signal.entry_window = 1
             signal.countdown = 0
 
             print("----------------------------------------")
             print("✅ ENTRY CONFIRMED")
             print("----------------------------------------")
+            print("BIAS        :", signal.bias)
+            print("NEXT BIAS   :", signal.next_candle_bias)
             print("ACTION      :", signal.action)
             print("CAN ENTER   :", signal.can_enter)
             print("ENTRY WINDOW:", signal.entry_window)
             print("COUNTDOWN   :", signal.countdown)
-            print("🚀 ENTER NOW")
+            print("🚀 ENTER", signal.action, "NOW")
             print("----------------------------------------")
 
             return True

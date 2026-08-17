@@ -44,7 +44,7 @@ class SignalLock:
         print("----------------------------------------")
         print("Reason  :", self.lock_reason)
         print("Bias    :", signal.bias)
-        print("Action  :", signal.action)
+        print("Next Bias :", signal.next_candle_bias)
         print("State   :", signal.market_state)
         print("Trade ID:", self.trade_id)
         print("----------------------------------------")
