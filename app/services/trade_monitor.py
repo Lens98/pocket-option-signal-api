@@ -239,23 +239,15 @@ class TradeMonitor:
             if expiration_candle is None:
 
                 print("----------------------------------------")
-                print("⚠️ EXPIRATION CANDLE NOT AVAILABLE")
+                print("EXPIRATION CANDLE NOT AVAILABLE YET")
                 print("Trade ID:", trade.id)
-                print("Asset:", trade.asset)
                 print("Expiration:", expire_time)
                 print("Latest Candle:", market.candles[-1].timestamp)
-                print("Marking trade as UNRESOLVED")
+                print("Keeping trade OPEN and waiting for market data.")
                 print("----------------------------------------")
 
-                trade.status = "CLOSED"
-                trade.result = "UNRESOLVED"
-                trade.exit_price = None
-                trade.exit_time = now
-                trade.profit = 0.0
-                trade.payout = 0.0
-
-                self.trade_storage.update(trade)
-
+                # Do not close the trade yet.
+                # Wait for the next market update to provide the expiration candle.
                 continue
 
             # ----------------------------------------
