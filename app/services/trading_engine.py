@@ -17,8 +17,7 @@ from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
-from app.storage.shared import trade_storage
-from app.services.signal_lock import SignalLock
+from app.storage.shared import trade_storage, signal_lock
 from app.services.market_quality import MarketQuality
 from app.services.pattern_fingerprint import PatternFingerprint
 from app.storage.shared import trade_state
@@ -62,7 +61,7 @@ class TradingEngine:
         self.agreement = SignalAgreement()
         self.pattern_fingerprint = PatternFingerprint()
         self.session = SessionDetector()
-        self.signal_lock = SignalLock()
+        self.signal_lock = signal_lock
         self.learning = LearningAnalyzer()
         self.candle_strategy = CandleStrategy()
         self.openai = OpenAIReviewer()
@@ -752,7 +751,6 @@ class TradingEngine:
             signal.locked_candle_bucket = self.get_minute_bucket(
                 market.candles[-1].timestamp
             )
-
 
             # ----------------------------------------
             # ACTUALLY LOCK NEXT-CANDLE PREDICTION

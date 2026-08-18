@@ -10,6 +10,7 @@ from app.services.pattern_learning import PatternLearning
 from app.storage.shared import (
     market_storage,
     trade_storage,
+    signal_lock,
 )
 
 
@@ -23,6 +24,7 @@ class TradeMonitor:
         self.learning = LearningStorage()
         self.pattern_metadata = PatternMetadataRepository()
         self.pattern_learning = PatternLearning()
+        self.signal_lock = signal_lock
         self.running = False
         self.thread = None
 
@@ -207,17 +209,44 @@ class TradeMonitor:
 
                 try:
 
-                    candle_time = datetime.fromisoformat(
-                        candle.timestamp.replace("Z", "+00:00")
-                    )
+                    timestamp_value = candle.timestamp
 
-                    if candle_time.tzinfo is None:
+                    try:
 
-                        candle_time = candle_time.replace(tzinfo=timezone.utc)
+                        timestamp_number = float(timestamp_value)
 
-                    else:
+                        if timestamp_number > 10_000_000_000:
 
-                        candle_time = candle_time.astimezone(timezone.utc)
+                            candle_time = datetime.fromtimestamp(
+                                timestamp_number / 1000,
+                                tz=timezone.utc,
+                            )
+
+                        else:
+
+                            candle_time = datetime.fromtimestamp(
+                                timestamp_number,
+                                tz=timezone.utc,
+                            )
+
+                    except (TypeError, ValueError, OverflowError):
+
+                        candle_time = datetime.fromisoformat(
+                            str(timestamp_value).replace('Z', '+00:00')
+                        )
+
+                        if candle_time.tzinfo is None:
+
+                            candle_time = candle_time.replace(
+                                tzinfo=timezone.utc
+                            )
+
+                        else:
+
+                            candle_time = candle_time.astimezone(
+                                timezone.utc
+                            )
+
 
                     # We want the candle whose timestamp
                     # is at or immediately after expiration.
@@ -355,6 +384,18 @@ class TradeMonitor:
             # ----------------------------------------
 
             self.pattern_metadata.save(closed_trade)
+
+            # ----------------------------------------
+            # RELEASE ACTIVE TRADE LOCK
+            # ----------------------------------------
+
+            print("----------------------------------------")
+            print("SIGNAL LOCK RELEASED AFTER TRADE CLOSE")
+            print("Trade ID:", closed_trade.id)
+            print("Result  :", closed_trade.result)
+            print("----------------------------------------")
+
+            self.signal_lock.unlock()
 
             print("----------------------------------------")
             print("📊 Pattern Metadata Saved")
