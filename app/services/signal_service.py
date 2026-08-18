@@ -119,5 +119,5 @@ def generate_signal():
  
      )
 
-    trade_storage.add(trade)
+       trade_storage.add(trade)
     return signal
