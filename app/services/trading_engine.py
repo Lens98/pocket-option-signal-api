@@ -1108,6 +1108,15 @@ class TradingEngine:
         # TRADE CREATION
         # ----------------------------------------
 
+        print("========================================")
+        print("TRADE CREATION CONDITIONS")
+        print("========================================")
+        print("New Candle     :", new_candle_opened)
+        print("Can Enter      :", signal.can_enter)
+        print("Action         :", signal.action)
+        print("Entry State    :", state)
+        print("========================================")
+
         if (
             new_candle_opened
             and signal.can_enter
