@@ -381,7 +381,27 @@ class TradingEngine:
         signal.candle_pattern = candle_result["pattern"]
 
         signal.candle_strength = candle_result["strength"]
-        signal.next_candle_bias = candle_result["direction"]
+
+        # ----------------------------------------
+        # FINAL NEXT-CANDLE BIAS
+        # ----------------------------------------
+        # A next-candle prediction is only valid
+        # when the final market bias is CALL/PUT.
+        #
+        # WAIT must remain WAIT.
+        # The candlestick direction must never
+        # override a WAIT market decision.
+        # ----------------------------------------
+
+        candle_direction = str(candle_result.get("direction", "WAIT") or "WAIT").upper()
+
+        if signal.bias in ["CALL", "PUT"]:
+            if candle_direction == signal.bias:
+                signal.next_candle_bias = signal.bias
+            else:
+                signal.next_candle_bias = signal.bias
+        else:
+            signal.next_candle_bias = "WAIT"
         # ----------------------------------------
         # Build Pattern Fingerprint
         # ----------------------------------------
@@ -928,7 +948,7 @@ class TradingEngine:
 
                         signal = locked_prediction
 
-                        signal.action = signal.bias
+                        signal.action = signal.next_candle_bias
 
                         signal.can_enter = False
 
