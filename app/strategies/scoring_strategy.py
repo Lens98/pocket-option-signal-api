@@ -141,6 +141,20 @@ class ScoringStrategy:
         else:
 
             probability = round((winning_score / total) * 100, 2)
+        # ========================================
+        # FINAL NEXT-CANDLE DIRECTION
+        # ========================================
+
+        #
+        # The final market bias is the single
+        # authoritative binary direction.
+        #
+        # Candlestick analysis contributes to
+        # the scoring, but must not create a
+        # conflicting CALL/PUT signal.
+        #
+
+        candle_next_bias = bias
 
         # ========================================
         # Debug
