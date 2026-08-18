@@ -753,6 +753,16 @@ class TradingEngine:
                 market.candles[-1].timestamp
             )
 
+
+            # ----------------------------------------
+            # ACTUALLY LOCK NEXT-CANDLE PREDICTION
+            # ----------------------------------------
+
+            self.signal_lock.lock(
+                signal,
+                reason="ENTRY",
+            )
+
             print("========================================")
             print("🔒 1-MINUTE PREDICTION LOCKED")
             print("========================================")
