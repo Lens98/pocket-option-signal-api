@@ -152,7 +152,7 @@ def get_candles(asset: str):
 # ========================================
 
 
-@router.get("/trade/statistics")
+@router.get('/trade/statistics-overall')
 def trade_statistics():
 
     stats = trade_storage.statistics()
