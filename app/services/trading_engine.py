@@ -396,12 +396,37 @@ class TradingEngine:
         candle_direction = str(candle_result.get("direction", "WAIT") or "WAIT").upper()
 
         if signal.bias in ["CALL", "PUT"]:
+
             if candle_direction == signal.bias:
+
+                # Market bias and candle direction agree.
                 signal.next_candle_bias = signal.bias
+
+                print("✅ CANDLE BIAS AGREEMENT")
+                print("Market Bias     :", signal.bias)
+                print("Candle Direction:", candle_direction)
+                print("Next Candle Bias:", signal.next_candle_bias)
+
             else:
-                signal.next_candle_bias = signal.bias
+
+                # Market bias and candle direction conflict.
+                # Do NOT create a directional prediction.
+                signal.next_candle_bias = "WAIT"
+
+                print("⚠️ CANDLE BIAS CONFLICT")
+                print("Market Bias     :", signal.bias)
+                print("Candle Direction:", candle_direction)
+                print("Next Candle Bias: WAIT")
+                print("Reason          : Market and candle directions disagree.")
+
         else:
+
             signal.next_candle_bias = "WAIT"
+
+            print("🟡 NO MARKET BIAS")
+            print("Market Bias     :", signal.bias)
+            print("Candle Direction:", candle_direction)
+            print("Next Candle Bias: WAIT")
         # ----------------------------------------
         # Build Pattern Fingerprint
         # ----------------------------------------
