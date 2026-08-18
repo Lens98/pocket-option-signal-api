@@ -25,9 +25,10 @@ function updateAction(signal) {
 
     const rawAction =
         String(
-            signal.action || "WAIT"
+             signal.next_candle_bias ||
+             signal.action ||
+             "WAIT"
         ).toUpperCase();
-
     const bias =
         String(
             signal.bias || ""

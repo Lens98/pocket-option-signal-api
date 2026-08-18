@@ -74,7 +74,9 @@ function getSignalKey(signal) {
         signal.asset || "",
         signal.timestamp || "",
         signal.entry_price || "",
-        signal.action || ""
+        signal.next_candle_bias ||
+        signal.action ||
+        "WAIT"
     ].join("|");
 }
 
@@ -163,13 +165,19 @@ async function refresh() {
             signalKey !== state.lastSignalKey
         ) {
 
+            const signalAction = String(
+                signal?.next_candle_bias ||
+                signal?.action ||
+                "WAIT"
+            ).toUpperCase();
+
             if (
                 signal &&
                 !signal.status &&
-                state.stats[signal.action] !== undefined
+                state.stats[signalAction] !== undefined
             ) {
 
-                state.stats[signal.action]++;
+                state.stats[signalAction]++;
             }
 
             state.lastSignalKey =
