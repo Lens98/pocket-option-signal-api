@@ -177,18 +177,4 @@ def select_asset(asset: str):
 @router.get("/trade/today")
 def today_session():
 
-    trades = trade_storage.all()
-
-    today = datetime.now().date()
-
-    today_trades = [t for t in trades if t.entry_time.date() == today]
-
-    wins = len([t for t in today_trades if t.result == "WIN"])
-
-    losses = len([t for t in today_trades if t.result == "LOSS"])
-
-    total = len(today_trades)
-
-    win_rate = round((wins / total) * 100, 2) if total > 0 else 0
-
-    return {"trades": total, "wins": wins, "losses": losses, "win_rate": win_rate}
+    return trade_storage.today_statistics()
