@@ -1,6 +1,5 @@
-from datetime import datetime, timezone
 import os
-
+from datetime import datetime, timezone, timedelta
 from app.entry.entry_engine import EntryEngine
 from app.models.market import MarketData
 from app.models.signal import Signal
@@ -1190,49 +1189,24 @@ class TradingEngine:
                 print("========================================")
                 print("CLOCK / CANDLE TIME DEBUG")
                 print("========================================")
-                print("Python UTC Now :", datetime.now(timezone.utc).isoformat())
+
+                server_now = datetime.now(timezone.utc)
+
+                print("Python UTC Now :", server_now.isoformat())
                 print("Candle Raw     :", latest_entry_candle.timestamp)
                 print("Candle Type    :", type(latest_entry_candle.timestamp))
                 print("========================================")
 
-                timestamp_value = latest_entry_candle.timestamp
+                # Use the actual server UTC time for the trade clock.
+                # The candle timestamp is used for market/candle identification,
+                # but must NOT be allowed to create a future trade expiration time.
+                entry_time = server_now
 
-                try:
-
-                    timestamp_number = float(timestamp_value)
-
-                    if timestamp_number > 10_000_000_000:
-
-                        entry_time = datetime.fromtimestamp(
-                            timestamp_number / 1000,
-                            tz=timezone.utc,
-                        )
-
-                    else:
-
-                        entry_time = datetime.fromtimestamp(
-                            timestamp_number,
-                            tz=timezone.utc,
-                        )
-
-                except (
-                    TypeError,
-                    ValueError,
-                    OverflowError,
-                ):
-
-                    entry_time = datetime.fromisoformat(
-                        str(timestamp_value).replace("Z", "+00:00")
-                    )
-
-                if entry_time.tzinfo is None:
-
-                    entry_time = entry_time.replace(tzinfo=timezone.utc)
-
-                else:
-
-                    entry_time = entry_time.astimezone(timezone.utc)
-
+                print("Resolved Entry :", entry_time.isoformat())
+                print(
+                    "Expiration     :", (entry_time + timedelta(seconds=60)).isoformat()
+                )
+                print("========================================")
                 # ----------------------------------------
                 # BINARY ENTRY LOG
                 # ----------------------------------------
