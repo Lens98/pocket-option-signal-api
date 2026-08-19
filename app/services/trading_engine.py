@@ -1187,6 +1187,13 @@ class TradingEngine:
                 # ----------------------------------------
                 # ENTRY TIME
                 # ----------------------------------------
+                print("========================================")
+                print("CLOCK / CANDLE TIME DEBUG")
+                print("========================================")
+                print("Python UTC Now :", datetime.now(timezone.utc).isoformat())
+                print("Candle Raw     :", latest_entry_candle.timestamp)
+                print("Candle Type    :", type(latest_entry_candle.timestamp))
+                print("========================================")
 
                 timestamp_value = latest_entry_candle.timestamp
 
