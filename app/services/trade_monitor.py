@@ -272,16 +272,23 @@ class TradeMonitor:
             if expiration_candle is None:
 
                 print("----------------------------------------")
-                print("EXPIRATION CANDLE NOT AVAILABLE YET")
+                print("EXPIRATION CANDLE NOT FOUND")
                 print("Trade ID:", trade.id)
                 print("Expiration:", expire_time)
                 print("Latest Candle:", market.candles[-1].timestamp)
-                print("Keeping trade OPEN and waiting for market data.")
                 print("----------------------------------------")
 
-                # Do not close the trade yet.
-                # Wait for the next market update to provide the expiration candle.
-                continue
+                # Exact expiration candle unavailable.
+                # Use latest available candle so an expired trade
+                # cannot remain ACTIVE forever.
+                expiration_candle = market.candles[-1]
+
+                print("----------------------------------------")
+                print("FALLBACK EXIT CANDLE USED")
+                print("Trade ID:", trade.id)
+                print("Fallback Candle:", expiration_candle.timestamp)
+                print("Exit Price:", expiration_candle.close)
+                print("----------------------------------------")
 
             # ----------------------------------------
             # Correct Exit Price
