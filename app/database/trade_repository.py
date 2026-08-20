@@ -379,13 +379,15 @@ class TradeRepository:
         draws = int(row["draws"] or 0)
         profit = float(row["profit"] or 0)
 
-        if total == 0:
+        decided_trades = wins + losses
+
+        if decided_trades == 0:
 
             win_rate = 0.0
 
         else:
 
-            win_rate = round(wins / total * 100, 2)
+            win_rate = round(wins / decided_trades * 100, 2)
 
         return {
             "total": total,
