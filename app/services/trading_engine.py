@@ -157,46 +157,31 @@ class TradingEngine:
                 print("✅ ACTIVE TRADE FINISHED")
                 print("----------------------------------------")
 
-            if trade is not None:
+                if trade is not None:
 
-                print("Trade ID :", trade.id)
-                print("Status   :", trade.status)
-                print("Result   :", trade.result)
-                print("Profit   :", trade.profit)
+                    print("Trade ID :", trade.id)
+                    print("Status   :", trade.status)
+                    print("Result   :", trade.result)
+                    print("Profit   :", trade.profit)
 
-            self.signal_lock.unlock()
+                self.signal_lock.unlock()
 
-            print("🔓 SIGNAL LOCK RELEASED")
-            print("----------------------------------------")
-
-            # Do not generate another signal in the same cycle.
-            # Wait for the next market update / candle.
-            return Signal(
-                asset=market.asset,
-                timeframe=market.timeframe,
-                action="WAIT",
-                confidence=0,
-                trend="SIDEWAYS",
-                expiration="Next Candle",
-                entry_price=(market.candles[-1].close if market.candles else 0.0),
-                timestamp=datetime.now(timezone.utc),
-                risk="HIGH",
-                reasons=["Previous trade finished - waiting for next candle"],
-            )
+                print("🔓 SIGNAL LOCK RELEASED")
+                print("----------------------------------------")
 
             # ----------------------------------------
             # Trade still active
             # ----------------------------------------
 
-        else:
+            else:
 
-            print("Status   :", trade.status)
-            print("Asset    :", locked.asset)
-            print("Bias     :", locked.bias)
-            print("Action   :", locked.action)
-            print("State    :", locked.market_state)
+                print("Status   :", trade.status)
+                print("Asset    :", locked.asset)
+                print("Bias     :", locked.bias)
+                print("Action   :", locked.action)
+                print("State    :", locked.market_state)
 
-            return locked
+                return locked
 
         debug_print()
         debug_print("========================================")
