@@ -334,7 +334,22 @@ class TradeMonitor:
             print("----------------------------------------")
 
             self.signal_lock.unlock()
+            # ----------------------------------------
+            # Normalize Trade Times
+            # ----------------------------------------
 
+            learning_entry_time = closed_trade.entry_time
+            learning_exit_time = closed_trade.exit_time
+
+            if learning_entry_time.tzinfo is None:
+                learning_entry_time = learning_entry_time.replace(tzinfo=timezone.utc)
+            else:
+                learning_entry_time = learning_entry_time.astimezone(timezone.utc)
+
+            if learning_exit_time.tzinfo is None:
+                learning_exit_time = learning_exit_time.replace(tzinfo=timezone.utc)
+            else:
+                learning_exit_time = learning_exit_time.astimezone(timezone.utc)
             # ----------------------------------------
             # Save Learning Record
             # ----------------------------------------
@@ -371,11 +386,9 @@ class TradeMonitor:
                 payout=closed_trade.payout,
                 profit=closed_trade.profit,
                 result=closed_trade.result,
-                entry_time=closed_trade.entry_time,
-                exit_time=closed_trade.exit_time,
-                duration=(
-                    closed_trade.exit_time - closed_trade.entry_time
-                ).total_seconds(),
+                entry_time=learning_entry_time,
+                exit_time=learning_exit_time,
+                duration=(learning_exit_time - learning_entry_time).total_seconds(),
                 reasons=closed_trade.reasons,
             )
 
