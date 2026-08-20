@@ -172,6 +172,7 @@ class TradeMonitor:
                 trade.payout = 0.0
 
                 self.trade_storage.update(trade)
+                self.signal_lock.unlock()
 
                 continue
 
@@ -196,6 +197,7 @@ class TradeMonitor:
                 trade.payout = 0.0
 
                 self.trade_storage.update(trade)
+                self.signal_lock.unlock()
 
                 continue
 
@@ -232,21 +234,16 @@ class TradeMonitor:
                     except (TypeError, ValueError, OverflowError):
 
                         candle_time = datetime.fromisoformat(
-                            str(timestamp_value).replace('Z', '+00:00')
+                            str(timestamp_value).replace("Z", "+00:00")
                         )
 
                         if candle_time.tzinfo is None:
 
-                            candle_time = candle_time.replace(
-                                tzinfo=timezone.utc
-                            )
+                            candle_time = candle_time.replace(tzinfo=timezone.utc)
 
                         else:
 
-                            candle_time = candle_time.astimezone(
-                                timezone.utc
-                            )
-
+                            candle_time = candle_time.astimezone(timezone.utc)
 
                     # We want the candle whose timestamp
                     # is at or immediately after expiration.
@@ -305,7 +302,6 @@ class TradeMonitor:
             print("Entry Price:", trade.entry_price)
             print("Exit Price:", exit_price)
             print("----------------------------------------")
-
             # ----------------------------------------
             # Close Trade
             # ----------------------------------------
@@ -322,7 +318,22 @@ class TradeMonitor:
                 print("Exit:", exit_price)
                 print("----------------------------------------")
 
+                # Never leave an ACTIVE trade lock behind
+                self.signal_lock.unlock()
+
                 continue
+
+            # ----------------------------------------
+            # RELEASE ACTIVE TRADE LOCK
+            # ----------------------------------------
+
+            print("----------------------------------------")
+            print("SIGNAL LOCK RELEASED AFTER TRADE CLOSE")
+            print("Trade ID:", closed_trade.id)
+            print("Result  :", closed_trade.result)
+            print("----------------------------------------")
+
+            self.signal_lock.unlock()
 
             # ----------------------------------------
             # Save Learning Record
@@ -395,18 +406,6 @@ class TradeMonitor:
             # ----------------------------------------
 
             self.pattern_metadata.save(closed_trade)
-
-            # ----------------------------------------
-            # RELEASE ACTIVE TRADE LOCK
-            # ----------------------------------------
-
-            print("----------------------------------------")
-            print("SIGNAL LOCK RELEASED AFTER TRADE CLOSE")
-            print("Trade ID:", closed_trade.id)
-            print("Result  :", closed_trade.result)
-            print("----------------------------------------")
-
-            self.signal_lock.unlock()
 
             print("----------------------------------------")
             print("📊 Pattern Metadata Saved")
