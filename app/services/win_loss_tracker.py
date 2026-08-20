@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.storage.trade_storage import TradeStorage
 
@@ -13,20 +13,13 @@ class WinLossTracker:
     # Close Trade
     # ----------------------------------------
 
-    def close_trade(
-        self,
-        trade,
-        exit_price,
-        payout=0.80
-    ):
+    def close_trade(self, trade, exit_price, payout=0.80):
 
         trade.exit_price = exit_price
-        trade.exit_time = datetime.now()
+        trade.exit_time = datetime.now(timezone.utc)
         trade.status = "CLOSED"
 
-        duration = (
-            trade.exit_time - trade.entry_time
-        ).total_seconds()
+        duration = (trade.exit_time - trade.entry_time).total_seconds()
 
         # ----------------------------------------
         # CALL
@@ -114,12 +107,7 @@ class WinLossTracker:
     # Close Trade by ID
     # ----------------------------------------
 
-    def update_trade(
-        self,
-        trade_id,
-        exit_price,
-        payout=0.80
-    ):
+    def update_trade(self, trade_id, exit_price, payout=0.80):
 
         trade = self.storage.find(trade_id)
 
@@ -127,8 +115,4 @@ class WinLossTracker:
 
             return None
 
-        return self.close_trade(
-            trade,
-            exit_price,
-            payout
-        )
+        return self.close_trade(trade, exit_price, payout)
