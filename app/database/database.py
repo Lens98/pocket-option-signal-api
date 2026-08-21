@@ -2,6 +2,7 @@ import os
 import sqlite3
 from pathlib import Path
 
+
 class Database:
 
     def __init__(self):
@@ -14,10 +15,7 @@ class Database:
             base = Path(__file__).resolve().parent
             self.db_path = base / "trades.db"
 
-        self.connection = sqlite3.connect(
-            self.db_path,
-            check_same_thread=False
-        )
+        self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
 
         self.connection.row_factory = sqlite3.Row
 
@@ -35,12 +33,11 @@ class Database:
         # Trades table - EXISTING
         # ----------------------------------------
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS trades (
 
                 id TEXT PRIMARY KEY,
-
+                user_id TEXT,
                 asset TEXT,
                 timeframe TEXT,
 
@@ -75,15 +72,25 @@ class Database:
                 reasons TEXT
 
             )
-            """
-        )
+            """)
+        # ----------------------------------------
+        # Add user_id to existing trades table
+        # ----------------------------------------
+
+        columns = {
+            row["name"]
+            for row in cursor.execute("PRAGMA table_info(trades)").fetchall()
+        }
+
+        if "user_id" not in columns:
+
+            cursor.execute("ALTER TABLE trades ADD COLUMN user_id TEXT")
 
         # ----------------------------------------
         # Users table - NEW
         # ----------------------------------------
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
 
                 id TEXT PRIMARY KEY,
@@ -95,15 +102,13 @@ class Database:
                 created_at TEXT NOT NULL
 
             )
-            """
-        )
+            """)
 
         # ----------------------------------------
         # Sessions table - NEW
         # ----------------------------------------
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS sessions (
 
                 token TEXT PRIMARY KEY,
@@ -117,20 +122,33 @@ class Database:
                 FOREIGN KEY (user_id) REFERENCES users(id)
 
             )
-            """
-        )
+            """)
+        # ----------------------------------------
+        # User Preferences
+        # ----------------------------------------
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_preferences (
+
+                user_id TEXT PRIMARY KEY,
+
+                selected_asset TEXT,
+
+                created_at TEXT NOT NULL,
+
+                updated_at TEXT NOT NULL,
+
+                FOREIGN KEY (user_id) REFERENCES users(id)
+
+            )
+            """)
         self.connection.commit()
 
     # ----------------------------------------
     # Execute
     # ----------------------------------------
 
-    def execute(
-        self,
-        query,
-        params=()
-    ):
+    def execute(self, query, params=()):
 
         cursor = self.connection.cursor()
 
@@ -144,11 +162,7 @@ class Database:
     # Fetch One
     # ----------------------------------------
 
-    def fetch_one(
-        self,
-        query,
-        params=()
-    ):
+    def fetch_one(self, query, params=()):
 
         cursor = self.execute(query, params)
 
@@ -158,11 +172,7 @@ class Database:
     # Fetch All
     # ----------------------------------------
 
-    def fetch_all(
-        self,
-        query,
-        params=()
-    ):
+    def fetch_all(self, query, params=()):
 
         cursor = self.execute(query, params)
 

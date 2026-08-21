@@ -19,25 +19,25 @@ class TradeStorage:
     # Find Trade
     # ----------------------------------------
 
-    def find(self, trade_id):
+    def find(self, trade_id, user_id=None):
 
-        return self.repository.find(trade_id)
+        return self.repository.find(trade_id, user_id)
 
     # ----------------------------------------
     # Latest Trade
     # ----------------------------------------
 
-    def latest(self):
+    def latest(self, user_id=None):
 
-        return self.repository.latest()
+        return self.repository.latest(user_id)
 
     # ----------------------------------------
     # All Trades
     # ----------------------------------------
 
-    def all(self):
+    def all(self, user_id=None):
 
-        return self.repository.all()
+        return self.repository.all(user_id)
 
     # ----------------------------------------
     # Update Trade
@@ -51,70 +51,70 @@ class TradeStorage:
     # Count
     # ----------------------------------------
 
-    def count(self):
+    def count(self, user_id=None):
 
-        return self.repository.count()
+        return self.repository.count(user_id)
 
     # ----------------------------------------
     # Open Trades
     # ----------------------------------------
 
-    def open_trades(self):
+    def open_trades(self, user_id=None):
 
-        return self.repository.open_trades()
+        return self.repository.open_trades(user_id)
 
     # ----------------------------------------
     # Closed Trades
     # ----------------------------------------
 
-    def closed_trades(self):
+    def closed_trades(self, user_id=None):
 
-        return self.repository.closed_trades()
+        return self.repository.closed_trades(user_id)
 
     # ----------------------------------------
     # Statistics
     # ----------------------------------------
 
-    def statistics(self):
+    def statistics(self, user_id=None):
 
-        return self.repository.statistics()
+        return self.repository.statistics(user_id)
 
     # ----------------------------------------
     # Today's Statistics
     # ----------------------------------------
 
-    def today_statistics(self):
+    def today_statistics(self, user_id=None):
 
-        return self.repository.today_statistics()
+        return self.repository.today_statistics(user_id)
 
     # ----------------------------------------
     # Win Count
     # ----------------------------------------
 
-    def win_count(self):
+    def win_count(self, user_id=None):
 
-        return self.repository.win_count()
+        return self.repository.win_count(user_id)
 
     # ----------------------------------------
     # Loss Count
     # ----------------------------------------
 
-    def loss_count(self):
+    def loss_count(self, user_id=None):
 
-        return self.repository.loss_count()
+        return self.repository.loss_count(user_id)
 
     # ----------------------------------------
     # Draw Count
     # ----------------------------------------
 
-    def draw_count(self):
+    def draw_count(self, user_id=None):
 
-        return self.repository.draw_count()
+        return self.repository.draw_count(user_id)
 
     # ----------------------------------------
     # Win Rate
     # ----------------------------------------
 
-    def win_rate(self):
+    def win_rate(self, user_id=None):
 
-        return self.repository.win_rate()
+        return self.repository.win_rate(user_id)

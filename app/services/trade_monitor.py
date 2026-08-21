@@ -10,8 +10,9 @@ from app.services.pattern_learning import PatternLearning
 from app.storage.shared import (
     market_storage,
     trade_storage,
-    signal_lock,
 )
+
+from app.services.signal_lock import user_signal_lock_manager
 
 
 class TradeMonitor:
@@ -24,7 +25,6 @@ class TradeMonitor:
         self.learning = LearningStorage()
         self.pattern_metadata = PatternMetadataRepository()
         self.pattern_learning = PatternLearning()
-        self.signal_lock = signal_lock
         self.running = False
         self.thread = None
 
@@ -172,7 +172,7 @@ class TradeMonitor:
                 trade.payout = 0.0
 
                 self.trade_storage.update(trade)
-                self.signal_lock.unlock()
+                user_signal_lock_manager.get(trade.user_id).unlock()
 
                 continue
 
@@ -197,7 +197,7 @@ class TradeMonitor:
                 trade.payout = 0.0
 
                 self.trade_storage.update(trade)
-                self.signal_lock.unlock()
+                user_signal_lock_manager.get(trade.user_id).unlock()
 
                 continue
 
@@ -319,7 +319,7 @@ class TradeMonitor:
                 print("----------------------------------------")
 
                 # Never leave an ACTIVE trade lock behind
-                self.signal_lock.unlock()
+                user_signal_lock_manager.get(trade.user_id).unlock()
 
                 continue
 
@@ -333,7 +333,7 @@ class TradeMonitor:
             print("Result  :", closed_trade.result)
             print("----------------------------------------")
 
-            self.signal_lock.unlock()
+            user_signal_lock_manager.get(closed_trade.user_id).unlock()
             # ----------------------------------------
             # Normalize Trade Times
             # ----------------------------------------

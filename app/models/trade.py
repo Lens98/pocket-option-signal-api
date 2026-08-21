@@ -11,7 +11,8 @@ class Trade(BaseModel):
     # ========================================
 
     id: str
-
+    user_id: str
+    user_id: str | None = None
     asset: str
 
     timeframe: str

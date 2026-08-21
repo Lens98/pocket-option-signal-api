@@ -5,32 +5,66 @@ class SignalStorage:
 
     def __init__(self):
 
-        self.signal = None
+        # Latest signal for each user + asset
         self.signals = {}
+
+        # Latest signal globally, kept for compatibility
+        self.signal = None
 
     # ========================================
     # UPDATE SIGNAL
     # ========================================
 
-    def update(self, signal: Signal):
+    def update(self, signal: Signal, user_id=None):
 
         self.signal = signal
 
         asset = getattr(signal, "asset", None)
 
-        if asset:
+        if not asset:
+            return
 
-            self.signals[asset] = signal
+        # User-specific storage
+        if user_id:
+
+            if user_id not in self.signals:
+                self.signals[user_id] = {}
+
+            self.signals[user_id][asset] = signal
+
+            return
+
+        # Legacy/global storage
+        if "__global__" not in self.signals:
+            self.signals["__global__"] = {}
+
+        self.signals["__global__"][asset] = signal
 
     # ========================================
     # GET SIGNAL
     # ========================================
 
-    def get(self, asset=None):
+    def get(self, asset=None, user_id=None):
 
+        # User-specific signal
+        if user_id:
+
+            user_signals = self.signals.get(user_id, {})
+
+            if asset:
+                return user_signals.get(asset)
+
+            if user_signals:
+                return next(reversed(user_signals.values()))
+
+            return None
+
+        # Legacy/global signal
         if asset:
 
-            return self.signals.get(asset)
+            global_signals = self.signals.get("__global__", {})
+
+            return global_signals.get(asset)
 
         return self.signal
 
@@ -38,22 +72,44 @@ class SignalStorage:
     # GET ALL SIGNALS
     # ========================================
 
-    def all(self):
+    def all(self, user_id=None):
 
-        return dict(self.signals)
+        if user_id:
+
+            return dict(self.signals.get(user_id, {}))
+
+        global_signals = self.signals.get("__global__", {})
+
+        return dict(global_signals)
 
     # ========================================
     # CLEAR
     # ========================================
 
-    def clear(self, asset=None):
+    def clear(self, asset=None, user_id=None):
+
+        if user_id:
+
+            if user_id not in self.signals:
+                return
+
+            if asset:
+
+                self.signals[user_id].pop(asset, None)
+
+            else:
+
+                self.signals[user_id].clear()
+
+            return
 
         if asset:
 
-            self.signals.pop(asset, None)
+            global_signals = self.signals.get("__global__", {})
+
+            global_signals.pop(asset, None)
 
             if self.signal is not None and getattr(self.signal, "asset", None) == asset:
-
                 self.signal = None
 
             return

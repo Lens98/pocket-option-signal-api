@@ -16,7 +16,8 @@ from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
 from app.services.session_detector import SessionDetector
-from app.storage.shared import trade_storage, signal_lock
+from app.storage.shared import trade_storage
+from app.services.signal_lock import user_signal_lock_manager
 from app.services.market_quality import MarketQuality
 from app.services.pattern_fingerprint import PatternFingerprint
 from app.storage.shared import trade_state
@@ -60,7 +61,7 @@ class TradingEngine:
         self.agreement = SignalAgreement()
         self.pattern_fingerprint = PatternFingerprint()
         self.session = SessionDetector()
-        self.signal_lock = signal_lock
+        self.signal_lock = None
         self.learning = LearningAnalyzer()
         self.candle_strategy = CandleStrategy()
         self.openai = OpenAIReviewer()
@@ -121,7 +122,12 @@ class TradingEngine:
 
         return int(value) - (int(value) % 60)
 
-    def generate_signal(self, market, indicator_result=None):
+    def generate_signal(self, market, indicator_result=None, user_id=None):
+        # ----------------------------------------
+        # USER-SPECIFIC SIGNAL LOCK
+        # ----------------------------------------
+
+        self.signal_lock = user_signal_lock_manager.get(user_id)
 
         # ----------------------------------------
         # ACTIVE TRADE LOCK
@@ -145,7 +151,7 @@ class TradingEngine:
             print("Trade ID :", trade_id)
 
             # Check whether the locked trade still exists
-            trade = self.trade_storage.find(trade_id) if trade_id else None
+            trade = self.trade_storage.find(trade_id, user_id) if trade_id else None
 
             # ----------------------------------------
             # Trade finished
@@ -1260,6 +1266,7 @@ class TradingEngine:
 
                     trade = Trade(
                         id=str(uuid4()),
+                        user_id=user_id,
                         asset=signal.asset,
                         timeframe=signal.timeframe,
                         confidence=signal.confidence,

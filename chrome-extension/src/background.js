@@ -227,7 +227,7 @@ initialize();
 // ========================================
 
 chrome.runtime.onMessage.addListener(
-    (message, sender, sendResponse) => {
+    async (message, sender, sendResponse) => {
 
         // ========================================
         // GET STATE
@@ -289,7 +289,12 @@ chrome.runtime.onMessage.addListener(
                     method: "POST",
 
                     headers: {
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${
+                           (await chrome.storage.local.get(
+                                  "pocketOptionAuthToken"
+                            )).pocketOptionAuthToken || ""
+                        }`
                     },
 
                     body: JSON.stringify(

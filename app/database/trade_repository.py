@@ -18,6 +18,7 @@ class TradeRepository:
 
         return Trade(
             id=row["id"],
+            user_id=row["user_id"],
             asset=row["asset"],
             timeframe=row["timeframe"],
             action=row["action"],
@@ -48,8 +49,8 @@ class TradeRepository:
         database.execute(
             """
             INSERT INTO trades (
-
                 id,
+                user_id,
                 asset,
                 timeframe,
                 action,
@@ -67,19 +68,15 @@ class TradeRepository:
                 profit,
                 payout,
                 reasons
-
             )
-
             VALUES (
-
                 ?,?,?,?,?,?,?,?,?,?,
-                ?,?,?,?,?,?,?,?
-
+                ?,?,?,?,?,?,?,?,?
             )
-
             """,
             (
                 trade.id,
+                trade.user_id,
                 trade.asset,
                 trade.timeframe,
                 trade.action,
@@ -111,7 +108,7 @@ class TradeRepository:
             UPDATE trades
 
             SET
-
+                user_id=?,
                 asset=?,
                 timeframe=?,
                 action=?,
@@ -131,9 +128,9 @@ class TradeRepository:
                 reasons=?
 
             WHERE id=?
-
             """,
             (
+                trade.user_id,
                 trade.asset,
                 trade.timeframe,
                 trade.action,
@@ -159,9 +156,30 @@ class TradeRepository:
     # Find Trade
     # ----------------------------------------
 
-    def find(self, trade_id):
+    def find(self, trade_id, user_id=None):
 
-        row = database.fetch_one("SELECT * FROM trades WHERE id=?", (trade_id,))
+        if user_id is None:
+
+            row = database.fetch_one(
+                """
+                SELECT *
+                FROM trades
+                WHERE id=?
+                """,
+                (trade_id,),
+            )
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT *
+                FROM trades
+                WHERE id=?
+                AND user_id=?
+                """,
+                (trade_id, user_id),
+            )
 
         return self._row_to_trade(row)
 
@@ -169,14 +187,29 @@ class TradeRepository:
     # Latest Trade
     # ----------------------------------------
 
-    def latest(self):
+    def latest(self, user_id=None):
 
-        row = database.fetch_one("""
-            SELECT *
-            FROM trades
-            ORDER BY entry_time DESC
-            LIMIT 1
-            """)
+        if user_id is None:
+
+            row = database.fetch_one("""
+                SELECT *
+                FROM trades
+                ORDER BY entry_time DESC
+                LIMIT 1
+                """)
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT *
+                FROM trades
+                WHERE user_id=?
+                ORDER BY entry_time DESC
+                LIMIT 1
+                """,
+                (user_id,),
+            )
 
         return self._row_to_trade(row)
 
@@ -184,13 +217,27 @@ class TradeRepository:
     # All Trades
     # ----------------------------------------
 
-    def all(self):
+    def all(self, user_id=None):
 
-        rows = database.fetch_all("""
-            SELECT *
-            FROM trades
-            ORDER BY entry_time DESC
-            """)
+        if user_id is None:
+
+            rows = database.fetch_all("""
+                SELECT *
+                FROM trades
+                ORDER BY entry_time DESC
+                """)
+
+        else:
+
+            rows = database.fetch_all(
+                """
+                SELECT *
+                FROM trades
+                WHERE user_id=?
+                ORDER BY entry_time DESC
+                """,
+                (user_id,),
+            )
 
         return [self._row_to_trade(row) for row in rows]
 
@@ -198,14 +245,29 @@ class TradeRepository:
     # Open Trades
     # ----------------------------------------
 
-    def open_trades(self):
+    def open_trades(self, user_id=None):
 
-        rows = database.fetch_all("""
-            SELECT *
-            FROM trades
-            WHERE status='OPEN'
-            ORDER BY entry_time DESC
-            """)
+        if user_id is None:
+
+            rows = database.fetch_all("""
+                SELECT *
+                FROM trades
+                WHERE status='OPEN'
+                ORDER BY entry_time DESC
+                """)
+
+        else:
+
+            rows = database.fetch_all(
+                """
+                SELECT *
+                FROM trades
+                WHERE status='OPEN'
+                AND user_id=?
+                ORDER BY entry_time DESC
+                """,
+                (user_id,),
+            )
 
         return [self._row_to_trade(row) for row in rows]
 
@@ -213,14 +275,29 @@ class TradeRepository:
     # Closed Trades
     # ----------------------------------------
 
-    def closed_trades(self):
+    def closed_trades(self, user_id=None):
 
-        rows = database.fetch_all("""
-            SELECT *
-            FROM trades
-            WHERE status='CLOSED'
-            ORDER BY exit_time DESC
-            """)
+        if user_id is None:
+
+            rows = database.fetch_all("""
+                SELECT *
+                FROM trades
+                WHERE status='CLOSED'
+                ORDER BY exit_time DESC
+                """)
+
+        else:
+
+            rows = database.fetch_all(
+                """
+                SELECT *
+                FROM trades
+                WHERE status='CLOSED'
+                AND user_id=?
+                ORDER BY exit_time DESC
+                """,
+                (user_id,),
+            )
 
         return [self._row_to_trade(row) for row in rows]
 
@@ -228,9 +305,22 @@ class TradeRepository:
     # Count
     # ----------------------------------------
 
-    def count(self):
+    def count(self, user_id=None):
 
-        row = database.fetch_one("SELECT COUNT(*) AS total FROM trades")
+        if user_id is None:
+
+            row = database.fetch_one("SELECT COUNT(*) AS total FROM trades")
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE user_id=?
+                """,
+                (user_id,),
+            )
 
         return row["total"]
 
@@ -238,13 +328,27 @@ class TradeRepository:
     # Win Count
     # ----------------------------------------
 
-    def win_count(self):
+    def win_count(self, user_id=None):
 
-        row = database.fetch_one("""
-            SELECT COUNT(*) AS total
-            FROM trades
-            WHERE result='WIN'
-            """)
+        if user_id is None:
+
+            row = database.fetch_one("""
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE result='WIN'
+                """)
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE result='WIN'
+                AND user_id=?
+                """,
+                (user_id,),
+            )
 
         return row["total"]
 
@@ -252,13 +356,27 @@ class TradeRepository:
     # Loss Count
     # ----------------------------------------
 
-    def loss_count(self):
+    def loss_count(self, user_id=None):
 
-        row = database.fetch_one("""
-            SELECT COUNT(*) AS total
-            FROM trades
-            WHERE result='LOSS'
-            """)
+        if user_id is None:
+
+            row = database.fetch_one("""
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE result='LOSS'
+                """)
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE result='LOSS'
+                AND user_id=?
+                """,
+                (user_id,),
+            )
 
         return row["total"]
 
@@ -266,13 +384,27 @@ class TradeRepository:
     # Draw Count
     # ----------------------------------------
 
-    def draw_count(self):
+    def draw_count(self, user_id=None):
 
-        row = database.fetch_one("""
-            SELECT COUNT(*) AS total
-            FROM trades
-            WHERE result='DRAW'
-            """)
+        if user_id is None:
+
+            row = database.fetch_one("""
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE result='DRAW'
+                """)
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT COUNT(*) AS total
+                FROM trades
+                WHERE result='DRAW'
+                AND user_id=?
+                """,
+                (user_id,),
+            )
 
         return row["total"]
 
@@ -280,98 +412,174 @@ class TradeRepository:
     # Win Rate
     # ----------------------------------------
 
-    def win_rate(self):
+    def win_rate(self, user_id=None):
 
-        total = self.count()
+        total = self.count(user_id)
 
         if total == 0:
-
             return 0.0
 
-        return round(self.win_count() / total * 100, 2)
+        return round(
+            self.win_count(user_id) / total * 100,
+            2,
+        )
 
     # ----------------------------------------
     # Statistics
     # ----------------------------------------
 
-    def statistics(self):
+    def statistics(self, user_id=None):
 
-        row = database.fetch_one("""
-             SELECT
-                  COALESCE(SUM(profit), 0) AS profit
-             FROM trades
-             """)
+        if user_id is None:
+
+            row = database.fetch_one("""
+                SELECT
+                    COALESCE(
+                        SUM(profit),
+                        0
+                    ) AS profit
+                FROM trades
+                """)
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT
+                    COALESCE(
+                        SUM(profit),
+                        0
+                    ) AS profit
+                FROM trades
+                WHERE user_id=?
+                """,
+                (user_id,),
+            )
 
         profit = float(row["profit"] or 0)
 
         return {
-            "total": self.count(),
-            "wins": self.win_count(),
-            "losses": self.loss_count(),
-            "draws": self.draw_count(),
-            "win_rate": self.win_rate(),
+            "total": self.count(user_id),
+            "wins": self.win_count(user_id),
+            "losses": self.loss_count(user_id),
+            "draws": self.draw_count(user_id),
+            "win_rate": self.win_rate(user_id),
             "profit": round(profit, 2),
         }
-        # ----------------------------------------
 
+    # ----------------------------------------
     # Today's Statistics
     # Based on Trade Entry Time
     # ----------------------------------------
 
-    def today_statistics(self):
+    def today_statistics(self, user_id=None):
 
         today = datetime.now().date().isoformat()
 
-        row = database.fetch_one(
-            """
-            SELECT
-                COUNT(*) AS total,
+        if user_id is None:
 
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN result='WIN'
-                            THEN 1
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS wins,
+            row = database.fetch_one(
+                """
+                SELECT
+                    COUNT(*) AS total,
 
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN result='LOSS'
-                            THEN 1
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS losses,
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN result='WIN'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS wins,
 
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN result='DRAW'
-                            THEN 1
-                            ELSE 0
-                        END
-                    ),
-                    0
-                ) AS draws,
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN result='LOSS'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS losses,
 
-                COALESCE(
-                    SUM(profit),
-                    0
-                ) AS profit
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN result='DRAW'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS draws,
 
-            FROM trades
+                    COALESCE(
+                        SUM(profit),
+                        0
+                    ) AS profit
 
-            WHERE date(entry_time) = ?
+                FROM trades
 
-            """,
-            (today,),
-        )
+                WHERE date(entry_time)=?
+                """,
+                (today,),
+            )
+
+        else:
+
+            row = database.fetch_one(
+                """
+                SELECT
+                    COUNT(*) AS total,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN result='WIN'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS wins,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN result='LOSS'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS losses,
+
+                    COALESCE(
+                        SUM(
+                            CASE
+                                WHEN result='DRAW'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    ) AS draws,
+
+                    COALESCE(
+                        SUM(profit),
+                        0
+                    ) AS profit
+
+                FROM trades
+
+                WHERE date(entry_time)=?
+                AND user_id=?
+                """,
+                (today, user_id),
+            )
 
         total = int(row["total"] or 0)
         wins = int(row["wins"] or 0)
@@ -382,12 +590,12 @@ class TradeRepository:
         decided_trades = wins + losses
 
         if decided_trades == 0:
-
             win_rate = 0.0
-
         else:
-
-            win_rate = round(wins / decided_trades * 100, 2)
+            win_rate = round(
+                wins / decided_trades * 100,
+                2,
+            )
 
         return {
             "total": total,
@@ -402,14 +610,42 @@ class TradeRepository:
     # Delete Trade
     # ----------------------------------------
 
-    def delete(self, trade_id):
+    def delete(self, trade_id, user_id=None):
 
-        database.execute("DELETE FROM trades WHERE id=?", (trade_id,))
+        if user_id is None:
+
+            database.execute(
+                "DELETE FROM trades WHERE id=?",
+                (trade_id,),
+            )
+
+        else:
+
+            database.execute(
+                """
+                DELETE FROM trades
+                WHERE id=?
+                AND user_id=?
+                """,
+                (trade_id, user_id),
+            )
 
     # ----------------------------------------
     # Clear Database
     # ----------------------------------------
 
-    def clear(self):
+    def clear(self, user_id=None):
 
-        database.execute("DELETE FROM trades")
+        if user_id is None:
+
+            database.execute("DELETE FROM trades")
+
+        else:
+
+            database.execute(
+                """
+                DELETE FROM trades
+                WHERE user_id=?
+                """,
+                (user_id,),
+            )

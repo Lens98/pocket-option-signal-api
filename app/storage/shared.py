@@ -16,5 +16,3 @@ trade_state = TradeStateManager()
 active_asset = ActiveAsset()
 
 signal_lock = SignalLock()
-
-signal_lock = SignalLock()

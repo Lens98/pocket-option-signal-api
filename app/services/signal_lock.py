@@ -109,3 +109,44 @@ class SignalLock:
         self.signal = None
         self.lock_reason = ""
         self.trade_id = None
+
+
+# ========================================
+# PER-USER SIGNAL LOCK MANAGER
+# ========================================
+
+
+class UserSignalLockManager:
+
+    def __init__(self):
+
+        self.locks = {}
+
+    # ----------------------------------------
+    # Get User Lock
+    # ----------------------------------------
+
+    def get(self, user_id):
+
+        if not user_id:
+
+            # Keep a fallback lock for
+            # internal / legacy calls.
+            user_id = "__global__"
+
+        if user_id not in self.locks:
+
+            self.locks[user_id] = SignalLock()
+
+        return self.locks[user_id]
+
+    # ----------------------------------------
+    # Clear User Lock
+    # ----------------------------------------
+
+    def clear(self, user_id):
+
+        self.locks.pop(user_id, None)
+
+
+user_signal_lock_manager = UserSignalLockManager()
