@@ -1,6 +1,19 @@
 const API =
     "https://pocket-option-signal-api-production.up.railway.app";
 
+async function getAuthHeaders() {
+    const result = await chrome.storage.local.get(
+        "pocketOptionAuthToken"
+    );
+
+    return {
+        "Authorization": `Bearer ${
+            result.pocketOptionAuthToken || ""
+        }`
+    };
+}
+
+
 /* ==========================================
    GET SIGNAL
 ========================================== */
@@ -27,7 +40,8 @@ export async function getSignal() {
                 method: "GET",
                 cache: "no-store",
                 headers: {
-                    "Cache-Control": "no-cache"
+                    "Cache-Control": "no-cache",
+                    ...(await getAuthHeaders())
                 }
             }
         );
@@ -67,7 +81,10 @@ export async function getTradeStatistics() {
 
     const response =
         await fetch(
-            `${API}/trade/statistics`
+            `${API}/trade/statistics`,
+            {
+                headers: await getAuthHeaders()
+            }
         );
 
     if (!response.ok) {
@@ -90,7 +107,10 @@ export async function getTradeHistory() {
 
     const response =
         await fetch(
-            `${API}/trade/all`
+            `${API}/trade/all`,
+            {
+                headers: await getAuthHeaders()
+            }
         );
 
     if (!response.ok) {
