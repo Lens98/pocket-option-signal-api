@@ -6,18 +6,6 @@
 const API_URL =
     "https://pocket-option-signal-api-production.up.railway.app";
 
-async function getAuthHeaders() {
-    const result = await chrome.storage.local.get(
-        "pocketOptionAuthToken"
-    );
-
-    return {
-        "Authorization": `Bearer ${
-            result.pocketOptionAuthToken || ""
-        }`
-    };
-}
-
 const state = {
     connected: false,
 
@@ -105,9 +93,7 @@ async function refresh() {
         // ----------------------------------------
 
         const signalResponse =
-            await fetch(`${API_URL}/signal`, {
-                headers: await getAuthHeaders()
-            });
+            await fetch(`${API_URL}/signal`);
 
         if (!signalResponse.ok) {
 
@@ -126,9 +112,7 @@ async function refresh() {
         // ----------------------------------------
 
         const tradeResponse =
-            await fetch(`${API_URL}/trade/state`, {
-                headers: await getAuthHeaders()
-            });
+            await fetch(`${API_URL}/trade/state`);
 
         if (!tradeResponse.ok) {
 
@@ -148,9 +132,7 @@ async function refresh() {
         // ----------------------------------------
 
         const historyResponse =
-            await fetch(`${API_URL}/trade/all`, {
-                headers: await getAuthHeaders()
-            });
+            await fetch(`${API_URL}/trade/all`);
 
         if (!historyResponse.ok) {
 
@@ -245,7 +227,7 @@ initialize();
 // ========================================
 
 chrome.runtime.onMessage.addListener(
-    async (message, sender, sendResponse) => {
+    (message, sender, sendResponse) => {
 
         // ========================================
         // GET STATE
@@ -307,12 +289,7 @@ chrome.runtime.onMessage.addListener(
                     method: "POST",
 
                     headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${
-                           (await chrome.storage.local.get(
-                                  "pocketOptionAuthToken"
-                            )).pocketOptionAuthToken || ""
-                        }`
+                        "Content-Type": "application/json"
                     },
 
                     body: JSON.stringify(
