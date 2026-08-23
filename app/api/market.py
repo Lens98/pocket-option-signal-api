@@ -209,7 +209,6 @@ def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)
 
 @router.get("/trade/statistics-overall")
 def trade_statistics(current_user: dict = Depends(get_authenticated_user)):
-
     user_id = current_user["id"]
 
     stats = trade_storage.statistics(user_id)
@@ -220,7 +219,7 @@ def trade_statistics(current_user: dict = Depends(get_authenticated_user)):
         "losses": trade_storage.loss_count(user_id),
         "draws": trade_storage.draw_count(user_id),
         "win_rate": trade_storage.win_rate(user_id),
-        "profit": stats.get("profit", user_id),
+        "profit": stats.get("profit", 0),
     }
 
 
