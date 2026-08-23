@@ -1,21 +1,26 @@
+import { getTradeHistory } from "./api.js";
+
 export async function loadTradeHistory() {
 
-    console.log("🔥 loadTradeHistory() called");
+    console.log("📜 loadTradeHistory() called");
 
     try {
 
-        const response =
-            await fetch(
-                "https://pocket-option-signal-api-production.up.railway.app/trade/all"
-            );
-
-        console.log("Response Status:", response.status);
-
         const trades =
-            await response.json();
+    await getTradeHistory();
 
-        console.log("Trades received:", trades);
-        console.log("Trade count:", trades.length);
+if (!Array.isArray(trades)) {
+
+    console.error(
+        "Invalid trade history response:",
+        trades
+    );
+
+    return;
+}
+
+console.log("Trades received:", trades);
+console.log("Trade count:", trades.length);
 
         const historyCount =
             document.getElementById("historyCount");
@@ -32,7 +37,9 @@ export async function loadTradeHistory() {
 
         if (!body) {
 
-            console.error("Missing element: historyBody");
+            console.error(
+                "Missing element: historyBody"
+            );
 
             return;
 
@@ -40,24 +47,26 @@ export async function loadTradeHistory() {
 
         body.innerHTML = "";
 
-// Sort newest trades first
-trades.sort(
-    (a, b) =>
-        new Date(b.entry_time) -
-        new Date(a.entry_time)
-);
+        trades.sort(
+            (a, b) =>
+                new Date(b.entry_time) -
+                new Date(a.entry_time)
+        );
 
-
-trades.slice(0,50).forEach(trade => {
+        trades.slice(0, 50).forEach(trade => {
 
             const row =
                 document.createElement("tr");
 
-            const time = trade.entry_time
-                ? new Date(trade.entry_time).toLocaleTimeString()
-                : "--";
+            const time =
+                trade.entry_time
+                    ? new Date(
+                        trade.entry_time
+                    ).toLocaleTimeString()
+                    : "--";
 
-            const result = trade.result ?? "--";
+            const result =
+                trade.result ?? "--";
 
             const resultClass =
                 result === "--"
@@ -80,13 +89,19 @@ trades.slice(0,50).forEach(trade => {
 
         });
 
-        console.log("Rows inserted:", body.children.length);
+        console.log(
+            "Rows inserted:",
+            body.children.length
+        );
 
     }
 
     catch (error) {
 
-        console.error("History Error:", error);
+        console.error(
+            "History Error:",
+            error
+        );
 
     }
 

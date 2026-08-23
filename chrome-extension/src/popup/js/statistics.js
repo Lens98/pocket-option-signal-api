@@ -1,14 +1,19 @@
+import {
+    getTodayStatistics
+} from "./api.js";
+
+
 export async function loadTradeStatistics() {
 
     try {
 
-        const response =
-            await fetch(
-                "https://pocket-option-signal-api-production.up.railway.app/trade/today"
-            );
-
         const stats =
-            await response.json();
+            await getTodayStatistics();
+
+        console.log(
+            "Today's statistics:",
+            stats
+        );
 
         const winRate =
             document.getElementById("winRate");
@@ -26,24 +31,34 @@ export async function loadTradeStatistics() {
             document.getElementById("accuracy");
 
         if (winRate)
-            winRate.innerHTML = `${stats.win_rate}%`;
+            winRate.innerHTML =
+                `${stats.win_rate ?? 0}%`;
 
         if (wins)
-            wins.innerHTML = stats.wins;
+            wins.innerHTML =
+                stats.wins ?? 0;
 
         if (losses)
-            losses.innerHTML = stats.losses;
+            losses.innerHTML =
+                stats.losses ?? 0;
 
         if (profit)
-    profit.innerHTML = `$${stats.profit ?? 0}`;
+            profit.innerHTML =
+                `$${stats.profit ?? 0}`;
 
-        if (accuracy)
+        if (accuracy) {
+
+            const winRateValue =
+                stats.win_rate ?? 0;
+
             accuracy.innerHTML =
-                stats.win_rate >= 80
+                winRateValue >= 80
                     ? "High"
-                    : stats.win_rate >= 60
+                    : winRateValue >= 60
                     ? "Medium"
                     : "Low";
+
+        }
 
     }
 

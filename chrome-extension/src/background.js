@@ -6,14 +6,24 @@ const API_URL =
     "https://pocket-option-signal-api-production.up.railway.app";
 
 async function getAuthHeaders() {
-    const result = await chrome.storage.local.get(
-        "pocketOptionAuthToken"
-    );
+
+    const result =
+        await chrome.storage.local.get(
+            "pocketOptionAuthToken"
+        );
+
+    const token =
+        result.pocketOptionAuthToken;
+
+    if (!token) {
+
+        throw new Error(
+            "No authentication token found"
+        );
+    }
 
     return {
-        "Authorization": `Bearer ${
-            result.pocketOptionAuthToken || ""
-        }`
+        "Authorization": `Bearer ${token}`
     };
 }
 
@@ -100,13 +110,23 @@ async function refresh() {
 
     try {
 
+        // Get ONE authenticated header set
+        // for the entire refresh cycle.
+
+        const authHeaders =
+            await getAuthHeaders();
+
+        console.log(
+            "🔐 Background auth token found:",
+            !!authHeaders.Authorization
+        );
         // ----------------------------------------
         // Get Signal
         // ----------------------------------------
 
         const signalResponse =
             await fetch(`${API_URL}/signal`, {
-                headers: await getAuthHeaders()
+                headers: authHeaders
             });
 
         if (!signalResponse.ok) {
@@ -127,7 +147,7 @@ async function refresh() {
 
         const tradeResponse =
             await fetch(`${API_URL}/trade/state`, {
-                headers: await getAuthHeaders()
+                headers: authHeaders
             });
 
         if (!tradeResponse.ok) {
@@ -148,7 +168,7 @@ async function refresh() {
         // ----------------------------------------
         const historyResponse =
             await fetch(`${API_URL}/trade/all`, {
-                headers: await getAuthHeaders()
+                headers: authHeaders
             });
 
         if (!historyResponse.ok) {
@@ -233,7 +253,7 @@ async function initialize() {
 
     setInterval(
         refresh,
-        1000
+        3000
     );
 }
 
@@ -260,131 +280,137 @@ chrome.runtime.onMessage.addListener(
         // ========================================
         // SEND MARKET DATA TO RAILWAY
         // ========================================
-
-        if (message.type === "SEND_MARKET") {
+                if (message.type === "SEND_MARKET") {
 
             console.log(
                 "📡 Sending market data to Railway..."
             );
-        // ----------------------------------------
-        // Save latest live market data
-        // ----------------------------------------
 
-        if (message.payload) {
+            try {
 
-            if (message.payload.asset) {
+                if (message.payload) {
 
-                state.marketAsset =
-                    message.payload.asset;
+                    if (message.payload.asset) {
 
-            }
+                        state.marketAsset =
+                            message.payload.asset;
 
-            if (Array.isArray(message.payload.candles)) {
+                    }
 
-                state.marketCandles =
-                    message.payload.candles;
+                    if (
+                        Array.isArray(
+                            message.payload.candles
+                        )
+                    ) {
 
-            }
+                        state.marketCandles =
+                            message.payload.candles;
 
-            saveState();
+                    }
 
-        }
+                    await saveState();
 
-            console.log(
-                "Asset:",
-                message.payload?.asset
-            );
-
-            console.log(
-                "Candles:",
-                message.payload?.candles?.length
-            );
-
-            fetch(
-                `${API_URL}/market/update`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type": "application/json",
-                        ...(await getAuthHeaders())
-                    },
-
-                    body: JSON.stringify(
-                        message.payload
-                    )
                 }
-            )
 
-                .then(
-                    async (response) => {
-
-                        console.log(
-                            "📡 MARKET UPDATE STATUS:",
-                            response.status
-                        );
-
-                        const text =
-                            await response.text();
-
-                        let result;
-
-                        try {
-
-                            result =
-                                JSON.parse(text);
-
-                        }
-
-                        catch {
-
-                            result = {
-                                raw: text
-                            };
-                        }
-
-                        console.log(
-                            "📡 MARKET UPDATE RESPONSE:",
-                            result
-                        );
-
-                        sendResponse({
-
-                            ok: response.ok,
-
-                            status:
-                                response.status,
-
-                            result
-                        });
-                    }
-                )
-
-                .catch(
-                    (error) => {
-
-                        console.error(
-                            "❌ MARKET UPDATE FAILED:",
-                            error
-                        );
-
-                        sendResponse({
-
-                            ok: false,
-
-                            error:
-                                error.message
-                        });
-                    }
+                console.log(
+                    "Asset:",
+                    message.payload?.asset
                 );
 
-            // IMPORTANT:
-            // Keep the message channel open
-            // for the asynchronous fetch above.
+                console.log(
+                    "Candles:",
+                    message.payload?.candles?.length
+                );
+
+                const authHeaders =
+                    await getAuthHeaders();
+
+                const response =
+                    await fetch(
+                        `${API_URL}/market/update`,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                ...authHeaders
+                            },
+
+                            body: JSON.stringify(
+                                message.payload
+                            )
+                        }
+                    );
+
+                const text =
+                    await response.text();
+
+                let result;
+
+                try {
+
+                    result =
+                        JSON.parse(text);
+
+                }
+
+                catch {
+
+                    result = {
+                        raw: text
+                    };
+
+                }
+
+                console.log(
+                    "📡 MARKET UPDATE STATUS:",
+                    response.status
+                );
+
+                console.log(
+                    "📡 MARKET UPDATE RESPONSE:",
+                    result
+                );
+
+                sendResponse({
+
+                    ok: response.ok,
+
+                    status:
+                        response.status,
+
+                    result
+
+                });
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "❌ MARKET UPDATE FAILED:",
+                    error
+                );
+
+                sendResponse({
+
+                    ok: false,
+
+                    error:
+                        error.message
+
+                });
+
+            }
 
             return true;
+
         }
 
         return true;
+
     }
+
 );

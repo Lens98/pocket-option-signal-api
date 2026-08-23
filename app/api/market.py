@@ -210,18 +210,17 @@ def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)
 @router.get("/trade/statistics-overall")
 def trade_statistics(current_user: dict = Depends(get_authenticated_user)):
 
-    # Authentication is now required.
-    # Per-user trade_storage will be
-    # converted separately.
+    user_id = current_user["id"]
 
-    stats = trade_storage.statistics()
+    stats = trade_storage.statistics(user_id)
 
     return {
-        "wins": trade_storage.win_count(),
-        "losses": trade_storage.loss_count(),
-        "draws": trade_storage.draw_count(),
-        "win_rate": trade_storage.win_rate(),
-        "profit": stats.get("profit", 0),
+        **stats,
+        "wins": trade_storage.win_count(user_id),
+        "losses": trade_storage.loss_count(user_id),
+        "draws": trade_storage.draw_count(user_id),
+        "win_rate": trade_storage.win_rate(user_id),
+        "profit": stats.get("profit", user_id),
     }
 
 
@@ -248,8 +247,6 @@ def select_asset(asset: str, current_user: dict = Depends(get_authenticated_user
 @router.get("/trade/today")
 def today_session(current_user: dict = Depends(get_authenticated_user)):
 
-    # Authentication is now required.
-    # Per-user trade_storage will be
-    # converted separately.
+    user_id = current_user["id"]
 
-    return trade_storage.today_statistics()
+    return trade_storage.today_statistics(user_id)

@@ -130,10 +130,12 @@ export async function getTradeHistory() {
 ========================================== */
 
 export async function getTradeState() {
-
     const response =
         await fetch(
-            `${API}/trade/state`
+            `${API}/trade/state`,
+            {
+                headers: await getAuthHeaders()
+            }
         );
 
     if (!response.ok) {
@@ -196,4 +198,30 @@ export async function getCandles(asset) {
     );
 
     return candles;
+}
+/* ==========================================
+   GET TODAY'S STATISTICS
+========================================== */
+
+export async function getTodayStatistics() {
+
+    const response =
+        await fetch(
+            `${API}/trade/today`,
+            {
+                headers:
+                    await getAuthHeaders()
+            }
+        );
+
+    if (!response.ok) {
+
+        throw new Error(
+            `Unable to load today's statistics: ${response.status}`
+        );
+
+    }
+
+    return await response.json();
+
 }

@@ -2,7 +2,7 @@
 
         <iframe
             id="pai-dashboard-frame"
-            src="${chrome.runtime.getURL(`popup.html`)}"
+            src="${chrome.runtime.getURL(`src/popup/popup.html`)}"
             frameborder="0">
         </iframe>
 
