@@ -152,7 +152,7 @@ class TradeMonitor:
             # Get Market
             # ----------------------------------------
 
-            market = self.market_storage.get(trade.asset)
+            market = self.market_storage.get(trade.user_id, trade.asset)
 
             if market is None:
 
