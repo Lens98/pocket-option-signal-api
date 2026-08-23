@@ -163,12 +163,15 @@ def market_history(asset: str, current_user: dict = Depends(get_authenticated_us
 # ========================================
 
 
+# ========================================
+# TRADE STATE
+# ========================================
+
+
 @router.get("/trade/state")
 def trade_state_status(current_user: dict = Depends(get_authenticated_user)):
 
-    # Authentication is now required.
-    # Per-user trade_state storage will be
-    # converted separately in the next step.
+    user_id = current_user["id"]
 
     return {"state": trade_state.get(user_id).value}
 
