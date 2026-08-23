@@ -107,9 +107,9 @@ class WinLossTracker:
     # Close Trade by ID
     # ----------------------------------------
 
-    def update_trade(self, trade_id, exit_price, payout=0.80):
+    def update_trade(self, trade_id, exit_price, user_id=None, payout=0.80):
 
-        trade = self.storage.find(trade_id)
+        trade = self.storage.find(trade_id, user_id)
 
         if trade is None:
 

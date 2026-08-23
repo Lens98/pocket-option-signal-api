@@ -45,7 +45,7 @@ def trade_result(result: TradeResult, user=Depends(get_current_user)):
 
         return {"status": "Trade not found"}
 
-    updated_trade = tracker.update_trade(result.trade_id, result.exit_price)
+    updated_trade = tracker.update_trade(result.trade_id, result.exit_price, user["id"])
 
     if updated_trade is None:
 
