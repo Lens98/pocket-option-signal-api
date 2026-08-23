@@ -4,17 +4,11 @@ from enum import Enum
 class TradeState(Enum):
 
     WAITING = "WAITING"
-
     ANALYZING = "ANALYZING"
-
     READY = "READY"
-
     ENTRY = "ENTRY"
-
     ACTIVE = "ACTIVE"
-
     FINISHED = "FINISHED"
-
     LEARNING = "LEARNING"
 
 
@@ -22,52 +16,57 @@ class TradeStateManager:
 
     def __init__(self):
 
-        self.state = TradeState.WAITING
+        self.states = {}
 
     # ----------------------------------------
+    # SET USER STATE
+    # ----------------------------------------
 
-    def set(self, state: TradeState):
+    def set(self, user_id, state: TradeState):
 
-        self.state = state
+        self.states[user_id] = state
 
         print("----------------------------------------")
         print("Trade State")
         print("----------------------------------------")
-        print(self.state.value)
+        print("User ID:", user_id)
+        print("State:", state.value)
         print("----------------------------------------")
 
     # ----------------------------------------
+    # GET USER STATE
+    # ----------------------------------------
 
-    def get(self):
+    def get(self, user_id):
 
-        return self.state
+        return self.states.get(user_id, TradeState.WAITING)
 
     # ----------------------------------------
 
-    def waiting(self):
+    def waiting(self, user_id):
 
-        self.set(TradeState.WAITING)
+        self.set(user_id, TradeState.WAITING)
 
-    def analyzing(self):
+    def analyzing(self, user_id):
 
-        self.set(TradeState.ANALYZING)
+        self.set(user_id, TradeState.ANALYZING)
 
-    def ready(self):
+    def ready(self, user_id):
 
-        self.set(TradeState.READY)
+        self.set(user_id, TradeState.READY)
 
-    def entry(self):
+    def entry(self, user_id):
 
-        self.set(TradeState.ENTRY)
+        self.set(user_id, TradeState.ENTRY)
 
-    def active(self):
+    def active(self, user_id):
 
-        self.set(TradeState.ACTIVE)
+        self.set(user_id, TradeState.ACTIVE)
 
-    def finished(self):
+    def finished(self, user_id):
 
-        self.set(TradeState.FINISHED)
+        self.set(user_id, TradeState.FINISHED)
 
-    def learning(self):
+    def learning(self, user_id):
 
-        self.set(TradeState.LEARNING)
+        self.set(user_id, TradeState.LEARNING)

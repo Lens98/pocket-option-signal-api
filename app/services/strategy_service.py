@@ -1,7 +1,7 @@
 from app.models.market import MarketData
 from app.models.indicator import IndicatorResult
 from app.models.signal import Signal
-from app.services.trade_state import TradeStateManager
+from app.storage.shared import trade_state
 from app.supply_demand.zone_detector import SupplyDemandDetector
 
 from app.strategies.supply_demand_strategy import SupplyDemandStrategy
@@ -27,7 +27,7 @@ class StrategyService:
         self.candles = CandlestickStrategy()
         self.adx = AdxStrategy()
         self.atr = AtrStrategy()
-        self.trade_state = TradeStateManager()
+
         self.market_structure = MarketStructureStrategy()
         self.structure = MarketStructureAnalyzer()
 
@@ -36,8 +36,13 @@ class StrategyService:
         self.zone_detector = SupplyDemandDetector()
         self.supply_demand = SupplyDemandStrategy()
 
-    def analyze(self, market: MarketData, indicators: IndicatorResult) -> Signal:
-        self.trade_state.analyzing()
+    def analyze(
+        self,
+        market: MarketData,
+        indicators: IndicatorResult,
+        user_id=None,
+    ) -> Signal:
+        trade_state.analyzing(user_id)
         ema_result = self.ema.analyze(indicators)
 
         rsi_result = self.rsi.analyze(indicators)
@@ -223,11 +228,8 @@ class StrategyService:
         print()
 
         if signal.action == "WAIT":
-
-            self.trade_state.waiting()
-
+            trade_state.waiting(user_id)
         else:
-
-            self.trade_state.ready()
+            trade_state.ready(user_id)
 
         return signal

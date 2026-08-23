@@ -248,8 +248,19 @@ class TradeMonitor:
                     # We want the candle whose timestamp
                     # is at or immediately after expiration.
 
-                    candle_seconds = int(trade.timeframe)
+                    timeframe_value = str(trade.timeframe).lower().strip()
 
+                    if timeframe_value.endswith("m"):
+                        candle_seconds = int(timeframe_value[:-1]) * 60
+
+                    elif timeframe_value.endswith("s"):
+                        candle_seconds = int(timeframe_value[:-1])
+
+                    elif timeframe_value.endswith("h"):
+                        candle_seconds = int(timeframe_value[:-1]) * 3600
+
+                    else:
+                        candle_seconds = 60
                     candle_end_time = candle_time + timedelta(seconds=candle_seconds)
 
                     if candle_time < expire_time <= candle_end_time:
