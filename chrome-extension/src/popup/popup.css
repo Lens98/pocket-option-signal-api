@@ -1,0 +1,941 @@
+/* ==========================================
+   Pocket Option AI PRO v3.0
+   Professional Trading Dashboard
+========================================== */
+
+*{
+
+    margin:0;
+
+    padding:0;
+
+    box-sizing:border-box;
+
+}
+
+body{
+
+    width:900px;
+
+    min-height:760px;
+
+    overflow:hidden;
+
+    color:white;
+
+    font-family:"Segoe UI",Arial,sans-serif;
+
+    background:
+        radial-gradient(circle at top right,#1A3B5D 0%,transparent 45%),
+        radial-gradient(circle at bottom left,#132238 0%,transparent 35%),
+        #0B1220;
+
+}
+
+/* ==========================================
+   Container
+========================================== */
+
+.container{
+
+    padding:18px;
+
+}
+
+/* ==========================================
+   Header
+========================================== */
+
+.header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+    padding-bottom:14px;
+
+    border-bottom:1px solid #23314F;
+
+}
+
+.header h2{
+
+    font-size:26px;
+
+    font-weight:700;
+
+    letter-spacing:.5px;
+
+}
+
+.version{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+
+.status{
+
+    padding:8px 18px;
+
+    border-radius:999px;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+}
+
+.online{
+
+    background:#14532D;
+
+    color:#4ADE80;
+
+}
+
+.offline{
+
+    background:#4B1113;
+
+    color:#F87171;
+
+}
+
+/* ==========================================
+   Dashboard
+========================================== */
+
+.dashboard{
+
+    display:grid;
+
+    grid-template-columns:1.4fr .9fr;
+
+    gap:18px;
+
+    margin-bottom:18px;
+
+}
+
+.left-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.right-panel{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+/* ==========================================
+   Cards
+========================================== */
+
+.card{
+
+    background:
+
+        linear-gradient(
+            180deg,
+            rgba(28,39,61,.98),
+            rgba(15,23,42,.98)
+        );
+
+    border:1px solid #243453;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    box-shadow:
+
+        0 12px 30px rgba(0,0,0,.35);
+
+}
+
+.card-title{
+
+    color:#94A3B8;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    margin-bottom:16px;
+
+    letter-spacing:.3px;
+
+}
+
+/* ==========================================
+   Chart
+========================================== */
+
+.chart-card{
+
+    height:320px;
+
+}
+
+.chart-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.chart-title{
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+
+.chart-asset{
+
+    margin-top:4px;
+
+    font-size:22px;
+
+    font-weight:700;
+
+}
+
+.chart-price{
+
+    color:#22C55E;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+}
+
+#miniChart{
+
+    width:100%;
+
+    height:220px;
+
+    border-radius:14px;
+
+    background:
+
+        linear-gradient(
+            180deg,
+            #16213A,
+            #0F172A
+        );
+
+    border:1px solid #223553;
+
+}
+/* ==========================================
+   SIGNAL TERMINAL
+========================================== */
+
+.signal-terminal{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    min-height:520px;
+
+}
+
+/* ==========================================
+   BUY / SELL BANNER
+========================================== */
+
+.buy-banner{
+
+    width:100%;
+
+    text-align:center;
+
+    padding:12px;
+
+    border-radius:12px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+    transition:.35s;
+
+}
+
+.buy-banner.wait{
+
+    background:#374151;
+
+    color:#E5E7EB;
+
+}
+
+.buy-banner.analyzing{
+
+    background:#2563EB;
+
+    color:white;
+
+}
+
+.buy-banner.ready{
+
+    background:#F59E0B;
+
+    color:white;
+
+}
+
+.buy-banner.call{
+
+    background:#16A34A;
+
+    color:white;
+
+    box-shadow:
+
+        0 0 25px rgba(34,197,94,.45);
+
+}
+
+.buy-banner.put{
+
+    background:#DC2626;
+
+    color:white;
+
+    box-shadow:
+
+        0 0 25px rgba(239,68,68,.45);
+
+}
+
+.buy-banner.active{
+
+    background:#7C3AED;
+
+    color:white;
+
+}
+
+.buy-banner.finished{
+
+    background:#0F9D58;
+
+    color:white;
+
+}
+
+/* ==========================================
+   CALL / PUT
+========================================== */
+
+.action{
+
+    font-size:72px;
+
+    font-weight:900;
+
+    letter-spacing:4px;
+
+    margin-top:10px;
+
+    margin-bottom:20px;
+
+    text-transform:uppercase;
+
+    text-align:center;
+
+}
+
+.action.call{
+
+    color:#22C55E;
+
+    text-shadow:
+
+        0 0 18px rgba(34,197,94,.70);
+
+}
+
+.action.put{
+
+    color:#EF4444;
+
+    text-shadow:
+
+        0 0 18px rgba(239,68,68,.70);
+
+}
+
+.action.wait{
+
+    color:#FACC15;
+
+}
+
+/* ==========================================
+   CONFIDENCE GAUGE
+========================================== */
+
+.gauge{
+
+    position:relative;
+
+    width:180px;
+
+    height:180px;
+
+    margin:15px auto;
+
+}
+
+.gauge svg{
+
+    position:absolute;
+
+    inset:0;
+
+}
+
+.gauge-bg{
+
+    fill:none;
+
+    stroke:#1E293B;
+
+    stroke-width:12;
+
+}
+
+.gauge-progress{
+
+    fill:none;
+
+    stroke:#22C55E;
+
+    stroke-width:12;
+
+    stroke-linecap:round;
+
+    stroke-dasharray:452;
+
+    stroke-dashoffset:452;
+
+    transition:.45s;
+
+}
+
+.gauge-text{
+
+    position:absolute;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:46px;
+
+    font-weight:800;
+
+    color:white;
+
+    text-align:center;
+
+}
+
+/* ==========================================
+   COUNTDOWN
+========================================== */
+
+.countdown{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-top:15px;
+
+}
+
+#countdownLabel{
+
+    color:#94A3B8;
+
+    font-size:15px;
+
+    margin-bottom:6px;
+
+}
+
+#countdown{
+
+    font-size:34px;
+
+    font-weight:800;
+
+}
+
+/* ==========================================
+   ENTRY MESSAGE
+========================================== */
+
+.entry-message{
+
+    margin-top:15px;
+
+    min-height:48px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:42px;
+
+    font-weight:900;
+
+    text-align:center;
+
+}
+
+/* ==========================================
+   ENTRY ANIMATIONS
+========================================== */
+
+.entry-message{
+
+    animation:pulseEntry 1s infinite;
+
+}
+
+@keyframes pulseEntry{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.08);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================
+   SIGNAL GLOW
+========================================== */
+
+.signal-terminal{
+
+    position:relative;
+
+}
+
+.signal-terminal::after{
+
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:18px;
+
+    pointer-events:none;
+
+    box-shadow:
+
+        inset 0 0 40px rgba(34,197,94,.05);
+
+}
+/* ==========================================
+   AI ANALYSIS
+========================================== */
+
+.analysis-card{
+
+    min-height:220px;
+
+}
+
+#analysis{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+
+    font-size:14px;
+
+    line-height:1.5;
+
+}
+
+#analysis .good{
+
+    color:#22C55E;
+
+    font-weight:600;
+
+}
+
+#analysis .warning{
+
+    color:#FACC15;
+
+    font-weight:600;
+
+}
+
+#analysis .bad{
+
+    color:#EF4444;
+
+    font-weight:600;
+
+}
+
+/* ==========================================
+   TODAY'S SESSION
+========================================== */
+
+.stats-card{
+
+    min-height:180px;
+
+}
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:12px;
+
+}
+
+.stat{
+
+    background:#182235;
+
+    border:1px solid #23314F;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    text-align:center;
+
+    transition:.25s;
+
+}
+
+.stat:hover{
+
+    transform:translateY(-3px);
+
+    background:#22304B;
+
+}
+
+.stat span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    margin-bottom:8px;
+
+}
+
+.stat strong{
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+/* ==========================================
+   MARKET INFORMATION
+========================================== */
+
+.info-card{
+
+    margin-top:18px;
+
+}
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(8,1fr);
+
+    gap:12px;
+
+}
+
+.info-item{
+
+    background:#16213A;
+
+    border:1px solid #243553;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    text-align:center;
+
+}
+
+.info-item span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+    margin-bottom:8px;
+
+}
+
+.info-item strong{
+
+    font-size:15px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   HISTORY
+========================================== */
+
+.history-card{
+
+    margin-top:18px;
+
+}
+
+#historyTable{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+#historyTable th{
+
+    background:#16213A;
+
+    color:#CBD5E1;
+
+    font-size:13px;
+
+    padding:12px;
+
+    border-bottom:1px solid #243553;
+
+    text-align:left;
+
+}
+
+#historyTable td{
+
+    padding:12px;
+
+    border-bottom:1px solid #1E293B;
+
+    font-size:13px;
+
+}
+
+#historyTable tbody tr{
+
+    transition:.25s;
+
+}
+
+#historyTable tbody tr:hover{
+
+    background:#182235;
+
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:18px;
+
+    padding-top:14px;
+
+    border-top:1px solid #23314F;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+
+.footer strong{
+
+    color:white;
+
+}
+
+/* ==========================================
+   GLOBAL ANIMATIONS
+========================================== */
+
+.card{
+
+    animation:fadeUp .45s ease;
+
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(12px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.action{
+
+    animation:signalPulse 2s infinite;
+
+}
+
+@keyframes signalPulse{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.03);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================
+   CUSTOM SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111827;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#334155;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#475569;
+
+}
