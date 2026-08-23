@@ -17,14 +17,16 @@ async function getAuthHeaders() {
 
     if (!token) {
 
-        throw new Error(
-            "No authentication token found"
-        );
+        return null;
+
     }
 
     return {
+
         "Authorization": `Bearer ${token}`
+
     };
+
 }
 
 const state = {
@@ -115,6 +117,23 @@ async function refresh() {
 
         const authHeaders =
             await getAuthHeaders();
+        if (!authHeaders) {
+
+    state.connected = false;
+    state.tradeState = "WAITING";
+
+    state.lastUpdate =
+        new Date().toISOString();
+
+    await saveState();
+
+    console.log(
+        "⏭️ Background refresh skipped: user not logged in"
+    );
+
+    return;
+
+}
 
         console.log(
             "🔐 Background auth token found:",
@@ -323,26 +342,40 @@ chrome.runtime.onMessage.addListener(
                 );
 
                 const authHeaders =
-                    await getAuthHeaders();
+    await getAuthHeaders();
 
-                const response =
-                    await fetch(
-                        `${API_URL}/market/update`,
-                        {
-                            method: "POST",
+if (!authHeaders) {
 
-                            headers: {
-                                "Content-Type":
-                                    "application/json",
+    console.log(
+        "⏭️ Market update skipped: user not logged in"
+    );
 
-                                ...authHeaders
-                            },
+    sendResponse({
+        ok: false,
+        error: "User not logged in"
+    });
 
-                            body: JSON.stringify(
-                                message.payload
-                            )
-                        }
-                    );
+    return true;
+}
+
+const response =
+    await fetch(
+        `${API_URL}/market/update`,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type":
+                    "application/json",
+
+                ...authHeaders
+            },
+
+            body: JSON.stringify(
+                message.payload
+            )
+        }
+    );
 
                 const text =
                     await response.text();
