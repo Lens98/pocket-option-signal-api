@@ -3,12 +3,12 @@ from pydantic import BaseModel
 
 from app.services.auth_dependency import get_current_user
 from app.services.win_loss_tracker import WinLossTracker
-from app.storage.trade_storage import TradeStorage
+from app.storage.shared import trade_storage
 
 router = APIRouter()
 
 tracker = WinLossTracker()
-storage = TradeStorage()
+storage = trade_storage
 
 
 class TradeResult(BaseModel):
