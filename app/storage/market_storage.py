@@ -5,28 +5,52 @@ class MarketStorage:
 
     def __init__(self):
 
+        # Structure:
+        #
+        # {
+        #     user_id: {
+        #         asset: [
+        #             candle,
+        #             candle
+        #         ]
+        #     }
+        # }
+
         self.markets = {}
 
-    def update(self, market: MarketData):
+    # ----------------------------------------
+    # UPDATE MARKET FOR ONE USER
+    # ----------------------------------------
+
+    def update(self, user_id: str, market: MarketData):
 
         asset = market.asset
 
-        if asset not in self.markets:
+        # Create user storage if needed
 
-            self.markets[asset] = []
+        if user_id not in self.markets:
 
-        history = self.markets[asset]
+            self.markets[user_id] = {}
+
+        user_markets = self.markets[user_id]
+
+        # Create asset history if needed
+
+        if asset not in user_markets:
+
+            user_markets[asset] = []
+
+        history = user_markets[asset]
 
         # ----------------------------------------
         # Existing timestamps
         # ----------------------------------------
 
-        existing = {
-            str(candle.timestamp)
-            for candle in history
-        }
+        existing = {str(candle.timestamp) for candle in history}
 
         print("----------------------------------------")
+        print("User ID          :", user_id)
+        print("Asset            :", asset)
         print("Existing Candles :", len(existing))
         print("Incoming Candles :", len(market.candles))
         print("----------------------------------------")
@@ -43,19 +67,21 @@ class MarketStorage:
             ts = str(candle.timestamp).strip()
 
             # Skip invalid timestamps
-            if (
-                ts == ""
-                or ts.lower() == "undefined"
-                or ts.lower() == "none"
-            ):
-                print("⚠ Ignoring invalid candle:", candle)
+
+            if ts == "" or ts.lower() == "undefined" or ts.lower() == "none":
+
+                print("Ignoring invalid candle:", candle)
+
                 ignored += 1
+
                 continue
 
             if ts not in existing:
 
                 history.append(candle)
+
                 existing.add(ts)
+
                 added += 1
 
         # ----------------------------------------
@@ -64,9 +90,7 @@ class MarketStorage:
 
         history = sorted(
             history,
-            key=lambda c: int(str(c.timestamp))
-            if str(c.timestamp).isdigit()
-            else 0
+            key=lambda c: int(str(c.timestamp)) if str(c.timestamp).isdigit() else 0,
         )
 
         # ----------------------------------------
@@ -74,9 +98,10 @@ class MarketStorage:
         # ----------------------------------------
 
         if len(history) > 500:
+
             history = history[-500:]
 
-        self.markets[asset] = history
+        user_markets[asset] = history
 
         print("----------------------------------------")
         print("New Candles Added :", added)
@@ -84,45 +109,66 @@ class MarketStorage:
         print("Stored History    :", len(history))
         print("----------------------------------------")
 
-    def get(self, asset):
-
-        history = self.markets.get(asset, [])
-
-        return MarketData(
-            asset=asset,
-            timeframe="10",
-            candles=history
-        )
-
-    def size(self, asset):
-
-        return len(
-            self.markets.get(asset, [])
-        )
-
     # ----------------------------------------
-    # Return candle history
+    # GET MARKET FOR ONE USER
     # ----------------------------------------
 
-    def history(self, asset, limit=None):
+    def get(self, user_id: str, asset: str):
 
-        history = self.markets.get(asset, [])
+        user_markets = self.markets.get(user_id, {})
+
+        history = user_markets.get(asset, [])
+
+        return MarketData(asset=asset, timeframe="10", candles=history)
+
+    # ----------------------------------------
+    # SIZE FOR ONE USER + ASSET
+    # ----------------------------------------
+
+    def size(self, user_id: str, asset: str):
+
+        user_markets = self.markets.get(user_id, {})
+
+        return len(user_markets.get(asset, []))
+
+    # ----------------------------------------
+    # RETURN HISTORY FOR ONE USER
+    # ----------------------------------------
+
+    def history(self, user_id: str, asset: str, limit=None):
+
+        user_markets = self.markets.get(user_id, {})
+
+        history = user_markets.get(asset, [])
 
         if limit is None:
+
             return history
 
         return history[-limit:]
 
     # ----------------------------------------
-    # Clear one asset
+    # CLEAR ONE USER ASSET
     # ----------------------------------------
 
-    def clear(self, asset):
+    def clear(self, user_id: str, asset: str):
 
-        self.markets[asset] = []
+        if user_id not in self.markets:
+
+            return
+
+        self.markets[user_id][asset] = []
 
     # ----------------------------------------
-    # Clear all assets
+    # CLEAR ALL ASSETS FOR ONE USER
+    # ----------------------------------------
+
+    def clear_user(self, user_id: str):
+
+        self.markets.pop(user_id, None)
+
+    # ----------------------------------------
+    # CLEAR EVERYTHING
     # ----------------------------------------
 
     def clear_all(self):

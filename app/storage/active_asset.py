@@ -2,16 +2,44 @@ class ActiveAsset:
 
     def __init__(self):
 
-        self.asset = None
+        # Structure:
+        #
+        # {
+        #     user_id: asset
+        # }
 
+        self.assets = {}
 
-    def set(self, asset):
+    # ========================================
+    # SET ACTIVE ASSET FOR USER
+    # ========================================
 
-        self.asset = asset
+    def set(self, user_id: str, asset: str):
 
-        print("🎯 Active Asset Set:", asset)
+        self.assets[user_id] = asset
 
+        print("Active Asset Set:", "User:", user_id, "Asset:", asset)
 
-    def get(self):
+    # ========================================
+    # GET ACTIVE ASSET FOR USER
+    # ========================================
 
-        return self.asset
+    def get(self, user_id: str):
+
+        return self.assets.get(user_id)
+
+    # ========================================
+    # CLEAR ACTIVE ASSET FOR USER
+    # ========================================
+
+    def clear(self, user_id: str):
+
+        self.assets.pop(user_id, None)
+
+    # ========================================
+    # CLEAR ALL USERS
+    # ========================================
+
+    def clear_all(self):
+
+        self.assets.clear()

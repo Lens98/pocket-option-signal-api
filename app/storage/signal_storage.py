@@ -5,114 +5,119 @@ class SignalStorage:
 
     def __init__(self):
 
-        # Latest signal for each user + asset
-        self.signals = {}
+        # Structure:
+        #
+        # {
+        #     user_id: {
+        #         "latest": Signal,
+        #         "signals": {
+        #             asset: Signal
+        #         }
+        #     }
+        # }
 
-        # Latest signal globally, kept for compatibility
-        self.signal = None
+        self.users = {}
 
     # ========================================
-    # UPDATE SIGNAL
+    # ENSURE USER STORAGE
     # ========================================
 
-    def update(self, signal: Signal, user_id=None):
+    def _get_user_storage(self, user_id: str):
 
-        self.signal = signal
+        if user_id not in self.users:
+
+            self.users[user_id] = {"latest": None, "signals": {}}
+
+        return self.users[user_id]
+
+    # ========================================
+    # UPDATE SIGNAL FOR USER
+    # ========================================
+
+    def update(self, user_id: str, signal: Signal):
+
+        user_storage = self._get_user_storage(user_id)
+
+        user_storage["latest"] = signal
 
         asset = getattr(signal, "asset", None)
 
-        if not asset:
-            return
+        if asset:
 
-        # User-specific storage
-        if user_id:
-
-            if user_id not in self.signals:
-                self.signals[user_id] = {}
-
-            self.signals[user_id][asset] = signal
-
-            return
-
-        # Legacy/global storage
-        if "__global__" not in self.signals:
-            self.signals["__global__"] = {}
-
-        self.signals["__global__"][asset] = signal
+            user_storage["signals"][asset] = signal
 
     # ========================================
-    # GET SIGNAL
+    # GET SIGNAL FOR USER
     # ========================================
 
-    def get(self, asset=None, user_id=None):
+    def get(self, user_id: str, asset=None):
 
-        # User-specific signal
-        if user_id:
+        user_storage = self.users.get(user_id)
 
-            user_signals = self.signals.get(user_id, {})
-
-            if asset:
-                return user_signals.get(asset)
-
-            if user_signals:
-                return next(reversed(user_signals.values()))
+        if not user_storage:
 
             return None
 
-        # Legacy/global signal
         if asset:
 
-            global_signals = self.signals.get("__global__", {})
+            return user_storage["signals"].get(asset)
 
-            return global_signals.get(asset)
-
-        return self.signal
+        return user_storage["latest"]
 
     # ========================================
-    # GET ALL SIGNALS
+    # GET ALL USER SIGNALS
     # ========================================
 
-    def all(self, user_id=None):
+    def all(self, user_id: str):
 
-        if user_id:
+        user_storage = self.users.get(user_id)
 
-            return dict(self.signals.get(user_id, {}))
+        if not user_storage:
 
-        global_signals = self.signals.get("__global__", {})
+            return {}
 
-        return dict(global_signals)
+        return dict(user_storage["signals"])
 
     # ========================================
-    # CLEAR
+    # CLEAR USER SIGNAL
     # ========================================
 
-    def clear(self, asset=None, user_id=None):
+    def clear(self, user_id: str, asset=None):
 
-        if user_id:
+        user_storage = self.users.get(user_id)
 
-            if user_id not in self.signals:
-                return
-
-            if asset:
-
-                self.signals[user_id].pop(asset, None)
-
-            else:
-
-                self.signals[user_id].clear()
+        if not user_storage:
 
             return
 
         if asset:
 
-            global_signals = self.signals.get("__global__", {})
+            user_storage["signals"].pop(asset, None)
 
-            global_signals.pop(asset, None)
+            latest = user_storage["latest"]
 
-            if self.signal is not None and getattr(self.signal, "asset", None) == asset:
-                self.signal = None
+            if latest is not None and getattr(latest, "asset", None) == asset:
+
+                user_storage["latest"] = None
 
             return
 
-        self.signal = None
-        self.signals.clear()
+        user_storage["latest"] = None
+
+        user_storage["signals"].clear()
+
+    # ========================================
+    # CLEAR ALL DATA FOR ONE USER
+    # ========================================
+
+    def clear_user(self, user_id: str):
+
+        self.users.pop(user_id, None)
+
+    # ========================================
+    # CLEAR EVERYTHING
+    # ========================================
+
+    def clear_all(self):
+
+        self.users.clear()

@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends
 
-from app.services.auth_dependency import get_current_user
-from app.storage.user_preferences_storage import user_preferences_storage
-
+from app.api.auth import get_authenticated_user
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
-from datetime import datetime
+
 from app.storage.shared import (
     market_storage,
     signal_storage,
@@ -21,19 +19,34 @@ router = APIRouter()
 engine = TradingEngine()
 
 
+# ========================================
+# HEALTH
+# ========================================
+
+
 @router.get("/health")
 def health():
 
     return {"status": "running"}
 
 
+# ========================================
+# MARKET UPDATE
+# ========================================
+
+
 @router.post("/market/update")
-def update_market(data: MarketUpdate, user=Depends(get_current_user)):
+def update_market(
+    data: MarketUpdate, current_user: dict = Depends(get_authenticated_user)
+):
+
+    user_id = current_user["id"]
 
     print()
     print("========================================")
-    print("🚀 NEW MARKET UPDATE")
+    print("NEW MARKET UPDATE")
     print("========================================")
+    print("User ID:", user_id)
     print("Asset:", data.asset)
     print("Timeframe:", data.timeframe)
     print("Candles Received:", len(data.candles))
@@ -43,86 +56,119 @@ def update_market(data: MarketUpdate, user=Depends(get_current_user)):
         asset=data.asset, timeframe=data.timeframe, candles=data.candles
     )
 
-    # Store history
-    market_storage.update(market)
+    # Store history for THIS authenticated user
+    market_storage.update(user_id, market)
 
     # ========================================
     # Active Asset Filter
     # ========================================
 
-    current = user_preferences_storage.get_selected_asset(user["id"])
+    current = active_asset.get(user_id)
 
     if current is not None and data.asset != current:
+
         print(
-            "⏭ Ignoring analysis for:",
-            data.asset,
-            "User:",
-            user["email"],
-            "Active:",
-            current,
+            "Ignoring analysis for:", data.asset, "Active:", current, "User:", user_id
         )
 
         return {"status": "stored_only", "asset": data.asset}
-    # Read full history
-    market = market_storage.get(data.asset)
+
+    # Read THIS USER'S full history
+    market = market_storage.get(user_id, data.asset)
 
     print("----------------------------------------")
     print("SIGNAL GENERATION INPUT")
     print("----------------------------------------")
+    print("User ID:", user_id)
     print("Asset:", market.asset)
     print("Timeframe:", market.timeframe)
     print("Market candles:", len(market.candles))
-    print("Storage candles:", market_storage.size(data.asset))
+    print("Storage candles:", market_storage.size(user_id, data.asset))
 
     if market.candles:
+
         print("First candle:", market.candles[0].timestamp)
+
         print("Last candle :", market.candles[-1].timestamp)
 
     print("----------------------------------------")
 
-    # Generate signal
-    signal = engine.generate_signal(market, user_id=user["id"])
+    # ========================================
+    # GENERATE SIGNAL
+    # DO NOT CHANGE AI LOGIC
+    # ========================================
+
+    signal = engine.generate_signal(market)
+
     if signal.asset is None:
+
         signal.asset = data.asset
 
-    # Save latest signal
-    signal_storage.update(signal, user_id=user["id"])
+    # Save latest signal for THIS USER
+    signal_storage.update(user_id, signal)
 
     return {
         "status": "updated",
         "asset": data.asset,
         "timeframe": data.timeframe,
         "candles": len(data.candles),
-        "stored": market_storage.size(data.asset),
+        "stored": market_storage.size(user_id, data.asset),
     }
 
 
+# ========================================
+# LATEST SIGNAL
+# ========================================
+
+
 @router.get("/signal")
-def latest_signal(user=Depends(get_current_user)):
+def latest_signal(current_user: dict = Depends(get_authenticated_user)):
 
-    current = user_preferences_storage.get_selected_asset(user["id"])
+    user_id = current_user["id"]
 
-    if current is None:
-        return {"status": "No asset selected"}
+    current = active_asset.get(user_id)
 
-    signal = signal_storage.get(current, user_id=user["id"])
+    if current is not None:
+
+        signal = signal_storage.get(user_id, current)
+
+    else:
+
+        signal = signal_storage.get(user_id)
 
     if signal is None:
-        return {"status": "No signal yet", "asset": current}
+
+        return {"status": "No signal yet"}
 
     return signal
 
 
-@router.get("/market/history/{asset}")
-def market_history(asset: str):
+# ========================================
+# MARKET HISTORY
+# ========================================
 
-    candles = market_storage.history(asset)
+
+@router.get("/market/history/{asset}")
+def market_history(asset: str, current_user: dict = Depends(get_authenticated_user)):
+
+    user_id = current_user["id"]
+
+    candles = market_storage.history(user_id, asset)
 
     return {"asset": asset, "count": len(candles), "candles": candles}
 
 
+# ========================================
+# TRADE STATE
+# ========================================
+
+
 @router.get("/trade/state")
-def trade_state_status():
+def trade_state_status(current_user: dict = Depends(get_authenticated_user)):
+
+    # Authentication is now required.
+    # Per-user trade_state storage will be
+    # converted separately in the next step.
 
     return {"state": trade_state.get().value}
 
@@ -133,18 +179,22 @@ def trade_state_status():
 
 
 @router.get("/candles/{asset:path}")
-def get_candles(asset: str):
+def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)):
+
+    user_id = current_user["id"]
 
     print("================================")
     print("GET /candles")
+    print("User ID:", user_id)
     print("Requested asset:", repr(asset))
     print("================================")
 
-    market = market_storage.get(asset)
+    market = market_storage.get(user_id, asset)
 
-    print("Market found:", market is not None)
+    print("Market found:", len(market.candles) > 0)
 
-    if market is None:
+    if not market.candles:
+
         return []
 
     print("Candlestick count:", len(market.candles))
@@ -158,7 +208,11 @@ def get_candles(asset: str):
 
 
 @router.get("/trade/statistics-overall")
-def trade_statistics():
+def trade_statistics(current_user: dict = Depends(get_authenticated_user)):
+
+    # Authentication is now required.
+    # Per-user trade_storage will be
+    # converted separately.
 
     stats = trade_storage.statistics()
 
@@ -171,22 +225,31 @@ def trade_statistics():
     }
 
 
+# ========================================
+# SELECT ACTIVE ASSET
+# ========================================
+
+
 @router.get("/market/select/{asset}")
-def select_asset(asset: str, user=Depends(get_current_user)):
+def select_asset(asset: str, current_user: dict = Depends(get_authenticated_user)):
 
-    asset = asset.strip()
+    user_id = current_user["id"]
 
-    if not asset:
-        return {"status": "invalid", "message": "Asset is required."}
+    active_asset.set(user_id, asset)
 
-    user_preferences_storage.set_selected_asset(user["id"], asset)
+    return {"active_asset": asset}
 
-    print("🎯 USER ASSET SET:", user["email"], "→", asset)
 
-    return {"status": "updated", "user_id": user["id"], "active_asset": asset}
+# ========================================
+# TODAY'S SESSION
+# ========================================
 
 
 @router.get("/trade/today")
-def today_session():
+def today_session(current_user: dict = Depends(get_authenticated_user)):
+
+    # Authentication is now required.
+    # Per-user trade_storage will be
+    # converted separately.
 
     return trade_storage.today_statistics()
