@@ -170,7 +170,7 @@ def trade_state_status(current_user: dict = Depends(get_authenticated_user)):
     # Per-user trade_state storage will be
     # converted separately in the next step.
 
-    return {"state": trade_state.get().value}
+    return {"state": trade_state.get(user_id).value}
 
 
 # ========================================
