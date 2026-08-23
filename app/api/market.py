@@ -98,7 +98,7 @@ def update_market(
     # DO NOT CHANGE AI LOGIC
     # ========================================
 
-    signal = engine.generate_signal(market)
+    signal = engine.generate_signal(market, user_id=user_id)
 
     if signal.asset is None:
 

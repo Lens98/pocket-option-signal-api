@@ -1145,7 +1145,7 @@ class TradingEngine:
             # HARD OPEN TRADE PROTECTION
             # ----------------------------------------
 
-            open_trades = self.trade_storage.open_trades()
+            open_trades = self.trade_storage.open_trades(user_id)
 
             if open_trades:
 
