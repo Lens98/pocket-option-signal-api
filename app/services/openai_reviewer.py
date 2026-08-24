@@ -3,21 +3,20 @@ import os
 
 from openai import OpenAI
 
-client = OpenAI(
-    api_key=os.environ["OPENAI_API_KEY"]
-)
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
 
 class OpenAIReviewer:
 
     def review(self, signal):
 
         prompt = f"""
-You are an expert institutional trader.
+You are an expert trading AI.
 
-Analyze this signal.
+Review the current market signal independently.
 
 Asset: {signal.asset}
-Action: {signal.action}
+Current Action: {signal.action}
 Trend: {signal.trend}
 Confidence: {signal.confidence}
 Probability: {signal.probability}
@@ -27,37 +26,34 @@ Risk: {signal.risk}
 Session: {signal.session}
 Regime: {signal.regime}
 
+Choose the best decision based on this information.
+
 Return ONLY valid JSON.
 
 {{
-    "decision":"BUY",
-    "confidence":90,
-    "reason":"Short explanation."
+    "decision": "CALL"
 }}
+
+The decision MUST be exactly one of:
+
+CALL
+PUT
+WAIT
 """
 
         try:
 
-            response = client.responses.create(
+            response = client.responses.create(model="gpt-5", input=prompt)
 
-                model="gpt-5",
+            result = json.loads(response.output_text)
 
-                input=prompt
+            decision = str(result.get("decision", "WAIT")).upper()
 
-            )
+            if decision not in ["CALL", "PUT", "WAIT"]:
+                decision = "WAIT"
 
-            return json.loads(
-                response.output_text
-            )
+            return {"decision": decision}
 
-        except Exception as e:
+        except Exception:
 
-            return {
-
-                "decision": "WAIT",
-
-                "confidence": 0,
-
-                "reason": str(e)
-
-            }
+            return {"decision": "WAIT"}
