@@ -215,38 +215,48 @@ def analyze_market(current_user: dict = Depends(get_authenticated_user)):
 
     user_id = current_user["id"]
 
-    # ====================================
-    # GET USER'S ACTIVE ASSET
-    # ====================================
+    print()
+    print("========================================")
+    print("ANALYZE MARKET BUTTON REQUEST")
+    print("========================================")
+    print("User ID:", user_id)
 
     asset = active_asset.get(user_id)
 
-    if not asset:
-        return {"action": "WAIT"}
+    print("Active asset:", asset)
 
-    # ====================================
-    # GET CURRENT SIGNAL
-    # ====================================
+    if not asset:
+        print("RESULT: WAIT - NO ACTIVE ASSET")
+        return {"action": "WAIT"}
 
     signal = signal_storage.get(user_id, asset)
 
+    print("Signal found:", signal is not None)
+
     if signal is None:
+        print("RESULT: WAIT - NO SIGNAL")
         return {"action": "WAIT"}
 
-    # ====================================
-    # SEND CURRENT SIGNAL TO OPENAI
-    # ====================================
+    print("Signal asset:", signal.asset)
+    print("Signal action:", signal.action)
+    print("Signal confidence:", signal.confidence)
+
+    print("CALLING OPENAI REVIEWER...")
 
     result = engine.openai.review(signal)
 
+    print("OPENAI RESULT:", result)
+
     decision = str(result.get("decision", "WAIT")).upper()
 
-    # ====================================
-    # RETURN ONLY CALL / PUT / WAIT
-    # ====================================
+    print("OPENAI DECISION:", decision)
 
     if decision not in ["CALL", "PUT", "WAIT"]:
+        print("INVALID DECISION - FORCING WAIT")
         decision = "WAIT"
+
+    print("FINAL BUTTON DECISION:", decision)
+    print("========================================")
 
     return {"action": decision}
 

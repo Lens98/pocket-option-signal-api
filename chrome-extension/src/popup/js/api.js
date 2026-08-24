@@ -231,6 +231,7 @@ export async function getTodayStatistics() {
 
 export async function analyzeMarket() {
 
+    console.log("🔥🔥🔥 NEW ANALYZE CODE VERSION 999 🔥🔥🔥");
     console.log("🧠 REQUESTING MARKET ANALYSIS");
 
     const response = await fetch(
