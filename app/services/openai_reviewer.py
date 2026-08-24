@@ -1,6 +1,5 @@
 import json
 import os
-
 from openai import OpenAI
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -28,7 +27,7 @@ Regime: {signal.regime}
 
 Choose the best decision based on this information.
 
-Return ONLY valid JSON:
+Return ONLY this JSON format:
 
 {{
     "decision": "CALL"
@@ -41,26 +40,30 @@ WAIT
 """
 
         try:
+            print("=== OPENAI REVIEW START ===")
+            print("SIGNAL:", signal)
 
             response = client.responses.create(model="gpt-5", input=prompt)
 
+            raw_response = response.output_text.strip()
+
             print("OPENAI RAW RESPONSE:")
-            print(response.output_text)
+            print(raw_response)
 
-            result = json.loads(response.output_text)
+            result = json.loads(raw_response)
 
-            decision = str(result.get("decision", "WAIT")).upper()
+            decision = str(result.get("decision", "WAIT")).strip().upper()
 
             if decision not in ["CALL", "PUT", "WAIT"]:
+                print("INVALID DECISION:", decision)
                 decision = "WAIT"
 
-            print("OPENAI DECISION:", decision)
+            print("OPENAI FINAL DECISION:", decision)
 
             return {"decision": decision}
 
         except Exception as e:
+            print("=== OPENAI REVIEW ERROR ===")
+            print(repr(e))
 
-            print("OPENAI REVIEW ERROR:")
-            print(str(e))
-
-            return {"decision": "WAIT"}
+            return {"decision": "WAIT", "error": str(e)}
