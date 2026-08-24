@@ -1,5 +1,6 @@
 import json
 import os
+
 from openai import OpenAI
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -10,38 +11,78 @@ class OpenAIReviewer:
     def review(self, signal):
 
         prompt = f"""
-You are an expert trading AI.
+You are an independent trading decision reviewer.
 
-Review the current market signal independently.
+Your job is to analyze the market information below and make a NEW decision.
+
+IMPORTANT:
+Do NOT simply copy the existing signal action.
+The existing automatic signal may be WAIT because it is waiting for
+timing or entry confirmation.
+
+You must independently evaluate the market direction using the
+market analysis data.
+
+MARKET DATA
 
 Asset: {signal.asset}
-Current Action: {signal.action}
+
+Market Bias: {getattr(signal, "bias", None)}
+
 Trend: {signal.trend}
+
 Confidence: {signal.confidence}
+
 Probability: {signal.probability}
-Agreement: {signal.agreement_score}
+
+Agreement Score: {signal.agreement_score}
+
 Pattern: {signal.pattern}
+
 Risk: {signal.risk}
+
 Session: {signal.session}
+
 Regime: {signal.regime}
 
-Choose the best decision based on this information.
+Make an independent decision:
 
-Return ONLY this JSON format:
+- CALL = bullish direction is strongest
+- PUT = bearish direction is strongest
+- WAIT = direction is unclear or evidence is insufficient
+
+Return ONLY valid JSON.
+
+Example:
 
 {{
     "decision": "CALL"
 }}
 
 The decision MUST be exactly one of:
+
 CALL
 PUT
 WAIT
 """
 
         try:
-            print("=== OPENAI REVIEW START ===")
-            print("SIGNAL:", signal)
+
+            print()
+            print("========================================")
+            print("OPENAI INDEPENDENT REVIEW START")
+            print("========================================")
+
+            print("Asset:", signal.asset)
+            print("Bias:", getattr(signal, "bias", None))
+            print("Action:", getattr(signal, "action", None))
+            print("Trend:", signal.trend)
+            print("Confidence:", signal.confidence)
+            print("Probability:", signal.probability)
+            print("Risk:", signal.risk)
+            print("Regime:", signal.regime)
+
+            print("CALLING OPENAI...")
 
             response = client.responses.create(model="gpt-5", input=prompt)
 
@@ -55,15 +96,23 @@ WAIT
             decision = str(result.get("decision", "WAIT")).strip().upper()
 
             if decision not in ["CALL", "PUT", "WAIT"]:
+
                 print("INVALID DECISION:", decision)
+
                 decision = "WAIT"
 
             print("OPENAI FINAL DECISION:", decision)
 
+            print("========================================")
+
             return {"decision": decision}
 
         except Exception as e:
-            print("=== OPENAI REVIEW ERROR ===")
+
+            print()
+            print("========================================")
+            print("OPENAI REVIEW ERROR")
+            print("========================================")
             print(repr(e))
 
             return {"decision": "WAIT", "error": str(e)}
