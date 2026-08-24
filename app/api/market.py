@@ -215,35 +215,40 @@ def analyze_market(current_user: dict = Depends(get_authenticated_user)):
 
     user_id = current_user["id"]
 
-    # Get this user's currently selected asset
+    # ====================================
+    # GET USER'S ACTIVE ASSET
+    # ====================================
+
     asset = active_asset.get(user_id)
 
     if not asset:
         return {"action": "WAIT"}
 
-    # Get this user's live market data
-    market = market_storage.get(user_id, asset)
+    # ====================================
+    # GET CURRENT SIGNAL
+    # ====================================
 
-    if not market or not market.candles:
+    signal = signal_storage.get(user_id, asset)
+
+    if signal is None:
         return {"action": "WAIT"}
 
     # ====================================
-    # ANALYZE USING THE EXISTING ENGINE
+    # SEND CURRENT SIGNAL TO OPENAI
     # ====================================
 
-    result = engine.generate_signal(market, user_id=user_id)
+    result = engine.openai.review(signal)
+
+    decision = str(result.get("decision", "WAIT")).upper()
 
     # ====================================
-    # RETURN ONLY BUY / SELL / WAIT
+    # RETURN ONLY CALL / PUT / WAIT
     # ====================================
 
-    if result.action == "CALL":
-        return {"action": "BUY"}
+    if decision not in ["CALL", "PUT", "WAIT"]:
+        decision = "WAIT"
 
-    if result.action == "PUT":
-        return {"action": "SELL"}
-
-    return {"action": "WAIT"}
+    return {"action": decision}
 
 
 # ========================================
