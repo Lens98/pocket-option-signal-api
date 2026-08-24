@@ -234,7 +234,7 @@ export async function analyzeMarket() {
     console.log("🧠 REQUESTING MARKET ANALYSIS");
 
     const response = await fetch(
-        `${API}/analyze-market`,
+    `${API}/analyze-market`,
         {
             method: "POST",
             headers: {
