@@ -39,10 +39,14 @@ def health():
 def update_market(
     data: MarketUpdate, current_user: dict = Depends(get_authenticated_user)
 ):
-
     user_id = current_user["id"]
 
+    # Set the currently received Pocket Option asset
+    # as this user's active asset
+    active_asset.set(user_id, data.asset)
+
     print()
+
     print("========================================")
     print("NEW MARKET UPDATE")
     print("========================================")
