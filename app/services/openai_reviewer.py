@@ -28,14 +28,13 @@ Regime: {signal.regime}
 
 Choose the best decision based on this information.
 
-Return ONLY valid JSON.
+Return ONLY valid JSON:
 
 {{
     "decision": "CALL"
 }}
 
 The decision MUST be exactly one of:
-
 CALL
 PUT
 WAIT
@@ -45,6 +44,9 @@ WAIT
 
             response = client.responses.create(model="gpt-5", input=prompt)
 
+            print("OPENAI RAW RESPONSE:")
+            print(response.output_text)
+
             result = json.loads(response.output_text)
 
             decision = str(result.get("decision", "WAIT")).upper()
@@ -52,8 +54,13 @@ WAIT
             if decision not in ["CALL", "PUT", "WAIT"]:
                 decision = "WAIT"
 
+            print("OPENAI DECISION:", decision)
+
             return {"decision": decision}
 
-        except Exception:
+        except Exception as e:
+
+            print("OPENAI REVIEW ERROR:")
+            print(str(e))
 
             return {"decision": "WAIT"}
