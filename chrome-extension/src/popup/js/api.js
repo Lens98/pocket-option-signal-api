@@ -231,19 +231,57 @@ export async function getTodayStatistics() {
 
 export async function analyzeMarket() {
 
-    console.log("🔥🔥🔥 NEW ANALYZE CODE VERSION 999 🔥🔥🔥");
     console.log("🧠 REQUESTING MARKET ANALYSIS");
 
+    // ==========================================
+    // CAPTURE POCKET OPTION SCREENSHOT
+    // ==========================================
+
+    console.log("📸 REQUESTING MARKET SCREENSHOT");
+
+    const screenshotResult =
+        await chrome.runtime.sendMessage({
+            type: "CAPTURE_MARKET_SCREENSHOT"
+        });
+
+    if (!screenshotResult?.ok) {
+
+        console.error(
+            "❌ SCREENSHOT CAPTURE FAILED:",
+            screenshotResult?.error
+        );
+
+        throw new Error(
+            screenshotResult?.error ||
+            "Unable to capture market screenshot"
+        );
+    }
+
+    console.log("📸 SCREENSHOT RECEIVED");
+
+    // ==========================================
+    // SEND ANALYSIS REQUEST
+    // ==========================================
+
     const response = await fetch(
-    `${API}/analyze-market`,
+        `${API}/analyze-market`,
         {
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json",
                 ...(await getAuthHeaders())
-            }
+            },
+
+            body: JSON.stringify({
+                screenshot: screenshotResult.screenshot
+            })
         }
     );
+
+    // IMPORTANT:
+    // Remove screenshot from this function immediately.
+    // We are not saving it in Chrome storage.
 
     console.log(
         "🧠 ANALYSIS RESPONSE:",
@@ -251,6 +289,7 @@ export async function analyzeMarket() {
     );
 
     if (!response.ok) {
+
         throw new Error(
             `/analyze-market returned ${response.status}`
         );

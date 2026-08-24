@@ -441,7 +441,66 @@ const response =
             return true;
 
         }
+                 // ========================================
+        // CAPTURE MARKET SCREENSHOT
+        // ========================================
 
+        if (message.type === "CAPTURE_MARKET_SCREENSHOT") {
+
+            try {
+
+                const tabs = await chrome.tabs.query({
+                    active: true,
+                    currentWindow: true
+                });
+
+                const tab = tabs[0];
+
+                if (!tab || !tab.id) {
+
+                    throw new Error(
+                        "No active tab found"
+                    );
+
+                }
+
+                const screenshot =
+                    await chrome.tabs.captureVisibleTab(
+                        tab.windowId,
+                        {
+                            format: "jpeg",
+                            quality: 70
+                        }
+                    );
+
+                console.log(
+                    "📸 MARKET SCREENSHOT CAPTURED"
+                );
+
+                sendResponse({
+                    ok: true,
+                    screenshot
+                });
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "❌ SCREENSHOT CAPTURE FAILED:",
+                    error
+                );
+
+                sendResponse({
+                    ok: false,
+                    error: error.message
+                });
+
+            }
+
+            return true;
+
+        }
         return true;
 
     }

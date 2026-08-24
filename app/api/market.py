@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
 from app.api.auth import get_authenticated_user
 from app.models.market import MarketData
@@ -16,7 +17,12 @@ from app.services.trading_engine import TradingEngine
 
 router = APIRouter()
 
+
 engine = TradingEngine()
+
+
+class AnalyzeMarketRequest(BaseModel):
+    screenshot: str | None = None
 
 
 # ========================================
@@ -215,7 +221,9 @@ def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)
 
 
 @router.post("/analyze-market")
-def analyze_market(current_user: dict = Depends(get_authenticated_user)):
+def analyze_market(
+    data: AnalyzeMarketRequest, current_user: dict = Depends(get_authenticated_user)
+):
 
     user_id = current_user["id"]
 
@@ -230,7 +238,9 @@ def analyze_market(current_user: dict = Depends(get_authenticated_user)):
     print("Active asset:", asset)
 
     if not asset:
+
         print("RESULT: WAIT - NO ACTIVE ASSET")
+
         return {"action": "WAIT"}
 
     signal = signal_storage.get(user_id, asset)
@@ -238,16 +248,47 @@ def analyze_market(current_user: dict = Depends(get_authenticated_user)):
     print("Signal found:", signal is not None)
 
     if signal is None:
+
         print("RESULT: WAIT - NO SIGNAL")
+
         return {"action": "WAIT"}
 
     print("Signal asset:", signal.asset)
     print("Signal action:", signal.action)
     print("Signal confidence:", signal.confidence)
 
+    # ========================================
+    # SCREENSHOT VALIDATION
+    # ========================================
+
+    screenshot = data.screenshot
+
+    if screenshot:
+
+        print("📸 SCREENSHOT RECEIVED")
+
+        # Safety limit: reject extremely large screenshots
+        if len(screenshot) > 8_000_000:
+
+            print("❌ SCREENSHOT TOO LARGE")
+
+            return {"action": "WAIT", "error": "Screenshot too large"}
+
+    else:
+
+        print("⚠️ NO SCREENSHOT RECEIVED")
+
+    # ========================================
+    # OPENAI REVIEW
+    # ========================================
+
     print("CALLING OPENAI REVIEWER...")
 
-    result = engine.openai.review(signal)
+    result = engine.openai.review(signal, screenshot=screenshot)
+
+    # Remove local reference immediately
+    screenshot = None
+    data.screenshot = None
 
     print("OPENAI RESULT:", result)
 
@@ -256,7 +297,9 @@ def analyze_market(current_user: dict = Depends(get_authenticated_user)):
     print("OPENAI DECISION:", decision)
 
     if decision not in ["CALL", "PUT", "WAIT"]:
+
         print("INVALID DECISION - FORCING WAIT")
+
         decision = "WAIT"
 
     print("FINAL BUTTON DECISION:", decision)
