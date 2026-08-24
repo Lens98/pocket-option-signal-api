@@ -231,15 +231,12 @@ export async function getTodayStatistics() {
 
 export async function analyzeMarket() {
 
-    console.log(
-        "🧠 REQUESTING MARKET ANALYSIS"
-    );
+    console.log("🧠 REQUESTING MARKET ANALYSIS");
 
     const response = await fetch(
         `${API}/analyze-market`,
         {
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json",
                 ...(await getAuthHeaders())
@@ -253,18 +250,16 @@ export async function analyzeMarket() {
     );
 
     if (!response.ok) {
-
         throw new Error(
             `/analyze-market returned ${response.status}`
         );
-
     }
 
     const data = await response.json();
 
     console.log(
         "🧠 AI MARKET RESULT:",
-        data.action
+        data
     );
 
     return data;
