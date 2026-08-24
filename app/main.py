@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List, Any
 from app.api.trade import router as trade_router
 from app.api.market import router as market_router
 from app.api.auth import router as auth_router
@@ -40,22 +38,3 @@ def root():
 @app.get("/get-signal", response_model=Signal)
 def get_signal():
     return generate_signal()
-
-
-class MarketAnalysisRequest(BaseModel):
-    asset: str
-    candles: List[Any]
-
-
-@app.post("/analyze-market")
-async def analyze_market(request: MarketAnalysisRequest):
-
-    if not request.candles:
-        return {"action": "WAIT"}
-
-    # AI analysis will be connected here
-    # For now, endpoint receives:
-    # - asset
-    # - live candles
-
-    return {"action": "WAIT"}
