@@ -206,6 +206,47 @@ def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)
 
 
 # ========================================
+# ANALYZE MARKET ON DEMAND
+# ========================================
+
+
+@router.post("/analyze-market")
+def analyze_market(current_user: dict = Depends(get_authenticated_user)):
+
+    user_id = current_user["id"]
+
+    # Get this user's currently selected asset
+    asset = active_asset.get(user_id)
+
+    if not asset:
+        return {"action": "WAIT"}
+
+    # Get this user's live market data
+    market = market_storage.get(user_id, asset)
+
+    if not market or not market.candles:
+        return {"action": "WAIT"}
+
+    # ====================================
+    # ANALYZE USING THE EXISTING ENGINE
+    # ====================================
+
+    result = engine.generate_signal(market, user_id=user_id)
+
+    # ====================================
+    # RETURN ONLY BUY / SELL / WAIT
+    # ====================================
+
+    if result.action == "CALL":
+        return {"action": "BUY"}
+
+    if result.action == "PUT":
+        return {"action": "SELL"}
+
+    return {"action": "WAIT"}
+
+
+# ========================================
 # TRADE STATISTICS
 # ========================================
 

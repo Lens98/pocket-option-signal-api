@@ -1,4 +1,4 @@
-import { getSignal } from "./api.js";
+import { getSignal,analyzeMarket} from "./api.js";
 import { updateGauge } from "./gauge.js";
 import { loadTradeStatistics } from "./statistics.js";
 import { loadTradeHistory } from "./history.js";
@@ -77,11 +77,89 @@ function withTimeout(promise, timeout = 5000) {
 
 }
 
+/* ==========================================
+   ANALYZE MARKET BUTTON
+========================================== */
 
+function initializeAnalyzeMarketButton() {
+
+    const button =
+        document.getElementById(
+            "analyzeMarketButton"
+        );
+
+    if (!button) {
+
+        console.warn(
+            "Analyze Market button not found"
+        );
+
+        return;
+
+    }
+
+    button.addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                // Prevent double clicks
+                button.disabled = true;
+
+                button.textContent =
+                    "ANALYZING...";
+
+                console.log(
+                    "🧠 ANALYZE MARKET CLICKED"
+                );
+
+                const result =
+                    await withTimeout(
+                        analyzeMarket(),
+                        10000
+                    );
+
+                console.log(
+                    "🧠 MARKET ANALYSIS RESULT:",
+                    result
+                );
+
+                // Show ONLY the result
+                button.textContent =
+                    result.action || "WAIT";
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Market analysis error:",
+                    error
+                );
+
+                button.textContent =
+                    "WAIT";
+
+            }
+
+            finally {
+
+                setTimeout(() => {
+
+                    button.disabled = false;
+
+                }, 1000);
+
+            }
+
+        }
+    );
+}
 export async function initializeDashboard() {
 
     console.log("🚀 DASHBOARD INITIALIZING");
-
+    initializeAnalyzeMarketButton();
     try {
 
         initChart();

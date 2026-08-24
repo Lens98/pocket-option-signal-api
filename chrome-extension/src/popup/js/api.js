@@ -225,3 +225,47 @@ export async function getTodayStatistics() {
     return await response.json();
 
 }
+/* ==========================================
+   ANALYZE MARKET
+========================================== */
+
+export async function analyzeMarket() {
+
+    console.log(
+        "🧠 REQUESTING MARKET ANALYSIS"
+    );
+
+    const response = await fetch(
+        `${API}/analyze-market`,
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json",
+                ...(await getAuthHeaders())
+            }
+        }
+    );
+
+    console.log(
+        "🧠 ANALYSIS RESPONSE:",
+        response.status
+    );
+
+    if (!response.ok) {
+
+        throw new Error(
+            `/analyze-market returned ${response.status}`
+        );
+
+    }
+
+    const data = await response.json();
+
+    console.log(
+        "🧠 AI MARKET RESULT:",
+        data.action
+    );
+
+    return data;
+}
