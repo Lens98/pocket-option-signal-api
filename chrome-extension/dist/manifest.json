@@ -11,6 +11,7 @@
   ],
   "host_permissions": [
     "https://pocket-option-signal-api-production.up.railway.app/*",
+    "https://pocketoption.com/*",
     "https://*.pocketoption.com/*"
   ],
   "background": {
@@ -23,6 +24,7 @@
         "assets/injected.js-DcbogQpk.js"
       ],
       "matches": [
+        "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
       ],
       "run_at": "document_start",
@@ -33,6 +35,7 @@
         "assets/content.js-bmIV8U8I.js"
       ],
       "matches": [
+        "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
       ],
       "run_at": "document_start",
@@ -44,7 +47,8 @@
   "web_accessible_resources": [
     {
       "matches": [
-        "https://*.pocketoption.com/*"
+        "https://*.pocketoption.com/*",
+        "https://pocketoption.com/*"
       ],
       "resources": [
         "src/injected.js",

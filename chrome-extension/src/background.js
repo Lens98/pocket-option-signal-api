@@ -453,16 +453,35 @@ const response =
                     active: true,
                     currentWindow: true
                 });
-
                 const tab = tabs[0];
 
                 if (!tab || !tab.id) {
 
-                    throw new Error(
-                        "No active tab found"
-                    );
+                     throw new Error(
+                          "No active tab found"
+                   );
+
+               }
+
+               // ========================================
+               // VERIFY POCKET OPTION PAGE
+               // ========================================
+
+               if (
+                  !tab.url ||
+                  !tab.url.includes("pocketoption.com")
+                ) {
+
+                   throw new Error(
+                        "Please open the Pocket Option trading page before analyzing."
+                   );
 
                 }
+
+                 console.log(
+                  "📸 CAPTURING POCKET OPTION:",
+                   tab.url
+                );
 
                 const screenshot =
                     await chrome.tabs.captureVisibleTab(
