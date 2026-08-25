@@ -65,7 +65,7 @@ function withTimeout(promise, timeout = 30000) {
 
                 reject(
                     new Error(
-                        "Request timeout after 5 seconds"
+                        `Request timeout after ${timeout / 1000} seconds`
                     )
                 );
 
@@ -117,7 +117,7 @@ function initializeAnalyzeMarketButton() {
                 const result =
                     await withTimeout(
                         analyzeMarket(),
-                        10000
+                        30000
                     );
 
                 console.log(
