@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-
+from typing import Optional
 from app.api.auth import get_authenticated_user
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
@@ -218,11 +218,10 @@ def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)
 # ========================================
 # ANALYZE MARKET ON DEMAND
 # ========================================
-
-
 @router.post("/analyze-market")
 def analyze_market(
-    data: AnalyzeMarketRequest, current_user: dict = Depends(get_authenticated_user)
+    data: Optional[AnalyzeMarketRequest] = None,
+    current_user: dict = Depends(get_authenticated_user),
 ):
 
     user_id = current_user["id"]
@@ -261,7 +260,7 @@ def analyze_market(
     # SCREENSHOT VALIDATION
     # ========================================
 
-    screenshot = data.screenshot
+    screenshot = data.screenshot if data else None
 
     if screenshot:
 
@@ -286,9 +285,11 @@ def analyze_market(
 
     result = engine.openai.review(signal, screenshot=screenshot)
 
-    # Remove local reference immediately
+    # Remove local references immediately
     screenshot = None
-    data.screenshot = None
+
+    if data:
+        data.screenshot = None
 
     print("OPENAI RESULT:", result)
 
