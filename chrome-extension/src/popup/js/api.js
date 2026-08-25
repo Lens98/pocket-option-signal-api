@@ -233,9 +233,9 @@ export async function analyzeMarket() {
 
     console.log("🧠 REQUESTING MARKET ANALYSIS");
 
-    // ==========================================
-    // CAPTURE POCKET OPTION SCREENSHOT
-    // ==========================================
+    /* ==========================================
+       CAPTURE POCKET OPTION SCREENSHOT
+    ========================================== */
 
     console.log("📸 REQUESTING MARKET SCREENSHOT");
 
@@ -255,29 +255,40 @@ export async function analyzeMarket() {
             screenshotResult?.error ||
             "Unable to capture market screenshot"
         );
+
     }
 
     console.log("📸 SCREENSHOT RECEIVED");
-    // TEMPORARY: OPEN SCREENSHOT SO WE CAN SEE IT
-    console.log("📸 SCREENSHOT PREVIEW:", screenshotResult.screenshot);
 
-    const screenshotWindow = window.open();
-    screenshotWindow.document.write(`
-       <html>
-            <head>
-                 <title>Captured Market Screenshot</title>
-            </head>
-            <body style="margin:0;background:#111;">
-                 <img
-                    src="${screenshotResult.screenshot}"
-                    style="width:100%;height:auto;"
-                />
-            </body>
-        </html>
-   `);
-    // ==========================================
-    // SEND ANALYSIS REQUEST
-    // ==========================================
+    /* ==========================================
+       SHOW SCREENSHOT INSIDE POPUP
+    ========================================== */
+
+    const previewImage = document.getElementById(
+        "marketScreenshotPreview"
+    );
+
+    const previewContainer = document.getElementById(
+        "screenshotPreviewContainer"
+    );
+
+    if (previewImage && previewContainer) {
+
+        previewImage.src =
+            screenshotResult.screenshot;
+
+        previewContainer.style.display =
+            "block";
+
+        console.log(
+            "📸 SCREENSHOT PREVIEW DISPLAYED"
+        );
+
+    }
+
+    /* ==========================================
+       SEND ANALYSIS REQUEST
+    ========================================== */
 
     const response = await fetch(
         `${API}/analyze-market`,
@@ -295,10 +306,6 @@ export async function analyzeMarket() {
         }
     );
 
-    // IMPORTANT:
-    // Remove screenshot from this function immediately.
-    // We are not saving it in Chrome storage.
-
     console.log(
         "🧠 ANALYSIS RESPONSE:",
         response.status
@@ -309,6 +316,7 @@ export async function analyzeMarket() {
         throw new Error(
             `/analyze-market returned ${response.status}`
         );
+
     }
 
     const data = await response.json();

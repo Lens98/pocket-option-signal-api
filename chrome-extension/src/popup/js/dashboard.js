@@ -53,7 +53,7 @@ async function getExtensionState() {
    FETCH TIMEOUT
 ========================================== */
 
-function withTimeout(promise, timeout = 5000) {
+function withTimeout(promise, timeout = 30000) {
 
     return Promise.race([
 

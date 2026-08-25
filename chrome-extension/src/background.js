@@ -472,7 +472,6 @@ const response =
                             quality: 70
                         }
                     );
-
                 console.log(
                     "📸 MARKET SCREENSHOT CAPTURED"
                 );
