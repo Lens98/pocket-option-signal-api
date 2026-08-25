@@ -326,5 +326,18 @@ export async function analyzeMarket() {
         data
     );
 
+    /* ==========================================
+    HIDE SCREENSHOT PREVIEW AFTER ANALYSIS
+    ========================================== */
+
+    if (previewImage && previewContainer) {
+
+        previewContainer.style.display =
+            "none";
+
+        previewImage.src = "";
+
+    }
+
     return data;
 }
