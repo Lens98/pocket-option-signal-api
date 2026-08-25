@@ -258,7 +258,23 @@ export async function analyzeMarket() {
     }
 
     console.log("📸 SCREENSHOT RECEIVED");
+    // TEMPORARY: OPEN SCREENSHOT SO WE CAN SEE IT
+    console.log("📸 SCREENSHOT PREVIEW:", screenshotResult.screenshot);
 
+    const screenshotWindow = window.open();
+    screenshotWindow.document.write(`
+       <html>
+            <head>
+                 <title>Captured Market Screenshot</title>
+            </head>
+            <body style="margin:0;background:#111;">
+                 <img
+                    src="${screenshotResult.screenshot}"
+                    style="width:100%;height:auto;"
+                />
+            </body>
+        </html>
+   `);
     // ==========================================
     // SEND ANALYSIS REQUEST
     // ==========================================
