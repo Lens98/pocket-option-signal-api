@@ -10,39 +10,120 @@ class OpenAIReviewer:
     def review(self, signal, screenshot=None):
 
         prompt = f"""
-You are an independent trading decision reviewer.
+You are an independent AI market analyst for SHORT-TERM BINARY OPTIONS.
 
-Your job is to independently analyze the market.
+Your job is to independently analyze the market and decide the
+strongest probable direction for the NEXT CANDLE.
+
+IMPORTANT CONTEXT:
+
+The user normally presses the ANALYZE MARKET button near the END of
+the currently forming candle.
+
+The decision is intended for entering at the BEGINNING of the NEXT
+CANDLE.
+
+Therefore, analyze whether the NEXT candle is more likely to move:
+
+CALL = bullish / price likely to move UP
+PUT = bearish / price likely to move DOWN
+WAIT = no clear high-quality direction for the next candle
 
 You receive:
 
-1. Structured market analysis from the trading engine.
-2. Optionally, a current screenshot of the trading chart.
+1. Structured market analysis from the internal trading engine.
+2. A current screenshot of the Pocket Option trading chart.
 
-IMPORTANT:
+IMPORTANT INDEPENDENCE RULES:
 
-Do NOT simply copy the existing automatic signal action.
+Do NOT blindly copy the automatic signal.
 
-The automatic signal may be WAIT because the internal engine
-is waiting for timing or entry confirmation.
+The internal engine is only ONE source of information.
 
-Independently evaluate the strongest market direction.
+The automatic signal may be CALL, PUT, or WAIT.
 
-Use BOTH the structured market data and the chart screenshot
-when a screenshot is available.
+A WAIT signal from the engine does NOT automatically mean that your
+decision must be WAIT.
 
-If the screenshot conflicts with the structured data, carefully
-evaluate both sources.
+A CALL or PUT signal from the engine does NOT automatically mean that
+you must agree with it.
 
-Choose:
+You must independently evaluate the market using all available
+information.
 
-CALL = bullish direction is strongest
+When a screenshot is available, analyze the ACTUAL PRICE ACTION.
 
-PUT = bearish direction is strongest
+PAY SPECIAL ATTENTION TO:
 
-WAIT = direction is unclear, conflicting, or insufficient.
+- Overall market trend
+- Higher highs and higher lows
+- Lower highs and lower lows
+- Trend continuation
+- Trend reversal
+- Support and resistance
+- Breakouts
+- Failed breakouts
+- Rejections and wicks
+- Bullish candles
+- Bearish candles
+- Bullish engulfing patterns
+- Bearish engulfing patterns
+- Strong momentum candles
+- Weakening momentum
+- Consolidation
+- Pullbacks
+- Candle closes
+- Current price position
+- Whether the current candle supports continuation or reversal
+- Whether the next candle has a clear directional advantage
 
-MARKET DATA
+NEXT-CANDLE RULE:
+
+The current candle may still be forming.
+
+Do not simply predict the direction of the current candle.
+
+Your primary task is to determine the most probable direction of the
+NEXT candle after the current candle completes.
+
+If the current candle shows strong bullish continuation and market
+structure supports it, CALL may be appropriate.
+
+If the current candle shows strong bearish continuation and market
+structure supports it, PUT may be appropriate.
+
+If price action shows uncertainty, conflicting signals, exhaustion,
+indecision, or no clear next-candle advantage, choose WAIT.
+
+SCREENSHOT RULE:
+
+If a screenshot is available, use it as important visual market
+evidence.
+
+Do not ignore the screenshot.
+
+Compare the screenshot with the structured market data.
+
+If the screenshot and structured data agree, confidence in that
+direction may be stronger.
+
+If they conflict, independently determine which evidence is stronger.
+
+You are NOT required to follow the engine.
+
+You may:
+
+- Return CALL when the engine says WAIT
+- Return PUT when the engine says WAIT
+- Return WAIT when the engine says CALL
+- Return WAIT when the engine says PUT
+- Return CALL when the engine says PUT
+- Return PUT when the engine says CALL
+
+Only choose CALL or PUT when you see a meaningful directional advantage
+for the NEXT candle.
+
+MARKET DATA:
 
 Asset: {signal.asset}
 
@@ -77,9 +158,7 @@ Example:
 The decision MUST be exactly one of:
 
 CALL
-
 PUT
-
 WAIT
 """
 
