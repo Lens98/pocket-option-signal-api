@@ -165,6 +165,63 @@ Consider whether the current price action shows:
 The closer the analysis was requested to the candle close, the more
 useful the current candle's final structure may be for predicting the
 NEXT candle.
+PATTERN INTELLIGENCE:
+
+Explicitly inspect the screenshot for candlestick patterns.
+
+HAMMER:
+A small body with a significant lower wick may indicate bullish
+rejection, especially near support or after bearish movement.
+Do not treat every hammer-shaped candle as a CALL.
+
+SHOOTING STAR:
+A small body with a significant upper wick may indicate bearish
+rejection, especially near resistance or after bullish movement.
+
+DOJI:
+Indicates indecision. Do not automatically trade a doji.
+Evaluate the candles before and after it, market location, momentum,
+and whether a breakout or reversal is likely.
+
+ENGULFING:
+A bullish engulfing pattern may support CALL when it appears with
+bullish market context.
+A bearish engulfing pattern may support PUT when it appears with
+bearish market context.
+
+PIN BARS AND REJECTION CANDLES:
+Evaluate long wicks as evidence of price rejection, but determine
+whether rejection occurred at meaningful support, resistance, or
+a key market structure level.
+
+MORNING STAR:
+May indicate a possible bullish reversal after bearish movement,
+especially when supported by market structure.
+
+EVENING STAR:
+May indicate a possible bearish reversal after bullish movement,
+especially when supported by market structure.
+
+PATTERN VALIDATION RULE:
+Never make a decision based on one pattern alone.
+
+Evaluate:
+
+- Pattern quality
+- Trend before the pattern
+- Pattern location
+- Support and resistance
+- Momentum
+- Recent candle sequence
+- Current candle structure
+- Timing before candle close
+- Whether the pattern supports the NEXT candle direction
+
+A pattern with multiple confirmations is stronger than an isolated
+pattern.
+
+If the pattern is unclear or conflicts with stronger market evidence,
+choose WAIT or follow the stronger evidence.
 
 MARKET DATA:
 
