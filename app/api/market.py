@@ -274,11 +274,15 @@ def analyze_market(
         if data and data.analysis_requested_at
         else int(time.time() * 1000)
     )
-
     last_candle = market.candles[-1]
 
     last_candle_timestamp = last_candle.timestamp
 
+    # Convert timestamp safely to a number
+    try:
+        last_candle_timestamp = int(float(last_candle_timestamp))
+    except (TypeError, ValueError):
+        last_candle_timestamp = 0
     # Convert milliseconds to seconds if needed
     if last_candle_timestamp > 10_000_000_000:
         last_candle_timestamp = last_candle_timestamp / 1000
