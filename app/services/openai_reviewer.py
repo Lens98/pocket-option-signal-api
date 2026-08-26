@@ -7,7 +7,14 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 class OpenAIReviewer:
 
-    def review(self, signal, screenshot=None):
+    def review(
+        self,
+        signal,
+        screenshot=None,
+        timeframe_seconds=None,
+        seconds_elapsed=None,
+        seconds_remaining=None,
+    ):
 
         prompt = f"""
 You are an independent AI market analyst for SHORT-TERM BINARY OPTIONS.
@@ -122,6 +129,42 @@ You may:
 
 Only choose CALL or PUT when you see a meaningful directional advantage
 for the NEXT candle.
+TIMING CONTEXT:
+
+Candle timeframe in seconds: {timeframe_seconds}
+
+Seconds elapsed in current candle when analysis was requested: {seconds_elapsed}
+
+Seconds remaining before the next candle: {seconds_remaining}
+
+IMPORTANT TIMING RULE:
+
+The screenshot represents the market near the time the user requested
+analysis.
+
+Use the timing information to understand how close the current candle
+was to completion.
+
+The trade decision is intended for the NEXT candle, not the current
+candle.
+
+If there were only a few seconds remaining, focus strongly on the
+likely direction after the current candle closes.
+
+Do not assume the current candle will automatically continue into the
+next candle.
+
+Consider whether the current price action shows:
+
+- continuation likely into the next candle
+- momentum exhaustion
+- rejection near support or resistance
+- a possible reversal
+- uncertainty caused by an unfinished candle
+
+The closer the analysis was requested to the candle close, the more
+useful the current candle's final structure may be for predicting the
+NEXT candle.
 
 MARKET DATA:
 
@@ -178,6 +221,9 @@ WAIT
             print("Probability:", signal.probability)
             print("Risk:", signal.risk)
             print("Regime:", signal.regime)
+            print("Timeframe seconds:", timeframe_seconds)
+            print("Seconds elapsed:", seconds_elapsed)
+            print("Seconds remaining:", seconds_remaining)
 
             if screenshot:
                 print("📸 SCREENSHOT PROVIDED TO OPENAI")

@@ -287,24 +287,51 @@ export async function analyzeMarket() {
     }
 
     /* ==========================================
-       SEND ANALYSIS REQUEST
-    ========================================== */
 
-    const response = await fetch(
-        `${API}/analyze-market`,
-        {
-            method: "POST",
+   SEND ANALYSIS REQUEST
 
-            headers: {
-                "Content-Type": "application/json",
-                ...(await getAuthHeaders())
-            },
+========================================== */
 
-            body: JSON.stringify({
-                screenshot: screenshotResult.screenshot
-            })
-        }
-    );
+const analysisRequestedAt = Date.now();
+
+console.log(
+    "⏱️ ANALYSIS REQUEST TIME:",
+    new Date(analysisRequestedAt).toISOString()
+);
+
+const response = await fetch(
+
+    `${API}/analyze-market`,
+
+    {
+
+        method: "POST",
+
+        headers: {
+
+            "Content-Type": "application/json",
+
+            ...(await getAuthHeaders())
+
+        },
+
+        body: JSON.stringify({
+
+            screenshot: screenshotResult.screenshot,
+
+            analysis_requested_at:
+                analysisRequestedAt,
+
+            analysis_requested_at_iso:
+                new Date(
+                    analysisRequestedAt
+                ).toISOString()
+
+        })
+
+    }
+
+);
 
     console.log(
         "🧠 ANALYSIS RESPONSE:",

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
+import time
 from app.api.auth import get_authenticated_user
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
@@ -22,7 +23,12 @@ engine = TradingEngine()
 
 
 class AnalyzeMarketRequest(BaseModel):
+
     screenshot: str | None = None
+
+    analysis_requested_at: int | None = None
+
+    analysis_requested_at_iso: str | None = None
 
 
 # ========================================
@@ -233,29 +239,75 @@ def analyze_market(
     print("User ID:", user_id)
 
     asset = active_asset.get(user_id)
-
-    print("Active asset:", asset)
-
+    # ========================================
+    # LOAD CURRENT USER MARKET DATA
+    # ========================================
     if not asset:
 
         print("RESULT: WAIT - NO ACTIVE ASSET")
 
         return {"action": "WAIT"}
+    market = market_storage.get(user_id, asset)
+
+    if not market or not market.candles:
+        print("RESULT: WAIT - NO MARKET DATA")
+        return {"action": "WAIT"}
+
+    # ========================================
+    # LOAD CURRENT USER SIGNAL
+    # ========================================
 
     signal = signal_storage.get(user_id, asset)
 
-    print("Signal found:", signal is not None)
-
     if signal is None:
-
         print("RESULT: WAIT - NO SIGNAL")
-
         return {"action": "WAIT"}
 
-    print("Signal asset:", signal.asset)
-    print("Signal action:", signal.action)
-    print("Signal confidence:", signal.confidence)
+    print("Active asset:", asset)
 
+    # ========================================
+    # BINARY OPTIONS TIMING CONTEXT
+    # ========================================
+
+    analysis_requested_at = (
+        data.analysis_requested_at
+        if data and data.analysis_requested_at
+        else int(time.time() * 1000)
+    )
+
+    last_candle = market.candles[-1]
+
+    last_candle_timestamp = last_candle.timestamp
+
+    # Convert milliseconds to seconds if needed
+    if last_candle_timestamp > 10_000_000_000:
+        last_candle_timestamp = last_candle_timestamp / 1000
+
+    button_timestamp = analysis_requested_at / 1000
+
+    timeframe_seconds = int(market.timeframe)
+
+    current_candle_end = last_candle_timestamp + timeframe_seconds
+
+    seconds_remaining = current_candle_end - button_timestamp
+
+    seconds_elapsed = timeframe_seconds - seconds_remaining
+
+    # Safety boundaries
+    seconds_remaining = max(0, min(timeframe_seconds, seconds_remaining))
+
+    seconds_elapsed = max(0, min(timeframe_seconds, seconds_elapsed))
+
+    print()
+    print("========================================")
+    print("BINARY OPTIONS TIMING")
+    print("========================================")
+    print("Timeframe seconds:", timeframe_seconds)
+    print("Last candle timestamp:", last_candle_timestamp)
+    print("Button pressed:", button_timestamp)
+    print("Seconds elapsed:", round(seconds_elapsed, 2))
+    print("Seconds remaining:", round(seconds_remaining, 2))
+    print("========================================")
     # ========================================
     # SCREENSHOT VALIDATION
     # ========================================
@@ -283,7 +335,13 @@ def analyze_market(
 
     print("CALLING OPENAI REVIEWER...")
 
-    result = engine.openai.review(signal, screenshot=screenshot)
+    result = engine.openai.review(
+        signal,
+        screenshot=screenshot,
+        timeframe_seconds=timeframe_seconds,
+        seconds_elapsed=seconds_elapsed,
+        seconds_remaining=seconds_remaining,
+    )
 
     # Remove local references immediately
     screenshot = None
