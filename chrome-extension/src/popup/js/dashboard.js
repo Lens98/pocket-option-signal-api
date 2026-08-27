@@ -12,6 +12,63 @@ import {
     updateSignal,
     updateConnectionStatus
 } from "./signal.js";
+/* ==========================================
+   TRADE SOUND ALERT
+========================================== */
+
+let lastAlertSignalKey = null;
+
+function playTradeAlert(signal) {
+
+    const action =
+        String(
+            signal?.action ||
+            signal?.decision ||
+            ""
+        ).toUpperCase();
+
+    // No sound for WAIT
+    if (
+        action !== "CALL" &&
+        action !== "PUT"
+    ) {
+        return;
+    }
+
+    // Create a unique key for this signal
+    const signalKey =
+        `${signal?.asset || "unknown"}-${action}-${signal?.trade_id || signal?.id || signal?.timestamp || ""}`;
+
+    // Prevent repeating the same alert
+    if (signalKey === lastAlertSignalKey) {
+        return;
+    }
+
+    lastAlertSignalKey = signalKey;
+
+    console.log(
+        "🔊 TRADE ALERT:",
+        action
+    );
+
+    const soundFile =
+    action === "CALL"
+        ? "sounds/call-alert.mp3"
+        : "sounds/put-alert.mp3";
+
+    const audio =
+        new Audio(
+        chrome.runtime.getURL(soundFile)
+    );
+
+    audio.play()
+        .catch(error => {
+            console.error(
+                "Trade sound error:",
+                error
+            );
+        });
+}
 
 
 /* ==========================================
@@ -124,6 +181,8 @@ function initializeAnalyzeMarketButton() {
                     "🧠 MARKET ANALYSIS RESULT:",
                     result
                 );
+                // Play sound for CALL or PUT
+                playTradeAlert(result);
 
                 // Show ONLY the result
                 button.textContent =
@@ -305,7 +364,6 @@ async function refreshDashboard() {
     // ======================================
 
     window.latestSignal = signal;
-
     window.marketTimeframe =
         Number(signal?.timeframe) || 60;
 
