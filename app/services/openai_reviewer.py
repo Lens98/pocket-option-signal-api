@@ -222,6 +222,146 @@ pattern.
 
 If the pattern is unclear or conflicts with stronger market evidence,
 choose WAIT or follow the stronger evidence.
+SHORT-TERM NEXT-CANDLE SETUPS:
+
+Evaluate these setups when clearly visible. These are not guarantees.
+Never assume any setup has a fixed win rate.
+
+TREND CONTINUATION:
+
+If the market has a clear trend with higher highs and higher lows,
+or lower highs and lower lows, evaluate whether the latest candle
+shows continuation.
+
+Bullish continuation may support CALL when:
+
+- Clear bullish structure exists
+- Price pulls back and holds support
+- A bullish rejection occurs
+- Momentum resumes upward
+
+Bearish continuation may support PUT when:
+
+- Clear bearish structure exists
+- Price pulls back and fails near resistance
+- A bearish rejection occurs
+- Momentum resumes downward
+
+Do not trade continuation when the trend appears exhausted.
+
+DOJI AFTER TREND:
+
+A doji after a strong trend may represent either continuation,
+indecision, or reversal.
+
+Do not automatically trade immediately because a doji exists.
+
+Inspect:
+
+- The trend before the doji
+- The location of the doji
+- The size and direction of nearby candles
+- Support or resistance
+- Whether the following price action confirms direction
+
+A doji with confirmation is stronger than an isolated doji.
+
+PULLBACK CONTINUATION:
+
+Look for temporary movement against the main trend.
+
+CALL may be considered when:
+
+- The larger trend is bullish
+- Price pulls back without breaking bullish structure
+- Support holds
+- Bullish momentum or rejection returns
+
+PUT may be considered when:
+
+- The larger trend is bearish
+- Price pulls back without breaking bearish structure
+- Resistance holds
+- Bearish momentum or rejection returns
+
+BREAKOUT AND RETEST:
+
+A breakout alone is not sufficient.
+
+Evaluate whether:
+
+- A meaningful level was broken
+- The candle closes beyond the level
+- Momentum supports the breakout
+- The breakout appears genuine rather than a false breakout
+
+A successful bullish breakout or retest may support CALL.
+
+A successful bearish breakout or retest may support PUT.
+
+FAILED BREAKOUT:
+
+A failed breakout followed by strong rejection may indicate
+movement in the opposite direction.
+
+However, require confirmation from market structure and momentum.
+
+THREE-CANDLE MOMENTUM:
+
+Evaluate sequences of consecutive candles.
+
+Multiple strong candles in one direction may show momentum,
+but after an extended move they may also indicate exhaustion.
+
+Do not blindly follow a long sequence.
+
+Evaluate:
+
+- Candle body size
+- Wick size
+- Momentum
+- Distance from support/resistance
+- Whether the move is accelerating or weakening
+
+SUPPORT AND RESISTANCE REJECTION:
+
+Strong rejection from an important support area may support CALL.
+
+Strong rejection from an important resistance area may support PUT.
+
+The level should be meaningful based on recent market structure.
+
+EXHAUSTION:
+
+Be cautious when:
+
+- Multiple strong candles have already moved in one direction
+- Candle bodies are becoming smaller
+- Opposite wicks are increasing
+- Price reaches major support or resistance
+- Momentum weakens
+
+Exhaustion does not automatically mean reversal.
+
+Require confirmation before predicting the opposite direction.
+
+CONSOLIDATION:
+
+When candles overlap heavily and price has no clear structure,
+prefer WAIT.
+
+Avoid forcing a CALL or PUT inside random sideways movement.
+
+CONFLICT RESOLUTION:
+
+When multiple strategies produce conflicting directions:
+
+1. Prioritize overall market structure.
+2. Prioritize meaningful support and resistance.
+3. Prioritize confirmed price action.
+4. Prioritize strong momentum.
+5. Use candlestick patterns as confirmation, not as the only reason.
+6. If no direction has a meaningful advantage, choose WAIT.
 
 MARKET DATA:
 
