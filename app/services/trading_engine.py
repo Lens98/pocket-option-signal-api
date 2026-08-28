@@ -541,10 +541,20 @@ class TradingEngine:
         # Save Market Regime
         # ----------------------------------------
 
+        # ----------------------------------------
+        # Save Market Context
+        # ----------------------------------------
+
         signal.reasons.extend(regime.reasons)
 
-        # Only if Signal has a regime field
+        # Market regime
         signal.regime = regime.regime
+
+        # Trading session
+        signal.session = self.session.detect()
+
+        # Indicator mode
+        signal.indicator_mode = getattr(indicator_result, "mode", "UNKNOWN")
 
         # ----------------------------------------
         # AI Confidence Engine
