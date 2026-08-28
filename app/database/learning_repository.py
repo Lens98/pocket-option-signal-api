@@ -1,20 +1,31 @@
+import os
 import json
 import sqlite3
 import threading
+from pathlib import Path
 
 from app.models.trade_learning import TradeLearning
 
 
 class LearningRepository:
 
-
     def __init__(self):
 
-        self.connection = sqlite3.connect(
-            "trades.db",
-            check_same_thread=False,
-            timeout=30
-        )
+        volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+
+        if volume_path:
+            db_path = Path(volume_path) / "trades.db"
+        else:
+            base = Path(__file__).resolve().parent.parent
+            db_path = base / "trades.db"
+
+        self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=30)
+
+        self.connection.row_factory = sqlite3.Row
+
+        self.lock = threading.Lock()
+
+        self.create_table()
 
         self.connection.row_factory = sqlite3.Row
 
@@ -23,8 +34,6 @@ class LearningRepository:
 
         self.create_table()
 
-
-
     # ========================================
     # New Cursor
     # ========================================
@@ -32,6 +41,7 @@ class LearningRepository:
     def _cursor(self):
 
         return self.connection.cursor()
+
     # ========================================
     # Create Table
     # ========================================
@@ -125,11 +135,12 @@ atr_used INTEGER,
 
     def add(self, record: TradeLearning):
 
-     with self.lock:
+        with self.lock:
 
-        cursor = self._cursor()
+            cursor = self._cursor()
 
-        cursor.execute("""
+            cursor.execute(
+                """
 
         INSERT OR REPLACE INTO learning (
 
@@ -208,60 +219,47 @@ atr_used,
 
 )
 
-        """, (
+        """,
+                (
+                    record.trade_id,
+                    record.asset,
+                    record.timeframe,
+                    record.session,
+                    record.action,
+                    record.indicator_mode,
+                    record.regime,
+                    record.trend,
+                    record.confidence,
+                    record.probability,
+                    record.risk,
+                    record.grade,
+                    record.ema20,
+                    record.ema50,
+                    record.ema200,
+                    record.rsi,
+                    record.macd,
+                    record.signal_line,
+                    record.histogram,
+                    record.adx,
+                    record.atr,
+                    int(record.ema_used),
+                    int(record.rsi_used),
+                    int(record.macd_used),
+                    int(record.adx_used),
+                    int(record.atr_used),
+                    record.entry_price,
+                    record.exit_price,
+                    record.payout,
+                    record.profit,
+                    record.result,
+                    record.entry_time.isoformat(),
+                    record.exit_time.isoformat(),
+                    record.duration,
+                    json.dumps(record.reasons),
+                ),
+            )
 
-            record.trade_id,
-            record.asset,
-            record.timeframe,
-            record.session,
-            record.action,
-
-            record.indicator_mode,
-            record.regime,
-            record.trend,
-            record.confidence,
-            record.probability,
-
-            record.risk,
-            record.grade,
-
-            record.ema20,
-            record.ema50,
-            record.ema200,
-
-            record.rsi,
-
-            record.macd,
-            record.signal_line,
-            record.histogram,
-
-            record.adx,
-record.atr,
-
-int(record.ema_used),
-int(record.rsi_used),
-int(record.macd_used),
-int(record.adx_used),
-int(record.atr_used),
-
-record.entry_price,
-record.exit_price,
-
-            record.payout,
-            record.profit,
-
-            record.result,
-
-            record.entry_time.isoformat(),
-            record.exit_time.isoformat(),
-
-            record.duration,
-
-            json.dumps(record.reasons)
-
-        ))
-
-        self.connection.commit()
+            self.connection.commit()
 
     # ========================================
     # Get All
@@ -271,11 +269,7 @@ record.exit_price,
 
         cursor = self._cursor()
 
-        return cursor.execute(
-
-            "SELECT * FROM learning"
-
-        ).fetchall()
+        return cursor.execute("SELECT * FROM learning").fetchall()
 
     # ========================================
     # Find Asset
@@ -286,11 +280,7 @@ record.exit_price,
         cursor = self._cursor()
 
         return cursor.execute(
-
-            "SELECT * FROM learning WHERE asset=?",
-
-            (asset,)
-
+            "SELECT * FROM learning WHERE asset=?", (asset,)
         ).fetchall()
 
     # ========================================
@@ -302,11 +292,7 @@ record.exit_price,
         cursor = self._cursor()
 
         return cursor.execute(
-
-            "SELECT * FROM learning WHERE regime=?",
-
-            (regime,)
-
+            "SELECT * FROM learning WHERE regime=?", (regime,)
         ).fetchall()
 
     # ========================================
@@ -318,11 +304,7 @@ record.exit_price,
         cursor = self._cursor()
 
         return cursor.execute(
-
-            "SELECT * FROM learning WHERE session=?",
-
-            (session,)
-
+            "SELECT * FROM learning WHERE session=?", (session,)
         ).fetchall()
 
     # ========================================
@@ -333,11 +315,7 @@ record.exit_price,
 
         cursor = self._cursor()
 
-        return cursor.execute(
-
-            "SELECT COUNT(*) FROM learning"
-
-        ).fetchone()[0]
+        return cursor.execute("SELECT COUNT(*) FROM learning").fetchone()[0]
 
     # ========================================
     # Asset Statistics
@@ -345,11 +323,12 @@ record.exit_price,
 
     def asset_stats(self, asset):
 
-     with self.lock:
+        with self.lock:
 
-        cursor = self._cursor()
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute(
+                """
 
             SELECT
 
@@ -381,7 +360,9 @@ record.exit_price,
 
             WHERE asset=?
 
-        """, (asset,)).fetchone()
+        """,
+                (asset,),
+            ).fetchone()
 
     # ========================================
     # Regime Statistics
@@ -389,11 +370,12 @@ record.exit_price,
 
     def regime_stats(self, regime):
 
-     with self.lock:
+        with self.lock:
 
-        cursor = self._cursor()
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute(
+                """
 
             SELECT
 
@@ -425,18 +407,21 @@ record.exit_price,
 
             WHERE regime=?
 
-        """, (regime,)).fetchone()
+        """,
+                (regime,),
+            ).fetchone()
 
     # ========================================
     # Session Statistics
     # ========================================
 
     def session_stats(self, session):
-      with self.lock:
+        with self.lock:
 
-        cursor = self._cursor()
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute(
+                """
 
             SELECT
 
@@ -468,17 +453,20 @@ record.exit_price,
 
             WHERE session=?
 
-        """, (session,)).fetchone()
+        """,
+                (session,),
+            ).fetchone()
 
     # ========================================
     # Confidence Statistics
     # ========================================
 
     def confidence_stats(self, minimum):
-      with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute(
+                """
 
             SELECT
 
@@ -510,7 +498,9 @@ record.exit_price,
 
             WHERE confidence>=?
 
-        """, (minimum,)).fetchone()
+        """,
+                (minimum,),
+            ).fetchone()
 
     # ========================================
     # Indicator Mode Statistics
@@ -518,11 +508,12 @@ record.exit_price,
 
     def mode_stats(self, mode):
 
-     with self.lock:
+        with self.lock:
 
-        cursor = self._cursor()
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute(
+                """
 
             SELECT
 
@@ -545,17 +536,19 @@ record.exit_price,
 
             WHERE indicator_mode=?
 
-        """, (mode,)).fetchone()
+        """,
+                (mode,),
+            ).fetchone()
 
     # ========================================
     # Overall Statistics
     # ========================================
 
     def overall_stats(self):
-      with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute("""
 
             SELECT
 
@@ -592,10 +585,11 @@ record.exit_price,
     # ========================================
 
     def recent_stats(self, limit=50):
-     with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute(
+                """
 
             SELECT
 
@@ -633,16 +627,19 @@ record.exit_price,
 
             )
 
-        """, (limit,)).fetchone()
-        # ========================================
+        """,
+                (limit,),
+            ).fetchone()
+            # ========================================
+
     # EMA Statistics
     # ========================================
 
     def ema_stats(self):
-      with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute("""
 
             SELECT
 
@@ -679,10 +676,10 @@ record.exit_price,
     # ========================================
 
     def rsi_stats(self):
-      with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute("""
 
             SELECT
 
@@ -719,10 +716,10 @@ record.exit_price,
     # ========================================
 
     def macd_stats(self):
-     with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute("""
 
             SELECT
 
@@ -759,10 +756,10 @@ record.exit_price,
     # ========================================
 
     def adx_stats(self):
-     with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute("""
 
             SELECT
 
@@ -799,10 +796,10 @@ record.exit_price,
     # ========================================
 
     def atr_stats(self):
-     with self.lock:
-        cursor = self._cursor()
+        with self.lock:
+            cursor = self._cursor()
 
-        return cursor.execute("""
+            return cursor.execute("""
 
             SELECT
 
