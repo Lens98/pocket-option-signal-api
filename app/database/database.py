@@ -37,19 +37,32 @@ class Database:
             CREATE TABLE IF NOT EXISTS trades (
 
                 id TEXT PRIMARY KEY,
+
                 user_id TEXT,
+
                 asset TEXT,
+
                 timeframe TEXT,
 
                 action TEXT,
 
                 confidence REAL,
 
+                probability REAL DEFAULT 0.0,
+
+                agreement_score REAL DEFAULT 0.0,
+
                 grade TEXT,
 
                 risk TEXT,
 
                 trend TEXT,
+
+                regime TEXT DEFAULT 'UNKNOWN',
+
+                session TEXT DEFAULT 'UNKNOWN',
+
+                indicator_mode TEXT DEFAULT 'UNKNOWN',
 
                 entry_price REAL,
 
@@ -69,12 +82,14 @@ class Database:
 
                 payout REAL,
 
-                reasons TEXT
+                reasons TEXT,
 
-            )
-            """)
+                pattern TEXT DEFAULT ''
+
+             )
+        """)
         # ----------------------------------------
-        # Add user_id to existing trades table
+        # Migrate existing trades table safely
         # ----------------------------------------
 
         columns = {
@@ -82,9 +97,25 @@ class Database:
             for row in cursor.execute("PRAGMA table_info(trades)").fetchall()
         }
 
-        if "user_id" not in columns:
+        migrations = {
+            "user_id": "TEXT",
+            "probability": "REAL DEFAULT 0.0",
+            "agreement_score": "REAL DEFAULT 0.0",
+            "regime": "TEXT DEFAULT 'UNKNOWN'",
+            "session": "TEXT DEFAULT 'UNKNOWN'",
+            "indicator_mode": "TEXT DEFAULT 'UNKNOWN'",
+            "pattern": "TEXT DEFAULT ''",
+        }
 
-            cursor.execute("ALTER TABLE trades ADD COLUMN user_id TEXT")
+        for column, definition in migrations.items():
+
+            if column not in columns:
+
+                print(f"Database migration: adding trades.{column}")
+
+                cursor.execute(
+                    f"ALTER TABLE trades " f"ADD COLUMN {column} {definition}"
+                )
 
         # ----------------------------------------
         # Users table - NEW
