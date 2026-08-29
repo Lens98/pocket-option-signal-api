@@ -51,6 +51,125 @@ class PerformanceAnalyzer:
             query,
             tuple(params),
         )
+        # ========================================
+
+    # GET CONTEXT-RICH LEARNING TRADES
+    # ========================================
+
+    def get_context_trades(self, user_id=None):
+
+        query = """
+            SELECT
+                id,
+                user_id,
+                asset,
+                action,
+                confidence,
+                probability,
+                agreement_score,
+                session,
+                regime,
+                indicator_mode,
+                pattern,
+                grade,
+                risk,
+                trend,
+                status,
+                result,
+                entry_time
+            FROM trades
+            WHERE status = 'CLOSED'
+              AND result IN ('WIN', 'LOSS')
+              AND session IS NOT NULL
+              AND session != ''
+              AND session != 'UNKNOWN'
+              AND regime IS NOT NULL
+              AND regime != ''
+              AND regime != 'UNKNOWN'
+              AND indicator_mode IS NOT NULL
+              AND indicator_mode != ''
+              AND indicator_mode != 'UNKNOWN'
+        """
+
+        params = []
+
+        if user_id is not None:
+            query += """
+                AND user_id = ?
+            """
+            params.append(user_id)
+
+        query += """
+            ORDER BY entry_time DESC
+        """
+
+        return database.fetch_all(
+            query,
+            tuple(params),
+        )
+        # ========================================
+
+    # CONTEXT-ONLY GROUP PERFORMANCE
+    # ========================================
+
+    def context_group_by(self, field, user_id=None):
+
+        trades = self.get_context_trades(user_id)
+
+        groups = defaultdict(list)
+
+        for trade in trades:
+
+            value = trade[field]
+
+            if value is None or value == "":
+                value = "UNKNOWN"
+
+            groups[value].append(trade)
+
+        results = {}
+
+        for value, group_trades in groups.items():
+
+            results[value] = self.calculate_statistics(group_trades)
+
+        return results
+
+    # ========================================
+    # CONTEXT-ONLY PERFORMANCE REPORT
+    # ========================================
+
+    def context_report(self, user_id=None):
+
+        trades = self.get_context_trades(user_id)
+
+        return {
+            "overall": self.calculate_statistics(trades),
+            "by_asset": self.context_group_by(
+                "asset",
+                user_id,
+            ),
+            "by_action": self.context_group_by(
+                "action",
+                user_id,
+            ),
+            "by_session": self.context_group_by(
+                "session",
+                user_id,
+            ),
+            "by_regime": self.context_group_by(
+                "regime",
+                user_id,
+            ),
+            "by_indicator_mode": self.context_group_by(
+                "indicator_mode",
+                user_id,
+            ),
+            "by_pattern": self.context_group_by(
+                "pattern",
+                user_id,
+            ),
+        }
 
     # ========================================
     # CALCULATE STATISTICS
