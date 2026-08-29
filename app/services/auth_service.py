@@ -6,27 +6,20 @@ from datetime import datetime, timedelta, timezone
 
 from app.database.database import database
 
-
 # ==========================================
 # PASSWORD HASHING
 # ==========================================
+
 
 def hash_password(password: str) -> str:
 
     salt = secrets.token_bytes(32)
 
     password_hash = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode("utf-8"),
-        salt,
-        600_000
+        "sha256", password.encode("utf-8"), salt, 600_000
     )
 
-    return (
-        salt.hex()
-        + ":"
-        + password_hash.hex()
-    )
+    return salt.hex() + ":" + password_hash.hex()
 
 
 def verify_password(password: str, stored_hash: str) -> bool:
@@ -40,16 +33,10 @@ def verify_password(password: str, stored_hash: str) -> bool:
         expected_hash = bytes.fromhex(hash_hex)
 
         actual_hash = hashlib.pbkdf2_hmac(
-            "sha256",
-            password.encode("utf-8"),
-            salt,
-            600_000
+            "sha256", password.encode("utf-8"), salt, 600_000
         )
 
-        return secrets.compare_digest(
-            actual_hash,
-            expected_hash
-        )
+        return secrets.compare_digest(actual_hash, expected_hash)
 
     except (ValueError, TypeError):
 
@@ -60,10 +47,8 @@ def verify_password(password: str, stored_hash: str) -> bool:
 # CREATE USER
 # ==========================================
 
-def create_user(
-    email: str,
-    password: str
-):
+
+def create_user(email: str, password: str):
 
     email = email.strip().lower()
 
@@ -73,22 +58,18 @@ def create_user(
         FROM users
         WHERE email = ?
         """,
-        (email,)
+        (email,),
     )
 
     if existing_user:
 
-        raise ValueError(
-            "An account with this email already exists."
-        )
+        raise ValueError("An account with this email already exists.")
 
     user_id = str(uuid.uuid4())
 
     password_hash = hash_password(password)
 
-    created_at = datetime.now(
-        timezone.utc
-    ).isoformat()
+    created_at = datetime.now(timezone.utc).isoformat()
 
     database.execute(
         """
@@ -100,29 +81,18 @@ def create_user(
         )
         VALUES (?, ?, ?, ?)
         """,
-        (
-            user_id,
-            email,
-            password_hash,
-            created_at
-        )
+        (user_id, email, password_hash, created_at),
     )
 
-    return {
-        "id": user_id,
-        "email": email,
-        "created_at": created_at
-    }
+    return {"id": user_id, "email": email, "created_at": created_at}
 
 
 # ==========================================
 # LOGIN
 # ==========================================
 
-def authenticate_user(
-    email: str,
-    password: str
-):
+
+def authenticate_user(email: str, password: str):
 
     email = email.strip().lower()
 
@@ -136,17 +106,14 @@ def authenticate_user(
         FROM users
         WHERE email = ?
         """,
-        (email,)
+        (email,),
     )
 
     if not user:
 
         return None
 
-    if not verify_password(
-        password,
-        user["password_hash"]
-    ):
+    if not verify_password(password, user["password_hash"]):
 
         return None
 
@@ -157,17 +124,14 @@ def authenticate_user(
 # CREATE SESSION
 # ==========================================
 
+
 def create_session(user_id: str):
 
     token = secrets.token_urlsafe(64)
 
-    created_at = datetime.now(
-        timezone.utc
-    )
+    created_at = datetime.now(timezone.utc)
 
-    expires_at = created_at + timedelta(
-        days=30
-    )
+    expires_at = created_at + timedelta(days=30)
 
     database.execute(
         """
@@ -179,12 +143,7 @@ def create_session(user_id: str):
         )
         VALUES (?, ?, ?, ?)
         """,
-        (
-            token,
-            user_id,
-            created_at.isoformat(),
-            expires_at.isoformat()
-        )
+        (token, user_id, created_at.isoformat(), expires_at.isoformat()),
     )
 
     return token, expires_at
@@ -194,10 +153,10 @@ def create_session(user_id: str):
 # GET USER FROM SESSION
 # ==========================================
 
+
 def get_user_from_token(token: str):
 
     if not token:
-
         return None
 
     session = database.fetch_one(
@@ -215,20 +174,27 @@ def get_user_from_token(token: str):
 
         WHERE sessions.token = ?
         """,
-        (token,)
+        (token,),
     )
 
     if not session:
-
         return None
 
     try:
 
-        expires_at = datetime.fromisoformat(
-            session["expires_at"]
-        )
+        expires_at_value = session["expires_at"]
 
-    except ValueError:
+        if not expires_at_value:
+            return None
+
+        expires_at = datetime.fromisoformat(expires_at_value)
+
+        # Support old timezone-naive session timestamps
+        if expires_at.tzinfo is None:
+
+            expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+    except (ValueError, TypeError):
 
         return None
 
@@ -241,7 +207,7 @@ def get_user_from_token(token: str):
             DELETE FROM sessions
             WHERE token = ?
             """,
-            (token,)
+            (token,),
         )
 
         return None
@@ -249,13 +215,14 @@ def get_user_from_token(token: str):
     return {
         "id": session["id"],
         "email": session["email"],
-        "created_at": session["created_at"]
+        "created_at": session["created_at"],
     }
 
 
 # ==========================================
 # LOGOUT
 # ==========================================
+
 
 def delete_session(token: str):
 
@@ -264,5 +231,5 @@ def delete_session(token: str):
         DELETE FROM sessions
         WHERE token = ?
         """,
-        (token,)
+        (token,),
     )
