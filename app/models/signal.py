@@ -9,14 +9,24 @@ class Signal(BaseModel):
     # ========================================
     # Market Information
     # ========================================
+
     instruction: str = ""
     reason: str = ""
 
     asset: str
-
     timeframe: str
 
+    # ========================================
+    # Saved Trade Context
+    # ========================================
+
     session: str = "UNKNOWN"
+    regime: str = "UNKNOWN"
+    indicator_mode: str = "UNKNOWN"
+    pattern: str = ""
+
+    probability: float = 0.0
+    agreement_score: float = 0.0
 
     # ========================================
     # Market Direction
@@ -36,13 +46,7 @@ class Signal(BaseModel):
     # ========================================
 
     confidence: float
-
-    probability: float = 0.0
-
     trend: str
-
-    regime: str = "UNKNOWN"
-
     expiration: str
 
     # ========================================
@@ -50,7 +54,6 @@ class Signal(BaseModel):
     # ========================================
 
     entry_price: float
-
     timestamp: Optional[datetime] = None
 
     # ========================================
@@ -58,7 +61,6 @@ class Signal(BaseModel):
     # ========================================
 
     risk: str
-
     grade: str = "N/A"
 
     # ========================================
