@@ -15,6 +15,7 @@ from app.services.probability_engine import ProbabilityEngine
 from app.timeframe.builder import TimeframeBuilder
 from app.timeframe.trend import TrendAnalyzer
 from app.timeframe.filter import MultiTimeframeFilter
+from app.services.performance_learning import PerformanceLearning
 from app.services.session_detector import SessionDetector
 from app.storage.shared import trade_storage
 from app.services.signal_lock import user_signal_lock_manager
@@ -63,6 +64,7 @@ class TradingEngine:
         self.session = SessionDetector()
         self.signal_lock = None
         self.learning = LearningAnalyzer()
+        self.performance_learning = PerformanceLearning()
         self.candle_strategy = CandleStrategy()
         self.openai = OpenAIReviewer()
         # ----------------------------------------
@@ -555,6 +557,12 @@ class TradingEngine:
 
         # Indicator mode
         signal.indicator_mode = getattr(indicator_result, "mode", "UNKNOWN")
+        # ----------------------------------------
+        # Prepare Learning Context
+        # ----------------------------------------
+
+        signal.asset = market.asset
+        signal.timeframe = market.timeframe
 
         # ----------------------------------------
         # AI Confidence Engine
@@ -584,6 +592,21 @@ class TradingEngine:
 
         signal.confidence = max(0.0, min(float(signal.confidence), 100.0))
 
+        # ----------------------------------------
+        # Performance Learning
+        # ----------------------------------------
+
+        learning_result = self.performance_learning.apply_learning(
+            signal.confidence,
+            asset=signal.asset,
+            action=signal.action,
+            session=signal.session,
+            regime=signal.regime,
+            indicator_mode=signal.indicator_mode,
+        )
+
+        signal.confidence = learning_result["final_confidence"]
+
         max_confidence = 100
 
         print("----------------------------------------")
@@ -592,6 +615,20 @@ class TradingEngine:
         print("Mode       :", indicator_result.mode)
         print("Confidence :", signal.confidence)
         print("Cap        :", max_confidence)
+        print("----------------------------------------")
+
+        print("----------------------------------------")
+        print("Performance Learning")
+        print("----------------------------------------")
+        print("Adjustment :", learning_result["learning_adjustment"])
+        print(
+            "Reason     :",
+            learning_result["learning_report"]["learning"]["reason"],
+        )
+        print(
+            "Reliable   :",
+            learning_result["learning_report"]["learning"]["reliable"],
+        )
         print("----------------------------------------")
 
         # ----------------------------------------
