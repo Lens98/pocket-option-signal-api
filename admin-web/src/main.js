@@ -3,16 +3,24 @@ const API =
 
 const app = document.getElementById("app");
 
+
+// ==========================================
+// LOGIN SCREEN
+// ==========================================
+
 function showLogin() {
     app.innerHTML = `
         <div class="login-page">
+
             <div class="login-card">
 
                 <div class="login-logo">
                     🤖
                 </div>
 
-                <h1>Pocket Option AI PRO</h1>
+                <h1>
+                    Pocket Option AI PRO
+                </h1>
 
                 <p class="login-subtitle">
                     Administrator Portal
@@ -57,6 +65,7 @@ function showLogin() {
                 </form>
 
             </div>
+
         </div>
     `;
 
@@ -64,6 +73,11 @@ function showLogin() {
         .getElementById("loginForm")
         .addEventListener("submit", login);
 }
+
+
+// ==========================================
+// LOGIN
+// ==========================================
 
 async function login(event) {
     event.preventDefault();
@@ -86,13 +100,16 @@ async function login(event) {
     button.textContent = "LOGGING IN...";
 
     try {
+
         const response = await fetch(
             `${API}/auth/login`,
             {
                 method: "POST",
+
                 headers: {
                     "Content-Type": "application/json"
                 },
+
                 body: JSON.stringify({
                     email,
                     password
@@ -117,16 +134,16 @@ async function login(event) {
             );
         }
 
-        /*
-         * IMPORTANT:
-         * Login alone does NOT grant admin access.
-         * We verify the user's role through Railway.
-         */
+
+        // ==========================================
+        // VERIFY ADMIN ACCESS
+        // ==========================================
 
         const adminResponse = await fetch(
             `${API}/auth/admin/test`,
             {
                 method: "GET",
+
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -136,18 +153,19 @@ async function login(event) {
         const adminData =
             await adminResponse.json();
 
-        if (!adminResponse.ok ||
-            adminData.success !== true) {
-
+        if (
+            !adminResponse.ok ||
+            adminData.success !== true
+        ) {
             throw new Error(
                 "Admin access required."
             );
         }
 
-        /*
-         * Only save the session after
-         * admin authorization succeeds.
-         */
+
+        // ==========================================
+        // SAVE ADMIN SESSION
+        // ==========================================
 
         localStorage.setItem(
             "adminToken",
@@ -159,7 +177,12 @@ async function login(event) {
             JSON.stringify(user)
         );
 
+
+        // Show dashboard
         showDashboard(user);
+
+        // Load real statistics
+        loadStats();
 
     } catch (err) {
 
@@ -177,13 +200,20 @@ async function login(event) {
     }
 }
 
+
+// ==========================================
+// ADMIN DASHBOARD
+// ==========================================
+
 function showDashboard(user) {
+
     app.innerHTML = `
         <div class="admin-page">
 
             <header class="admin-header">
 
                 <div>
+
                     <div class="admin-title">
                         🤖 Pocket Option AI PRO
                     </div>
@@ -191,9 +221,12 @@ function showDashboard(user) {
                     <div class="admin-subtitle">
                         Administrator Portal
                     </div>
+
                 </div>
 
+
                 <div class="admin-account">
+
                     <strong>
                         ${escapeHtml(user.email)}
                     </strong>
@@ -201,9 +234,11 @@ function showDashboard(user) {
                     <span>
                         ADMIN
                     </span>
+
                 </div>
 
             </header>
+
 
             <main class="admin-content">
 
@@ -211,51 +246,85 @@ function showDashboard(user) {
                     Admin Dashboard
                 </h2>
 
+
+                <!-- ==================================
+                     STATISTICS
+                =================================== -->
+
                 <div class="admin-stats">
 
+
+                    <!-- TOTAL USERS -->
+
                     <div class="admin-card">
+
                         <div class="admin-card-icon">
                             👥
                         </div>
 
-                        <div class="admin-card-value">
+                        <div
+                            id="totalUsers"
+                            class="admin-card-value"
+                        >
                             --
                         </div>
 
                         <div class="admin-card-label">
                             TOTAL USERS
                         </div>
+
                     </div>
 
+
+                    <!-- TOTAL TRADES -->
+
                     <div class="admin-card">
+
                         <div class="admin-card-icon">
                             📊
                         </div>
 
-                        <div class="admin-card-value">
+                        <div
+                            id="totalTrades"
+                            class="admin-card-value"
+                        >
                             --
                         </div>
 
                         <div class="admin-card-label">
                             TOTAL TRADES
                         </div>
+
                     </div>
 
+
+                    <!-- WIN RATE -->
+
                     <div class="admin-card">
+
                         <div class="admin-card-icon">
                             📈
                         </div>
 
-                        <div class="admin-card-value">
+                        <div
+                            id="winRate"
+                            class="admin-card-value"
+                        >
                             --
                         </div>
 
                         <div class="admin-card-label">
                             WIN RATE
                         </div>
+
                     </div>
 
                 </div>
+
+
+                <!-- ==================================
+                     ADMIN ACTIONS
+                =================================== -->
 
                 <div class="admin-actions">
 
@@ -273,6 +342,11 @@ function showDashboard(user) {
 
                 </div>
 
+
+                <!-- ==================================
+                     LOGOUT
+                =================================== -->
+
                 <button
                     id="logoutButton"
                     class="logout-button"
@@ -285,6 +359,7 @@ function showDashboard(user) {
         </div>
     `;
 
+
     document
         .getElementById("logoutButton")
         .addEventListener(
@@ -293,63 +368,199 @@ function showDashboard(user) {
         );
 }
 
-function logout() {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("adminUser");
 
-    showLogin();
-}
+// ==========================================
+// LOAD ADMIN STATISTICS
+// ==========================================
 
-function escapeHtml(value) {
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-}
+async function loadStats() {
 
-async function checkExistingSession() {
     const token =
         localStorage.getItem("adminToken");
 
-    const savedUser =
-        localStorage.getItem("adminUser");
-
-    if (!token || !savedUser) {
-        showLogin();
+    if (!token) {
         return;
     }
 
+
     try {
+
         const response = await fetch(
-            `${API}/auth/admin/test`,
+            `${API}/admin/stats`,
             {
                 method: "GET",
+
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             }
         );
 
+
+        const data =
+            await response.json();
+
+
+        if (
+            !response.ok ||
+            data.success !== true
+        ) {
+            throw new Error(
+                data.detail ||
+                "Unable to load statistics."
+            );
+        }
+
+
+        // Total users
+        document.getElementById(
+            "totalUsers"
+        ).textContent =
+            data.users;
+
+
+        // Total trades
+        document.getElementById(
+            "totalTrades"
+        ).textContent =
+            data.trades;
+
+
+        // Win rate
+        document.getElementById(
+            "winRate"
+        ).textContent =
+            `${Number(data.win_rate).toFixed(1)}%`;
+
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load admin statistics:",
+            error
+        );
+
+    }
+}
+
+
+// ==========================================
+// LOGOUT
+// ==========================================
+
+function logout() {
+
+    localStorage.removeItem(
+        "adminToken"
+    );
+
+    localStorage.removeItem(
+        "adminUser"
+    );
+
+    showLogin();
+}
+
+
+// ==========================================
+// ESCAPE HTML
+// ==========================================
+
+function escapeHtml(value) {
+
+    return String(value)
+
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}
+
+
+// ==========================================
+// CHECK EXISTING SESSION
+// ==========================================
+
+async function checkExistingSession() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const savedUser =
+        localStorage.getItem("adminUser");
+
+
+    if (!token || !savedUser) {
+
+        showLogin();
+
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(
+            `${API}/auth/admin/test`,
+            {
+                method: "GET",
+
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+
         if (!response.ok) {
+
             throw new Error(
                 "Admin session expired."
             );
         }
 
+
         const data =
             await response.json();
 
+
         if (data.success !== true) {
+
             throw new Error(
                 "Admin access denied."
             );
         }
 
-        showDashboard(
-            JSON.parse(savedUser)
-        );
+
+        const user =
+            JSON.parse(savedUser);
+
+
+        showDashboard(user);
+
+        // Load statistics after restoring session
+        loadStats();
+
 
     } catch (error) {
 
@@ -357,6 +568,7 @@ async function checkExistingSession() {
             "Admin session invalid:",
             error
         );
+
 
         localStorage.removeItem(
             "adminToken"
@@ -366,8 +578,14 @@ async function checkExistingSession() {
             "adminUser"
         );
 
+
         showLogin();
     }
 }
+
+
+// ==========================================
+// START APPLICATION
+// ==========================================
 
 checkExistingSession();
