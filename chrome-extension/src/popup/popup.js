@@ -35,16 +35,14 @@ async function startDashboard(user) {
 
         initializeAdmin(user);
 
-    } else {
-
-        console.log(
-            "Regular user access."
-        );
-
+        return;
     }
 
-    initializeDashboard();
+    console.log(
+        "Regular user access."
+    );
 
+    initializeDashboard();
 }
 
 document.addEventListener(

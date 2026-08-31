@@ -3,6 +3,7 @@ import { getAuthToken } from "./auth.js";
 const API =
     "https://pocket-option-signal-api-production.up.railway.app";
 
+
 export async function checkAdminAccess() {
 
     const token =
@@ -27,7 +28,6 @@ export async function checkAdminAccess() {
                 `${API}/auth/admin/test`,
                 {
                     method: "GET",
-
                     headers: {
                         "Authorization":
                             `Bearer ${token}`
@@ -74,7 +74,6 @@ export async function checkAdminAccess() {
         return false;
     }
 }
-
 // ==========================================
 // ADMIN DASHBOARD
 // ==========================================
