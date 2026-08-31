@@ -1,0 +1,287 @@
+* {
+    box-sizing: border-box;
+}
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+    background: #0b1020;
+    color: #ffffff;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+/* ==========================================
+   LOGIN
+========================================== */
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 42px;
+    border-radius: 20px;
+    background: #121a2e;
+    border: 1px solid #263250;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+}
+
+.login-logo {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: #1d2945;
+    font-size: 30px;
+}
+
+.login-card h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 24px;
+}
+
+.login-subtitle {
+    margin: 8px 0 32px;
+    text-align: center;
+    color: #8e9bb8;
+    font-size: 14px;
+}
+
+.login-card label {
+    display: block;
+    margin: 18px 0 8px;
+    color: #c7d0e5;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.login-card input {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #303d5d;
+    border-radius: 10px;
+    outline: none;
+    background: #0d1426;
+    color: #ffffff;
+}
+
+.login-card input:focus {
+    border-color: #6f8cff;
+}
+
+.login-card input::placeholder {
+    color: #66728d;
+}
+
+.login-card button[type="submit"] {
+    width: 100%;
+    margin-top: 26px;
+    padding: 14px;
+    border: 0;
+    border-radius: 10px;
+    background: #526dff;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.login-card button[type="submit"]:hover {
+    background: #647cff;
+}
+
+.login-card button[type="submit"]:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.login-error {
+    min-height: 20px;
+    margin-top: 14px;
+    text-align: center;
+    color: #ff6b6b;
+    font-size: 13px;
+}
+
+/* ==========================================
+   ADMIN DASHBOARD
+========================================== */
+
+.admin-page {
+    min-height: 100vh;
+    background: #0b1020;
+}
+
+.admin-header {
+    min-height: 82px;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #202b46;
+    background: #10182b;
+}
+
+.admin-title {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.admin-subtitle {
+    margin-top: 4px;
+    color: #7f8ba7;
+    font-size: 12px;
+}
+
+.admin-account {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #cbd4e8;
+    font-size: 13px;
+}
+
+.admin-account span {
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: #26375f;
+    color: #9fb1ff;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.admin-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 36px 28px;
+}
+
+.admin-content h2 {
+    margin: 0 0 26px;
+    font-size: 26px;
+}
+
+/* ==========================================
+   STAT CARDS
+========================================== */
+
+.admin-stats {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.admin-card {
+    padding: 24px;
+    border: 1px solid #263250;
+    border-radius: 16px;
+    background: #121a2e;
+}
+
+.admin-card-icon {
+    font-size: 26px;
+}
+
+.admin-card-value {
+    margin-top: 16px;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.admin-card-label {
+    margin-top: 6px;
+    color: #7f8ba7;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ==========================================
+   ACTIONS
+========================================== */
+
+.admin-actions {
+    display: grid;
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 28px;
+}
+
+.admin-action {
+    padding: 18px;
+    border: 1px solid #2b395b;
+    border-radius: 12px;
+    background: #121a2e;
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.admin-action:hover {
+    background: #18233c;
+}
+
+.logout-button {
+    margin-top: 30px;
+    padding: 11px 20px;
+    border: 1px solid #53313b;
+    border-radius: 9px;
+    background: transparent;
+    color: #ff8b8b;
+    cursor: pointer;
+}
+
+.logout-button:hover {
+    background: #241820;
+}
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 700px) {
+
+    .login-card {
+        padding: 30px 24px;
+    }
+
+    .admin-header {
+        padding: 16px 20px;
+        align-items: flex-start;
+        gap: 16px;
+        flex-direction: column;
+    }
+
+    .admin-account {
+        flex-wrap: wrap;
+    }
+
+    .admin-content {
+        padding: 28px 18px;
+    }
+
+    .admin-stats,
+    .admin-actions {
+        grid-template-columns: 1fr;
+    }
+}
