@@ -40,6 +40,35 @@ def get_authenticated_user(authorization: str | None = Header(default=None)):
 
 
 # ==========================================
+# ADMIN AUTHORIZATION DEPENDENCY
+# ==========================================
+
+
+def require_admin(user: dict = Depends(get_authenticated_user)):
+
+    if user.get("role") != "admin":
+
+        raise HTTPException(status_code=403, detail="Admin access required.")
+
+    return user
+
+
+# ==========================================
+# ADMIN TEST
+# ==========================================
+
+
+@router.get("/admin/test")
+def admin_test(user: dict = Depends(require_admin)):
+
+    return {
+        "success": True,
+        "message": "Admin access granted.",
+        "user": user,
+    }
+
+
+# ==========================================
 # REQUEST MODELS
 # ==========================================
 
@@ -83,7 +112,11 @@ def register(request: RegisterRequest):
     return {
         "success": True,
         "message": "Account created successfully.",
-        "user": {"id": user["id"], "email": user["email"]},
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "role": user["role"],
+        },
     }
 
 
@@ -98,7 +131,6 @@ def login(request: LoginRequest):
     user = authenticate_user(request.email, request.password)
 
     if not user:
-
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     token, expires_at = create_session(user["id"])
@@ -107,7 +139,11 @@ def login(request: LoginRequest):
         "success": True,
         "token": token,
         "expires_at": expires_at.isoformat(),
-        "user": {"id": user["id"], "email": user["email"]},
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "role": user["role"],
+        },
     }
 
 

@@ -77,14 +77,26 @@ def create_user(email: str, password: str):
             id,
             email,
             password_hash,
+            role,
             created_at
         )
-        VALUES (?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?)
         """,
-        (user_id, email, password_hash, created_at),
+        (
+            user_id,
+            email,
+            password_hash,
+            "user",
+            created_at,
+        ),
     )
 
-    return {"id": user_id, "email": email, "created_at": created_at}
+    return {
+        "id": user_id,
+        "email": email,
+        "role": "user",
+        "created_at": created_at,
+    }
 
 
 # ==========================================
@@ -102,6 +114,7 @@ def authenticate_user(email: str, password: str):
             id,
             email,
             password_hash,
+            role,
             created_at
         FROM users
         WHERE email = ?
@@ -166,6 +179,7 @@ def get_user_from_token(token: str):
             sessions.expires_at,
             users.id,
             users.email,
+            users.role,
             users.created_at
         FROM sessions
 
@@ -215,7 +229,49 @@ def get_user_from_token(token: str):
     return {
         "id": session["id"],
         "email": session["email"],
+        "role": session["role"],
         "created_at": session["created_at"],
+    }
+
+
+# ==========================================
+# PROMOTE USER TO ADMIN
+# ==========================================
+
+
+def promote_user_to_admin(email: str):
+
+    email = email.strip().lower()
+
+    user = database.fetch_one(
+        """
+        SELECT
+            id,
+            email,
+            role
+        FROM users
+        WHERE email = ?
+        """,
+        (email,),
+    )
+
+    if not user:
+
+        raise ValueError("User account not found.")
+
+    database.execute(
+        """
+        UPDATE users
+        SET role = 'admin'
+        WHERE email = ?
+        """,
+        (email,),
+    )
+
+    return {
+        "id": user["id"],
+        "email": user["email"],
+        "role": "admin",
     }
 
 

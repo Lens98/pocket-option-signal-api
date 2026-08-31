@@ -120,7 +120,6 @@ class Database:
         # ----------------------------------------
         # Users table - NEW
         # ----------------------------------------
-
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
 
@@ -130,11 +129,26 @@ class Database:
 
                 password_hash TEXT NOT NULL,
 
+                role TEXT NOT NULL DEFAULT 'user',
+
                 created_at TEXT NOT NULL
 
             )
             """)
+        # ----------------------------------------
+        # Add role to existing users table
+        # ----------------------------------------
 
+        user_columns = {
+            row["name"] for row in cursor.execute("PRAGMA table_info(users)").fetchall()
+        }
+
+        if "role" not in user_columns:
+
+            cursor.execute("""
+            ALTER TABLE users
+            ADD COLUMN role TEXT NOT NULL DEFAULT 'user'
+            """)
         # ----------------------------------------
         # Sessions table - NEW
         # ----------------------------------------

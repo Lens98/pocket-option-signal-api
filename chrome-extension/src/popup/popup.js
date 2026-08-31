@@ -1,5 +1,8 @@
 import { initializeDashboard } from "./js/dashboard.js";
-
+import {
+    checkAdminAccess,
+    initializeAdmin
+} from "./js/admin.js";
 import {
     verifySession
 } from "./js/auth.js";
@@ -13,19 +16,36 @@ import {
 } from "./js/account.js";
 
 
-function startDashboard(user) {
+async function startDashboard(user) {
 
     console.log(
         "Authentication successful. Starting dashboard."
     );
 
-
     initializeAccount(user);
 
+    const isAdmin =
+        await checkAdminAccess();
+
+    if (isAdmin) {
+
+        console.log(
+            "Admin access granted."
+        );
+
+        initializeAdmin(user);
+
+    } else {
+
+        console.log(
+            "Regular user access."
+        );
+
+    }
 
     initializeDashboard();
-}
 
+}
 
 document.addEventListener(
     "DOMContentLoaded",
@@ -48,7 +68,7 @@ document.addEventListener(
             );
 
 
-            startDashboard(user);
+            await startDashboard(user);
 
             return;
         }
@@ -76,8 +96,8 @@ document.addEventListener(
                 }
 
 
-                startDashboard(
-                    authenticatedUser
+               await startDashboard(
+                     authenticatedUser
                 );
             }
         );
