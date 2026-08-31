@@ -65,6 +65,22 @@ def require_admin(
 
 
 # ==========================================
+# ADMIN ACCESS TEST
+# ==========================================
+
+
+@router.get("/admin/test")
+def admin_test(
+    user: dict = Depends(require_admin),
+):
+    return {
+        "success": True,
+        "message": "Admin access granted.",
+        "user": user,
+    }
+
+
+# ==========================================
 
 # ADMIN FIRST-TIME SETUP
 

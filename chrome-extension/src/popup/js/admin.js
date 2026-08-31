@@ -10,11 +10,17 @@ export async function checkAdminAccess() {
 
     if (!token) {
 
-        return false;
+        console.log("Admin check: no token found.");
 
+        return false;
     }
 
     try {
+
+        console.log(
+            "Checking admin access:",
+            `${API}/auth/admin/test`
+        );
 
         const response =
             await fetch(
@@ -29,20 +35,36 @@ export async function checkAdminAccess() {
                 }
             );
 
+        console.log(
+            "Admin access response:",
+            response.status
+        );
+
         if (!response.ok) {
 
-            return false;
+            const errorText =
+                await response.text();
 
+            console.error(
+                "Admin access denied:",
+                response.status,
+                errorText
+            );
+
+            return false;
         }
 
         const data =
             await response.json();
 
+        console.log(
+            "Admin access result:",
+            data
+        );
+
         return data.success === true;
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(
             "Admin access check failed:",
@@ -50,9 +72,7 @@ export async function checkAdminAccess() {
         );
 
         return false;
-
     }
-
 }
 
 // ==========================================
