@@ -1,6 +1,7 @@
 import os
 
 from fastapi import APIRouter, HTTPException, Header, Depends
+
 from pydantic import BaseModel, EmailStr
 
 from app.services.auth_service import (
@@ -14,9 +15,10 @@ from app.services.auth_service import (
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-
 # ==========================================
+
 # AUTHENTICATION DEPENDENCY
+
 # ==========================================
 
 
@@ -42,21 +44,77 @@ def get_authenticated_user(authorization: str | None = Header(default=None)):
 
 
 # ==========================================
+
 # ADMIN AUTHORIZATION DEPENDENCY
+
 # ==========================================
 
 
-def require_admin(user: dict = Depends(get_authenticated_user)):
+def require_admin(
+    user: dict = Depends(get_authenticated_user),
+):
 
     if user.get("role") != "admin":
 
-        raise HTTPException(status_code=403, detail="Admin access required.")
+        raise HTTPException(
+            status_code=403,
+            detail="Admin access required.",
+        )
 
     return user
 
 
 # ==========================================
+
+# ADMIN FIRST-TIME SETUP
+
+# ==========================================
+
+
+@router.post("/admin/setup/{email}")
+def setup_first_admin(
+    email: str,
+    setup_key: str = Header(default=None),
+):
+
+    expected_key = os.getenv("ADMIN_SETUP_KEY")
+
+    if not expected_key:
+
+        raise HTTPException(
+            status_code=500,
+            detail="ADMIN_SETUP_KEY is not configured.",
+        )
+
+    if setup_key != expected_key:
+
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid admin setup key.",
+        )
+
+    try:
+
+        promoted_user = promote_user_to_admin(email)
+
+    except ValueError as error:
+
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        )
+
+    return {
+        "success": True,
+        "message": "Admin account configured successfully.",
+        "user": promoted_user,
+    }
+
+
+# ==========================================
+
 # ADMIN PROMOTION
+
 # ==========================================
 
 
@@ -65,9 +123,13 @@ def promote_admin(
     email: str,
     user: dict = Depends(require_admin),
 ):
+
     try:
+
         promoted_user = promote_user_to_admin(email)
+
     except ValueError as error:
+
         raise HTTPException(
             status_code=404,
             detail=str(error),
@@ -80,19 +142,10 @@ def promote_admin(
     }
 
 
-@router.post("/admin/promote/{email}")
-def promote_admin(email: str, user: dict = Depends(require_admin)):
-    promoted_user = promote_user_to_admin(email)
-
-    return {
-        "success": True,
-        "message": "User promoted to admin.",
-        "user": promoted_user,
-    }
-
-
 # ==========================================
+
 # REQUEST MODELS
+
 # ==========================================
 
 
@@ -111,7 +164,9 @@ class LoginRequest(BaseModel):
 
 
 # ==========================================
+
 # REGISTER
+
 # ==========================================
 
 
@@ -144,7 +199,9 @@ def register(request: RegisterRequest):
 
 
 # ==========================================
+
 # LOGIN
+
 # ==========================================
 
 
@@ -154,6 +211,7 @@ def login(request: LoginRequest):
     user = authenticate_user(request.email, request.password)
 
     if not user:
+
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     token, expires_at = create_session(user["id"])
@@ -171,7 +229,9 @@ def login(request: LoginRequest):
 
 
 # ==========================================
+
 # CURRENT USER
+
 # ==========================================
 
 
@@ -182,7 +242,9 @@ def get_current_user(user: dict = Depends(get_authenticated_user)):
 
 
 # ==========================================
+
 # LOGOUT
+
 # ==========================================
 
 
