@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.database.database import database
 
+ADMIN_EMAIL = "lens9798@gmail.com"
 # ==========================================
 # PASSWORD HASHING
 # ==========================================
@@ -70,7 +71,7 @@ def create_user(email: str, password: str):
     password_hash = hash_password(password)
 
     created_at = datetime.now(timezone.utc).isoformat()
-
+    role = "admin" if email == ADMIN_EMAIL else "user"
     database.execute(
         """
         INSERT INTO users (

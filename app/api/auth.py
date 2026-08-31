@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException, Header, Depends
+import os
 
+from fastapi import APIRouter, HTTPException, Header, Depends
 from pydantic import BaseModel, EmailStr
 
 from app.services.auth_service import (
@@ -8,6 +9,7 @@ from app.services.auth_service import (
     create_session,
     get_user_from_token,
     delete_session,
+    promote_user_to_admin,
 )
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -54,17 +56,38 @@ def require_admin(user: dict = Depends(get_authenticated_user)):
 
 
 # ==========================================
-# ADMIN TEST
+# ADMIN PROMOTION
 # ==========================================
 
 
-@router.get("/admin/test")
-def admin_test(user: dict = Depends(require_admin)):
+@router.post("/admin/promote/{email}")
+def promote_admin(
+    email: str,
+    user: dict = Depends(require_admin),
+):
+    try:
+        promoted_user = promote_user_to_admin(email)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=404,
+            detail=str(error),
+        )
 
     return {
         "success": True,
-        "message": "Admin access granted.",
-        "user": user,
+        "message": "User promoted to admin.",
+        "user": promoted_user,
+    }
+
+
+@router.post("/admin/promote/{email}")
+def promote_admin(email: str, user: dict = Depends(require_admin)):
+    promoted_user = promote_user_to_admin(email)
+
+    return {
+        "success": True,
+        "message": "User promoted to admin.",
+        "user": promoted_user,
     }
 
 
