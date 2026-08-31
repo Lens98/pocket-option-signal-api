@@ -1,9 +1,5 @@
 import { initializeDashboard } from "./js/dashboard.js";
 import {
-    checkAdminAccess,
-    initializeAdmin
-} from "./js/admin.js";
-import {
     verifySession
 } from "./js/auth.js";
 
@@ -16,32 +12,18 @@ import {
 } from "./js/account.js";
 
 
-async function startDashboard(user) {
+function startDashboard(user) {
 
     console.log(
         "Authentication successful. Starting dashboard."
     );
 
-    initializeAccount(user);
-
-    const isAdmin =
-        await checkAdminAccess();
-
-    if (isAdmin) {
-
-        console.log(
-            "Admin access granted."
-        );
-
-        initializeAdmin(user);
-
-        return;
-    }
-
     console.log(
-        "Regular user access."
+        "Starting regular user platform:",
+        user.email
     );
 
+    initializeAccount(user);
     initializeDashboard();
 }
 
