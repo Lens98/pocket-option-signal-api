@@ -1430,14 +1430,28 @@ function showDashboard(user) {
                 }
 
 
-               // ==========================
-              // OTHER PAGES
-             // ==========================
-           if (page === "trades") {
-           showTradesPage();
-        } else if (page === "performance") {
-    showPerformancePage();
-      } else {
+          if (page === "trades") {
+
+    await showTradesPage();
+
+} else if (page === "performance") {
+
+    await showPerformancePage();
+
+} else if (page === "assets") {
+
+    await showAssetsPage();
+
+} else if (page === "signals") {
+
+    await showSignalsPage();
+
+} else if (page === "subscriptions") {
+
+    await showSubscriptionsPage();
+
+} else {
+
     showComingSoon(
         item.textContent.trim()
     );
@@ -4760,16 +4774,3173 @@ function changeTradesPage(page) {
     renderFilteredTrades();
 }
 // ==========================================
-// PERFORMANCE PAGE
+// SIGNALS PAGE
 // ==========================================
 
+let adminSignalsCache = [];
+let adminSignalsPage = 1;
+let adminSignalsPerPage = 25;
+
+async function showSignalsPage() {
+
+    const content =
+        document.querySelector(".main-area .content");
+
+    if (!content) {
+        console.error(
+            "Signals page content container not found."
+        );
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div>
+                    <h1>Signals</h1>
+
+                    <p>
+                        Real recorded signal activity and AI quality
+                    </p>
+                </div>
+
+                <button
+                    id="signalsRefresh"
+                    class="refresh-button"
+                >
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+
+            <!-- ========================== -->
+            <!-- SIGNAL SUMMARY -->
+            <!-- ========================== -->
+
+            <div class="trades-kpi-grid">
+
+                <div class="trades-kpi">
+                    <span>TOTAL SIGNALS</span>
+                    <strong id="signalsTotal">
+                        —
+                    </strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>CALL SIGNALS</span>
+                    <strong
+                        id="signalsCall"
+                        class="stat-win"
+                    >
+                        —
+                    </strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>PUT SIGNALS</span>
+                    <strong
+                        id="signalsPut"
+                        class="stat-loss"
+                    >
+                        —
+                    </strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>WAIT SIGNALS</span>
+                    <strong id="signalsWait">
+                        —
+                    </strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>WIN RATE</span>
+                    <strong id="signalsWinRate">
+                        —
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <!-- ========================== -->
+            <!-- SIGNAL QUALITY -->
+            <!-- ========================== -->
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>
+                            Signal Quality
+                        </h2>
+
+                        <p>
+                            AI signal confidence and confirmation metrics
+                        </p>
+                    </div>
+
+                </div>
+
+
+                <div class="user-performance-grid">
+
+                    <div class="performance-stat">
+
+                        <span>
+                            AVG CONFIDENCE
+                        </span>
+
+                        <strong
+                            id="signalsAvgConfidence"
+                        >
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="performance-stat">
+
+                        <span>
+                            AVG PROBABILITY
+                        </span>
+
+                        <strong
+                            id="signalsAvgProbability"
+                        >
+                            —
+                        </strong>
+
+                    </div>
+
+
+                    <div class="performance-stat">
+
+                        <span>
+                            AVG AGREEMENT
+                        </span>
+
+                        <strong
+                            id="signalsAvgAgreement"
+                        >
+                            —
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================== -->
+            <!-- SIGNAL FILTERS -->
+            <!-- ========================== -->
+
+            <div class="panel">
+
+                <div class="asset-filters">
+
+                    <input
+                        type="text"
+                        id="signalSearch"
+                        placeholder="Search asset..."
+                    >
+
+
+                    <select id="signalTypeFilter">
+
+                        <option value="all">
+                            All Signals
+                        </option>
+
+                        <option value="CALL">
+                            CALL
+                        </option>
+
+                        <option value="PUT">
+                            PUT
+                        </option>
+
+                        <option value="WAIT">
+                            WAIT
+                        </option>
+
+                    </select>
+
+
+                    <select id="signalResultFilter">
+
+                        <option value="all">
+                            All Results
+                        </option>
+
+                        <option value="WIN">
+                            WIN
+                        </option>
+
+                        <option value="LOSS">
+                            LOSS
+                        </option>
+
+                        <option value="DRAW">
+                            DRAW
+                        </option>
+
+                        <option value="OPEN">
+                            OPEN
+                        </option>
+
+                    </select>
+
+
+                    <select id="signalGradeFilter">
+
+                        <option value="all">
+                            All Grades
+                        </option>
+
+                        <option value="A+">
+                            A+
+                        </option>
+
+                        <option value="A">
+                            A
+                        </option>
+
+                        <option value="B">
+                            B
+                        </option>
+
+                        <option value="C">
+                            C
+                        </option>
+
+                    </select>
+
+
+                    <select id="signalConfidenceFilter">
+
+                        <option value="0">
+                            All Confidence
+                        </option>
+
+                        <option value="70">
+                            70%+ Confidence
+                        </option>
+
+                        <option value="80">
+                            80%+ Confidence
+                        </option>
+
+                        <option value="90">
+                            90%+ Confidence
+                        </option>
+
+                        <option value="95">
+                            95%+ Confidence
+                        </option>
+
+                    </select>
+
+
+                    <select id="signalSort">
+
+                        <option value="newest">
+                            Newest
+                        </option>
+
+                        <option value="confidence">
+                            Highest Confidence
+                        </option>
+
+                        <option value="probability">
+                            Highest Probability
+                        </option>
+
+                        <option value="agreement">
+                            Highest Agreement
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="clearSignalFilters"
+                        class="clear-button"
+                    >
+                        CLEAR
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="signalsFilterCount"
+                    class="asset-filter-count"
+                >
+                    Loading...
+                </div>
+
+            </div>
+
+
+            <!-- ========================== -->
+            <!-- SIGNAL TABLE -->
+            <!-- ========================== -->
+
+            <div class="panel">
+
+                <div
+                    id="signalsTableContainer"
+                    class="table-wrap"
+                >
+
+                    <div class="trade-loading">
+                        Loading signals...
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="signalsPagination"
+                    class="pagination-container"
+                ></div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document
+        .getElementById("signalsRefresh")
+        ?.addEventListener(
+            "click",
+            loadSignalsData
+        );
+
+
+    document
+        .getElementById("signalSearch")
+        ?.addEventListener(
+            "input",
+            applySignalFilters
+        );
+
+
+    document
+        .getElementById("signalTypeFilter")
+        ?.addEventListener(
+            "change",
+            applySignalFilters
+        );
+
+
+    document
+        .getElementById("signalResultFilter")
+        ?.addEventListener(
+            "change",
+            applySignalFilters
+        );
+
+
+    document
+        .getElementById("signalGradeFilter")
+        ?.addEventListener(
+            "change",
+            applySignalFilters
+        );
+
+
+    document
+        .getElementById("signalConfidenceFilter")
+        ?.addEventListener(
+            "change",
+            applySignalFilters
+        );
+
+
+    document
+        .getElementById("signalSort")
+        ?.addEventListener(
+            "change",
+            applySignalFilters
+        );
+
+
+    document
+        .getElementById("clearSignalFilters")
+        ?.addEventListener(
+            "click",
+            clearSignalFilters
+        );
+
+
+    await loadSignalsData();
+}
+// ==========================================
+// LOAD SIGNAL DATA
+// ==========================================
+
+async function loadSignalsData() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const container =
+        document.getElementById(
+            "signalsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    try {
+
+        container.innerHTML = `
+            <div class="trade-loading">
+                Loading signals...
+            </div>
+        `;
+
+        const response =
+            await fetch(
+                `${API}/admin/trades`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to load signals."
+            );
+        }
+
+        const data =
+            await response.json();
+
+        const trades =
+            data.trades || [];
+
+        adminSignalsCache = trades;
+
+        updateSignalSummary(trades);
+
+        applySignalFilters();
+
+    } catch (error) {
+
+        console.error(
+            "Signal data failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="trade-error">
+                Failed to load signals.
+            </div>
+        `;
+    }
+}
+// ==========================================
+// SIGNAL SUMMARY
+// ==========================================
+
+function updateSignalSummary(trades) {
+
+    const total = trades.length;
+
+    const callCount = trades.filter(
+        trade =>
+            String(trade.action || "").toUpperCase() === "CALL"
+    ).length;
+
+    const putCount = trades.filter(
+        trade =>
+            String(trade.action || "").toUpperCase() === "PUT"
+    ).length;
+
+    const waitCount = trades.filter(
+        trade =>
+            String(trade.action || "").toUpperCase() === "WAIT"
+    ).length;
+
+    const wins = trades.filter(
+        trade =>
+            String(trade.result || "").toUpperCase() === "WIN"
+    ).length;
+
+    const losses = trades.filter(
+        trade =>
+            String(trade.result || "").toUpperCase() === "LOSS"
+    ).length;
+
+    const completed = wins + losses;
+
+    const winRate =
+        completed > 0
+            ? (wins / completed) * 100
+            : 0;
+
+    const confidenceValues = trades
+        .map(trade => Number(trade.confidence))
+        .filter(value => !Number.isNaN(value));
+
+    const probabilityValues = trades
+        .map(trade => Number(trade.probability))
+        .filter(value => !Number.isNaN(value));
+
+    const agreementValues = trades
+        .map(trade => Number(trade.agreement_score))
+        .filter(value => !Number.isNaN(value));
+
+    const average = values =>
+        values.length
+            ? values.reduce(
+                (sum, value) => sum + value,
+                0
+            ) / values.length
+            : 0;
+
+    setText(
+        "signalsTotal",
+        formatNumber(total)
+    );
+
+    setText(
+        "signalsCall",
+        formatNumber(callCount)
+    );
+
+    setText(
+        "signalsPut",
+        formatNumber(putCount)
+    );
+
+    setText(
+        "signalsWait",
+        formatNumber(waitCount)
+    );
+
+    setText(
+        "signalsWinRate",
+        formatPercent(winRate)
+    );
+
+    setText(
+        "signalsAvgConfidence",
+        formatPercent(
+            average(confidenceValues)
+        )
+    );
+
+    setText(
+        "signalsAvgProbability",
+        formatPercent(
+            average(probabilityValues)
+        )
+    );
+
+    setText(
+        "signalsAvgAgreement",
+        formatPercent(
+            average(agreementValues)
+        )
+    );
+}
+// ==========================================
+// SIGNAL FILTERS
+// ==========================================
+
+function applySignalFilters() {
+
+    let signals = [...adminSignalsCache];
+
+    const search =
+        (
+            document.getElementById(
+                "signalSearch"
+            )?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const type =
+        document.getElementById(
+            "signalTypeFilter"
+        )?.value || "all";
+
+    const result =
+        document.getElementById(
+            "signalResultFilter"
+        )?.value || "all";
+
+    const grade =
+        document.getElementById(
+            "signalGradeFilter"
+        )?.value || "all";
+
+    const confidence =
+        Number(
+            document.getElementById(
+                "signalConfidenceFilter"
+            )?.value || 0
+        );
+
+    const sortBy =
+        document.getElementById(
+            "signalSort"
+        )?.value || "newest";
+
+
+    // SEARCH ASSET
+    if (search) {
+
+        signals = signals.filter(
+            signal =>
+                String(
+                    signal.asset || ""
+                )
+                .toLowerCase()
+                .includes(search)
+        );
+    }
+
+
+    // SIGNAL TYPE
+    if (type !== "all") {
+
+        signals = signals.filter(
+            signal =>
+                String(
+                    signal.action || ""
+                ).toUpperCase() === type
+        );
+    }
+
+
+    // RESULT
+    if (result !== "all") {
+
+        signals = signals.filter(
+            signal =>
+                String(
+                    signal.result || ""
+                ).toUpperCase() === result
+        );
+    }
+
+
+    // GRADE
+    if (grade !== "all") {
+
+        signals = signals.filter(
+            signal =>
+                String(
+                    signal.grade || ""
+                ).toUpperCase() ===
+                grade.toUpperCase()
+        );
+    }
+
+
+    // MINIMUM CONFIDENCE
+    if (confidence > 0) {
+
+        signals = signals.filter(
+            signal =>
+                Number(
+                    signal.confidence || 0
+                ) >= confidence
+        );
+    }
+
+
+    // SORT
+    if (sortBy === "confidence") {
+
+        signals.sort(
+            (a, b) =>
+                Number(b.confidence || 0) -
+                Number(a.confidence || 0)
+        );
+
+    } else if (sortBy === "probability") {
+
+        signals.sort(
+            (a, b) =>
+                Number(b.probability || 0) -
+                Number(a.probability || 0)
+        );
+
+    } else if (sortBy === "agreement") {
+
+        signals.sort(
+            (a, b) =>
+                Number(b.agreement_score || 0) -
+                Number(a.agreement_score || 0)
+        );
+
+    } else {
+
+        signals.sort(
+            (a, b) =>
+                new Date(
+                    b.entry_time || 0
+                ) -
+                new Date(
+                    a.entry_time || 0
+                )
+        );
+    }
+
+
+    adminSignalsPage = 1;
+
+    renderSignalsTable(
+        signals
+    );
+}
+// ==========================================
+// GET FILTERED SIGNALS
+// ==========================================
+
+function getFilteredSignals() {
+
+    let signals =
+        [...adminSignalsCache];
+
+    const search =
+        (
+            document.getElementById(
+                "signalSearch"
+            )?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const type =
+        document.getElementById(
+            "signalTypeFilter"
+        )?.value || "all";
+
+    const result =
+        document.getElementById(
+            "signalResultFilter"
+        )?.value || "all";
+
+    const grade =
+        document.getElementById(
+            "signalGradeFilter"
+        )?.value || "all";
+
+    const confidence =
+        Number(
+            document.getElementById(
+                "signalConfidenceFilter"
+            )?.value || 0
+        );
+
+    const sortBy =
+        document.getElementById(
+            "signalSort"
+        )?.value || "newest";
+
+
+    if (search) {
+
+        signals =
+            signals.filter(
+                signal =>
+                    String(
+                        signal.asset || ""
+                    )
+                    .toLowerCase()
+                    .includes(search)
+            );
+    }
+
+
+    if (type !== "all") {
+
+        signals =
+            signals.filter(
+                signal =>
+                    String(
+                        signal.action || ""
+                    ).toUpperCase() === type
+            );
+    }
+
+
+    if (result !== "all") {
+
+        signals =
+            signals.filter(
+                signal =>
+                    String(
+                        signal.result || ""
+                    ).toUpperCase() === result
+            );
+    }
+
+
+    if (grade !== "all") {
+
+        signals =
+            signals.filter(
+                signal =>
+                    String(
+                        signal.grade || ""
+                    ).toUpperCase() ===
+                    grade.toUpperCase()
+            );
+    }
+
+
+    if (confidence > 0) {
+
+        signals =
+            signals.filter(
+                signal =>
+                    Number(
+                        signal.confidence || 0
+                    ) >= confidence
+            );
+    }
+
+
+    if (sortBy === "confidence") {
+
+        signals.sort(
+            (a, b) =>
+                Number(b.confidence || 0) -
+                Number(a.confidence || 0)
+        );
+
+    } else if (sortBy === "probability") {
+
+        signals.sort(
+            (a, b) =>
+                Number(b.probability || 0) -
+                Number(a.probability || 0)
+        );
+
+    } else if (sortBy === "agreement") {
+
+        signals.sort(
+            (a, b) =>
+                Number(b.agreement_score || 0) -
+                Number(a.agreement_score || 0)
+        );
+
+    } else {
+
+        signals.sort(
+            (a, b) =>
+                new Date(
+                    b.entry_time || 0
+                ) -
+                new Date(
+                    a.entry_time || 0
+                )
+        );
+    }
+
+
+    return signals;
+}
+// ==========================================
+// RENDER SIGNAL TABLE
+// ==========================================
+
+function renderSignalsTable(signals) {
+
+    const container =
+        document.getElementById(
+            "signalsTableContainer"
+        );
+
+    const count =
+        document.getElementById(
+            "signalsFilterCount"
+        );
+
+    if (!container) {
+        return;
+    }
+
+
+    if (count) {
+
+        count.textContent =
+            `${signals.length.toLocaleString(
+                "en-US"
+            )} matching signals`;
+    }
+
+
+    if (signals.length === 0) {
+
+        container.innerHTML = `
+            <div class="trade-loading">
+                No signals match your filters.
+            </div>
+        `;
+
+        return;
+    }
+
+
+    const start =
+        (
+            adminSignalsPage - 1
+        ) *
+        adminSignalsPerPage;
+
+    const end =
+        start +
+        adminSignalsPerPage;
+
+    const pageSignals =
+        signals.slice(
+            start,
+            end
+        );
+
+
+    const rows =
+        pageSignals
+            .map(signal => {
+
+                const action =
+                    String(
+                        signal.action || "—"
+                    ).toUpperCase();
+
+                const result =
+                    String(
+                        signal.result || "—"
+                    ).toUpperCase();
+
+                const confidence =
+                    Number(
+                        signal.confidence || 0
+                    );
+
+                const probability =
+                    Number(
+                        signal.probability || 0
+                    );
+
+                const agreement =
+                    Number(
+                        signal.agreement_score || 0
+                    );
+
+                let actionClass = "";
+
+                if (action === "CALL") {
+                    actionClass = "result-win";
+                } else if (action === "PUT") {
+                    actionClass = "result-loss";
+                }
+
+
+                let resultClass = "";
+
+                if (result === "WIN") {
+                    resultClass = "result-win";
+                } else if (result === "LOSS") {
+                    resultClass = "result-loss";
+                }
+
+
+                return `
+                    <tr>
+
+                        <td>
+                            ${formatDateTime(
+                                signal.entry_time
+                            )}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    signal.asset ||
+                                    "—"
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            <span
+                                class="${actionClass}"
+                            >
+                                ${escapeHtml(
+                                    action
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${confidence.toFixed(1)}%
+                        </td>
+
+                        <td>
+                            ${probability.toFixed(1)}%
+                        </td>
+
+                        <td>
+                            ${agreement.toFixed(1)}%
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                signal.grade ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td>
+                            <span
+                                class="${resultClass}"
+                            >
+                                ${escapeHtml(
+                                    result
+                                )}
+                            </span>
+                        </td>
+
+                    </tr>
+                `;
+            })
+            .join("");
+
+
+    container.innerHTML = `
+        <table class="trades-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>TIME</th>
+
+                    <th>ASSET</th>
+
+                    <th>SIGNAL</th>
+
+                    <th>CONF.</th>
+
+                    <th>PROB.</th>
+
+                    <th>AGREE.</th>
+
+                    <th>GRADE</th>
+
+                    <th>RESULT</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+                ${rows}
+            </tbody>
+
+        </table>
+    `;
+
+
+    renderSignalsPagination(
+        signals.length
+    );
+}
+// ==========================================
+// SIGNAL PAGINATION
+// ==========================================
+
+function renderSignalsPagination(total) {
+
+    const container =
+        document.getElementById(
+            "signalsPagination"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const totalPages =
+        Math.ceil(
+            total / adminSignalsPerPage
+        );
+
+    if (totalPages <= 1) {
+        container.innerHTML = "";
+        return;
+    }
+
+    const maxPages =
+        Math.min(totalPages, 7);
+
+    let html = `
+        <button
+            type="button"
+            class="pagination-button"
+            data-page="prev"
+            ${adminSignalsPage === 1 ? "disabled" : ""}
+        >
+            ‹
+        </button>
+    `;
+
+    for (
+        let page = 1;
+        page <= maxPages;
+        page++
+    ) {
+
+        html += `
+            <button
+                type="button"
+                class="pagination-button ${
+                    page === adminSignalsPage
+                        ? "active"
+                        : ""
+                }"
+                data-page="${page}"
+            >
+                ${page}
+            </button>
+        `;
+    }
+
+    html += `
+        <button
+            type="button"
+            class="pagination-button"
+            data-page="next"
+            ${
+                adminSignalsPage === totalPages
+                    ? "disabled"
+                    : ""
+            }
+        >
+            ›
+        </button>
+    `;
+
+    container.innerHTML = html;
+
+
+    // ==========================================
+    // PAGINATION CLICK EVENTS
+    // ==========================================
+
+    container
+        .querySelectorAll(
+            ".pagination-button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const page =
+                        button.dataset.page;
+
+                    const totalPages =
+                        Math.ceil(
+                            total /
+                            adminSignalsPerPage
+                        );
+
+
+                    if (
+                        page === "prev"
+                    ) {
+
+                        if (
+                            adminSignalsPage > 1
+                        ) {
+                            adminSignalsPage--;
+                        }
+
+                    } else if (
+                        page === "next"
+                    ) {
+
+                        if (
+                            adminSignalsPage <
+                            totalPages
+                        ) {
+                            adminSignalsPage++;
+                        }
+
+                    } else {
+
+                        adminSignalsPage =
+                            Number(page);
+                    }
+
+
+                    renderSignalsTable(
+                        getFilteredSignals()
+                    );
+
+                }
+            );
+        });
+}
+// ==========================================
+// CLEAR SIGNAL FILTERS
+// ==========================================
+
+function clearSignalFilters() {
+
+    const search =
+        document.getElementById(
+            "signalSearch"
+        );
+
+    const type =
+        document.getElementById(
+            "signalTypeFilter"
+        );
+
+    const result =
+        document.getElementById(
+            "signalResultFilter"
+        );
+
+    const grade =
+        document.getElementById(
+            "signalGradeFilter"
+        );
+
+    const confidence =
+        document.getElementById(
+            "signalConfidenceFilter"
+        );
+
+    const sort =
+        document.getElementById(
+            "signalSort"
+        );
+
+
+    if (search) {
+        search.value = "";
+    }
+
+    if (type) {
+        type.value = "all";
+    }
+
+    if (result) {
+        result.value = "all";
+    }
+
+    if (grade) {
+        grade.value = "all";
+    }
+
+    if (confidence) {
+        confidence.value = "0";
+    }
+
+    if (sort) {
+        sort.value = "newest";
+    }
+
+
+    adminSignalsPage = 1;
+
+    applySignalFilters();
+}
+// ==========================================
+// NEW SUBSCRIPTION MODAL
+// ==========================================
+
+async function showNewSubscriptionModal() {
+
+    let users = [];
+
+    try {
+
+        const response = await fetch(
+            `${API}/admin/users`,
+            {
+                headers: {
+                    Authorization:
+                        `Bearer ${localStorage.getItem("adminToken")}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error("Failed to load users.");
+        }
+
+        const data = await response.json();
+
+        users = data.users || [];
+
+    } catch (error) {
+
+        console.error(
+            "Failed to load users:",
+            error
+        );
+
+        alert(
+            "Unable to load users."
+        );
+
+        return;
+    }
+
+
+    // Remove existing modal if one exists
+    document
+        .getElementById(
+            "subscriptionModal"
+        )
+        ?.remove();
+
+
+    const modal =
+        document.createElement("div");
+
+    modal.id =
+        "subscriptionModal";
+
+    modal.className =
+        "subscription-modal-overlay";
+
+
+    modal.innerHTML = `
+
+        <div class="subscription-modal">
+
+            <div class="subscription-modal-header">
+
+                <div>
+
+                    <h2>
+                        New Subscription
+                    </h2>
+
+                    <p>
+                        Assign subscription access to a user
+                    </p>
+
+                </div>
+
+                <button
+                    type="button"
+                    id="closeSubscriptionModal"
+                    class="modal-close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="subscription-modal-body">
+
+
+                <label>
+                    USER
+                </label>
+
+                <select
+                    id="newSubscriptionUser"
+                >
+
+                    <option value="">
+                        Select user...
+                    </option>
+
+                    ${users
+                        .filter(
+                            user =>
+                                user.role !== "admin"
+                        )
+                        .map(
+                            user => `
+                                <option
+                                    value="${escapeHtml(
+                                        user.id
+                                    )}"
+                                >
+                                    ${escapeHtml(
+                                        user.email
+                                    )}
+                                </option>
+                            `
+                        )
+                        .join("")}
+
+                </select>
+
+
+                <label>
+                    PLAN
+                </label>
+
+                <select
+                    id="newSubscriptionPlan"
+                >
+
+                    <option value="monthly">
+                        MONTHLY
+                    </option>
+
+                    <option value="yearly">
+                        YEARLY
+                    </option>
+
+                    <option value="lifetime">
+                        LIFETIME
+                    </option>
+
+                </select>
+
+
+                <label>
+                    STATUS
+                </label>
+
+                <select
+                    id="newSubscriptionStatus"
+                >
+
+                    <option value="active">
+                        ACTIVE
+                    </option>
+
+                    <option value="inactive">
+                        INACTIVE
+                    </option>
+
+                </select>
+
+
+                <label>
+                    START DATE
+                </label>
+
+                <input
+                    type="datetime-local"
+                    id="newSubscriptionStartedAt"
+                >
+
+
+                <label>
+                    EXPIRATION DATE
+                </label>
+
+                <input
+                    type="datetime-local"
+                    id="newSubscriptionExpiresAt"
+                >
+
+
+            </div>
+
+
+            <div class="subscription-modal-footer">
+
+                <button
+                    type="button"
+                    id="cancelSubscriptionModal"
+                    class="clear-button"
+                >
+                    CANCEL
+                </button>
+
+                <button
+                    type="button"
+                    id="saveSubscriptionButton"
+                    class="primary-button"
+                >
+                    CREATE SUBSCRIPTION
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document.body.appendChild(modal);
+
+
+    // ==========================================
+    // CLOSE
+    // ==========================================
+
+    document
+        .getElementById(
+            "closeSubscriptionModal"
+        )
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    document
+        .getElementById(
+            "cancelSubscriptionModal"
+        )
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    // ==========================================
+    // SAVE
+    // ==========================================
+
+    document
+        .getElementById(
+            "saveSubscriptionButton"
+        )
+        ?.addEventListener(
+            "click",
+            createSubscription
+        );
+}
+// ==========================================
+// SUBSCRIPTIONS PAGE
+// ==========================================
+
+let adminSubscriptionsCache = [];
+
+async function showSubscriptionsPage() {
+
+    const content =
+        document.querySelector(".main-area .content");
+
+    if (!content) {
+        console.error(
+            "Subscriptions page content container not found."
+        );
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="page-content">
+
+            <div class="page-header">
+
+    <div>
+        <h1>Subscriptions</h1>
+
+        <p>
+            Manage user subscription access
+        </p>
+    </div>
+
+    <div class="page-header-actions">
+
+        <button
+            id="newSubscriptionButton"
+            class="primary-button"
+        >
+            + New Subscription
+        </button>
+
+        <button
+            id="subscriptionsRefresh"
+            class="refresh-button"
+        >
+            ↻ Refresh
+        </button>
+
+    </div>
+
+</div>
+
+
+            <!-- ========================== -->
+            <!-- SUBSCRIPTION SUMMARY -->
+            <!-- ========================== -->
+
+            <div class="trades-kpi-grid">
+
+                <div class="trades-kpi">
+
+                    <span>
+                        TOTAL
+                    </span>
+
+                    <strong id="subscriptionsTotal">
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="trades-kpi">
+
+                    <span>
+                        ACTIVE
+                    </span>
+
+                    <strong
+                        id="subscriptionsActive"
+                        class="stat-win"
+                    >
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="trades-kpi">
+
+                    <span>
+                        INACTIVE
+                    </span>
+
+                    <strong
+                        id="subscriptionsInactive"
+                    >
+                        —
+                    </strong>
+
+                </div>
+
+
+                <div class="trades-kpi">
+
+                    <span>
+                        EXPIRED
+                    </span>
+
+                    <strong
+                        id="subscriptionsExpired"
+                        class="stat-loss"
+                    >
+                        —
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================== -->
+            <!-- FILTERS -->
+            <!-- ========================== -->
+
+            <div class="panel">
+
+                <div class="asset-filters">
+
+                    <input
+                        type="text"
+                        id="subscriptionSearch"
+                        placeholder="Search user email..."
+                    >
+
+
+                    <select
+                        id="subscriptionStatusFilter"
+                    >
+
+                        <option value="all">
+                            All Status
+                        </option>
+
+                        <option value="active">
+                            ACTIVE
+                        </option>
+
+                        <option value="inactive">
+                            INACTIVE
+                        </option>
+
+                        <option value="expired">
+                            EXPIRED
+                        </option>
+
+                        <option value="cancelled">
+                            CANCELLED
+                        </option>
+
+                    </select>
+
+
+                    <select
+                        id="subscriptionPlanFilter"
+                    >
+
+                        <option value="all">
+                            All Plans
+                        </option>
+
+                        <option value="monthly">
+                            MONTHLY
+                        </option>
+
+                        <option value="yearly">
+                            YEARLY
+                        </option>
+
+                        <option value="lifetime">
+                            LIFETIME
+                        </option>
+
+                    </select>
+
+
+                    <button
+                        id="clearSubscriptionFilters"
+                        class="clear-button"
+                    >
+                        CLEAR
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="subscriptionFilterCount"
+                    class="asset-filter-count"
+                >
+                    Loading...
+                </div>
+
+            </div>
+
+
+            <!-- ========================== -->
+            <!-- SUBSCRIPTIONS TABLE -->
+            <!-- ========================== -->
+
+            <div class="panel">
+
+                <div
+                    id="subscriptionsTableContainer"
+                    class="table-wrap"
+                >
+
+                    <div class="trade-loading">
+                        Loading subscriptions...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document
+        .getElementById(
+            "subscriptionsRefresh"
+        )
+        ?.addEventListener(
+            "click",
+            loadSubscriptionsData
+    );
+    document
+    .getElementById(
+        "newSubscriptionButton"
+    )
+    ?.addEventListener(
+        "click",
+        showNewSubscriptionModal
+    );
+
+
+    document
+        .getElementById(
+            "subscriptionSearch"
+        )
+        ?.addEventListener(
+            "input",
+            applySubscriptionFilters
+        );
+
+
+    document
+        .getElementById(
+            "subscriptionStatusFilter"
+        )
+        ?.addEventListener(
+            "change",
+            applySubscriptionFilters
+        );
+
+
+    document
+        .getElementById(
+            "subscriptionPlanFilter"
+        )
+        ?.addEventListener(
+            "change",
+            applySubscriptionFilters
+        );
+
+
+    document
+        .getElementById(
+            "clearSubscriptionFilters"
+        )
+        ?.addEventListener(
+            "click",
+            clearSubscriptionFilters
+        );
+
+
+    await loadSubscriptionsData();
+}
+// ==========================================
+// LOAD SUBSCRIPTIONS
+// ==========================================
+
+async function loadSubscriptionsData() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const container =
+        document.getElementById(
+            "subscriptionsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    try {
+
+        container.innerHTML = `
+            <div class="trade-loading">
+                Loading subscriptions...
+            </div>
+        `;
+
+        const response =
+            await fetch(
+                `${API}/admin/subscriptions`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                `Subscription request failed: ${response.status}`
+            );
+        }
+
+        const data =
+            await response.json();
+
+        if (data.success !== true) {
+
+            throw new Error(
+                "Subscription API returned an error."
+            );
+        }
+
+        adminSubscriptionsCache =
+            data.subscriptions || [];
+
+        updateSubscriptionSummary(
+            adminSubscriptionsCache
+        );
+
+        applySubscriptionFilters();
+
+    } catch (error) {
+
+        console.error(
+            "Subscription data failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="trade-error">
+                Failed to load subscriptions.
+            </div>
+        `;
+    }
+}
+// ==========================================
+// SUBSCRIPTION SUMMARY
+// ==========================================
+
+function updateSubscriptionSummary(
+    subscriptions
+) {
+
+    const total =
+        subscriptions.length;
+
+    const active =
+        subscriptions.filter(
+            subscription =>
+                String(
+                    subscription.status || ""
+                ).toLowerCase() === "active"
+        ).length;
+
+    const inactive =
+        subscriptions.filter(
+            subscription =>
+                String(
+                    subscription.status || ""
+                ).toLowerCase() === "inactive"
+        ).length;
+
+    const expired =
+        subscriptions.filter(
+            subscription =>
+                String(
+                    subscription.status || ""
+                ).toLowerCase() === "expired"
+        ).length;
+
+
+    setText(
+        "subscriptionsTotal",
+        formatNumber(total)
+    );
+
+    setText(
+        "subscriptionsActive",
+        formatNumber(active)
+    );
+
+    setText(
+        "subscriptionsInactive",
+        formatNumber(inactive)
+    );
+
+    setText(
+        "subscriptionsExpired",
+        formatNumber(expired)
+    );
+}
+// ==========================================
+// RENDER SUBSCRIPTIONS TABLE
+// ==========================================
+
+function renderSubscriptionsTable(subscriptions) {
+
+    const container =
+        document.getElementById(
+            "subscriptionsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (!subscriptions.length) {
+
+        container.innerHTML = `
+            <div class="trade-empty">
+                No subscriptions found.
+            </div>
+        `;
+
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>USER</th>
+                        <th>PLAN</th>
+                        <th>STATUS</th>
+                        <th>STARTED</th>
+                        <th>EXPIRES</th>
+                        <th>ACTION</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    ${subscriptions.map(subscription => {
+
+                        const status =
+                            String(
+                                subscription.status || "inactive"
+                            ).toLowerCase();
+
+                        return `
+                            <tr>
+
+                                <td>
+                                    <strong>
+                                        ${escapeHtml(
+                                            subscription.email ||
+                                            subscription.user_id ||
+                                            "Unknown"
+                                        )}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(
+                                        subscription.plan || "NONE"
+                                    ).toUpperCase()}
+                                </td>
+
+                                <td>
+
+                                    <span
+                                        class="subscription-status ${status}"
+                                    >
+                                        ${status.toUpperCase()}
+                                    </span>
+
+                                </td>
+
+                                <td>
+                                    ${formatDateTime(
+                                             subscription.expires_at
+                                     )}
+                                </td>
+
+                                <td>
+                                    ${formatSubscriptionDate(
+                                        subscription.expires_at
+                                    )}
+                                </td>
+
+                                <td>
+
+                                    <button
+                                        type="button"
+                                        class="subscription-view-button"
+                                        data-subscription-id="${subscription.id}"
+                                    >
+                                        VIEW
+                                    </button>
+
+                                </td>
+
+                            </tr>
+                        `;
+
+                    }).join("")}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    `;
+
+    container
+        .querySelectorAll(
+            ".subscription-view-button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const id =
+                        button.dataset.subscriptionId;
+
+                    console.log(
+                        "Subscription selected:",
+                        id
+                    );
+
+                }
+            );
+
+        });
+}
+// ==========================================
+// SUBSCRIPTION FILTERS
+// ==========================================
+
+function applySubscriptionFilters() {
+
+    let subscriptions =
+        [...adminSubscriptionsCache];
+
+    const search =
+        (
+            document.getElementById(
+                "subscriptionSearch"
+            )?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const status =
+        document.getElementById(
+            "subscriptionStatusFilter"
+        )?.value || "all";
+
+    const plan =
+        document.getElementById(
+            "subscriptionPlanFilter"
+        )?.value || "all";
+
+
+    if (search) {
+
+        subscriptions =
+            subscriptions.filter(subscription => {
+
+                const email =
+                    String(
+                        subscription.email || ""
+                    ).toLowerCase();
+
+                const userId =
+                    String(
+                        subscription.user_id || ""
+                    ).toLowerCase();
+
+                return (
+                    email.includes(search) ||
+                    userId.includes(search)
+                );
+
+            });
+    }
+
+
+    if (status !== "all") {
+
+        subscriptions =
+            subscriptions.filter(subscription =>
+                String(
+                    subscription.status || ""
+                ).toLowerCase() === status
+            );
+    }
+
+
+    if (plan !== "all") {
+
+        subscriptions =
+            subscriptions.filter(subscription =>
+                String(
+                    subscription.plan || ""
+                ).toLowerCase() === plan
+            );
+    }
+
+
+    const count =
+        document.getElementById(
+            "subscriptionFilterCount"
+        );
+
+    if (count) {
+
+        count.textContent =
+            `${subscriptions.length} matching subscriptions`;
+    }
+
+
+    renderSubscriptionsTable(
+        subscriptions
+    );
+}
+// ==========================================
+// CLEAR SUBSCRIPTION FILTERS
+// ==========================================
+
+function clearSubscriptionFilters() {
+
+    const search =
+        document.getElementById(
+            "subscriptionSearch"
+        );
+
+    const status =
+        document.getElementById(
+            "subscriptionStatusFilter"
+        );
+
+    const plan =
+        document.getElementById(
+            "subscriptionPlanFilter"
+        );
+
+
+    if (search) {
+        search.value = "";
+    }
+
+    if (status) {
+        status.value = "all";
+    }
+
+    if (plan) {
+        plan.value = "all";
+    }
+
+
+    applySubscriptionFilters();
+}
+
+// ==========================================
+// ASSETS PAGE
+// ==========================================
+
+async function showAssetsPage() {
+
+    const content =
+        document.querySelector(".main-area .content");
+
+    if (!content) {
+        console.error(
+            "Assets page content container not found."
+        );
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="page-content">
+
+            <div class="page-header">
+                <div>
+                    <h1>Assets</h1>
+                    <p>
+                        Asset performance based on recorded trades
+                    </p>
+                </div>
+
+                <button
+                    id="assetsRefresh"
+                    class="refresh-button"
+                >
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <!-- ========================== -->
+            <!-- ASSET SUMMARY -->
+            <!-- ========================== -->
+
+            <div class="trades-kpi-grid">
+
+                <div class="kpi-card">
+                    <span class="kpi-label">
+                        TOTAL ASSETS
+                    </span>
+
+                    <strong id="assetTotalCount">
+                        0
+                    </strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span class="kpi-label">
+                        TOTAL TRADES
+                    </span>
+
+                    <strong id="assetTradeCount">
+                        0
+                    </strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span class="kpi-label">
+                        BEST ASSET
+                    </span>
+
+                    <strong id="assetBestAsset">
+                        —
+                    </strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span class="kpi-label">
+                        BEST WIN RATE
+                    </span>
+
+                    <strong id="assetBestRate">
+                        —
+                    </strong>
+                </div>
+
+                <div class="kpi-card">
+                    <span class="kpi-label">
+                        NET P/L
+                    </span>
+
+                    <strong id="assetNetProfit">
+                        $0.00
+                    </strong>
+                </div>
+
+            </div>
+
+            <!-- ========================== -->
+            <!-- ASSET TABLE -->
+            <!-- ========================== -->
+
+            <div class="panel">
+
+    <!-- ========================== -->
+    <!-- ASSET FILTERS -->
+    <!-- ========================== -->
+
+    <div class="asset-filters">
+
+        <input
+            type="text"
+            id="assetSearch"
+            placeholder="Search asset..."
+        >
+
+        <select id="assetMinTrades">
+            <option value="0">All Trade Counts</option>
+            <option value="20">20+ Trades</option>
+            <option value="50">50+ Trades</option>
+            <option value="100">100+ Trades</option>
+            <option value="200">200+ Trades</option>
+        </select>
+
+        <select id="assetWinRate">
+            <option value="0">All Win Rates</option>
+            <option value="50">50%+ Win Rate</option>
+            <option value="60">60%+ Win Rate</option>
+            <option value="70">70%+ Win Rate</option>
+        </select>
+
+        <select id="assetPerformance">
+            <option value="all">All Performance</option>
+            <option value="profit">Profitable</option>
+            <option value="loss">Losing</option>
+        </select>
+
+        <select id="assetSort">
+            <option value="trades">Most Trades</option>
+            <option value="winrate">Highest Win Rate</option>
+            <option value="profit">Highest Net P/L</option>
+            <option value="asset">Asset Name</option>
+        </select>
+
+        <button
+            id="clearAssetFilters"
+            class="clear-button"
+        >
+            CLEAR
+        </button>
+
+    </div>
+
+    <div class="panel-header">
+
+        <div>
+            <h2>Asset Performance</h2>
+
+            <p>
+                Real results grouped by asset
+            </p>
+        </div>
+
+    </div>
+
+    <div
+        id="assetFilterCount"
+        class="asset-filter-count"
+    >
+        Loading...
+    </div>
+
+    <div
+        id="assetsTableContainer"
+        class="table-wrap"
+    >
+        <div class="trade-loading">
+            Loading asset performance...
+        </div>
+    </div>
+
+</div>
+</div>
+        </div>
+    `;
+
+    document
+    .getElementById("assetsRefresh")
+    ?.addEventListener(
+        "click",
+        loadAssetsData
+    );
+
+document
+    .getElementById("assetSearch")
+    ?.addEventListener(
+        "input",
+        () => applyAssetFilters()
+    );
+
+document
+    .getElementById("assetMinTrades")
+    ?.addEventListener(
+        "change",
+        () => applyAssetFilters()
+    );
+
+document
+    .getElementById("assetWinRate")
+    ?.addEventListener(
+        "change",
+        () => applyAssetFilters()
+    );
+
+document
+    .getElementById("assetPerformance")
+    ?.addEventListener(
+        "change",
+        () => applyAssetFilters()
+    );
+
+document
+    .getElementById("assetSort")
+    ?.addEventListener(
+        "change",
+        () => applyAssetFilters()
+    );
+
+document
+    .getElementById("clearAssetFilters")
+    ?.addEventListener(
+        "click",
+        clearAssetFilters
+    );
+
+await loadAssetsData();
+}
+// ==========================================
+// LOAD ASSET DATA
+// ==========================================
+
+async function loadAssetsData() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const container =
+        document.getElementById(
+            "assetsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    try {
+
+        container.innerHTML = `
+            <div class="trade-loading">
+                Loading asset performance...
+            </div>
+        `;
+
+        const response =
+            await fetch(
+                `${API}/admin/trades`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to load trades."
+            );
+        }
+
+        const data =
+            await response.json();
+
+        const trades =
+            data.trades || [];
+
+        window.allAssetTrades = trades;
+
+renderAssetPerformance(trades);
+
+    } catch (error) {
+
+        console.error(
+            "Asset performance failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="trade-error">
+                Failed to load asset performance.
+            </div>
+        `;
+    }
+}
+// ==========================================
+// ASSET FILTERS
+// ==========================================
+
+function applyAssetFilters() {
+
+    const trades =
+        window.allAssetTrades || [];
+
+    const search =
+        (
+            document.getElementById(
+                "assetSearch"
+            )?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const minTrades =
+        Number(
+            document.getElementById(
+                "assetMinTrades"
+            )?.value || 0
+        );
+
+    const minWinRate =
+        Number(
+            document.getElementById(
+                "assetWinRate"
+            )?.value || 0
+        );
+
+    const performance =
+        document.getElementById(
+            "assetPerformance"
+        )?.value || "all";
+
+    const sortBy =
+        document.getElementById(
+            "assetSort"
+        )?.value || "trades";
+
+    // Group trades by asset
+    const assets = {};
+
+    trades.forEach(trade => {
+
+        const asset =
+            String(
+                trade.asset || "UNKNOWN"
+            );
+
+        if (!assets[asset]) {
+
+            assets[asset] = {
+                asset,
+                trades: 0,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                netProfit: 0
+            };
+        }
+
+        const stats =
+            assets[asset];
+
+        stats.trades++;
+
+        const result =
+            String(
+                trade.result || ""
+            ).toUpperCase();
+
+        if (result === "WIN") {
+            stats.wins++;
+        } else if (result === "LOSS") {
+            stats.losses++;
+        } else if (result === "DRAW") {
+            stats.draws++;
+        }
+
+        stats.netProfit +=
+            Number(
+                trade.profit || 0
+            );
+    });
+
+    let assetList =
+        Object.values(assets);
+
+    // Search
+    if (search) {
+
+        assetList =
+            assetList.filter(asset =>
+                asset.asset
+                    .toLowerCase()
+                    .includes(search)
+            );
+    }
+
+    // Minimum trades
+    assetList =
+        assetList.filter(
+            asset =>
+                asset.trades >= minTrades
+        );
+
+    // Calculate win rate
+    assetList.forEach(asset => {
+
+        asset.winRate =
+            asset.trades > 0
+                ? (
+                    asset.wins /
+                    asset.trades
+                ) * 100
+                : 0;
+    });
+
+    // Minimum win rate
+    assetList =
+        assetList.filter(
+            asset =>
+                asset.winRate >= minWinRate
+        );
+
+    // Performance
+    if (performance === "profit") {
+
+        assetList =
+            assetList.filter(
+                asset =>
+                    asset.netProfit > 0
+            );
+
+    } else if (performance === "loss") {
+
+        assetList =
+            assetList.filter(
+                asset =>
+                    asset.netProfit < 0
+            );
+    }
+
+    // Sorting
+    if (sortBy === "winrate") {
+
+        assetList.sort(
+            (a, b) =>
+                b.winRate -
+                a.winRate
+        );
+
+    } else if (sortBy === "profit") {
+
+        assetList.sort(
+            (a, b) =>
+                b.netProfit -
+                a.netProfit
+        );
+
+    } else if (sortBy === "asset") {
+
+        assetList.sort(
+            (a, b) =>
+                a.asset.localeCompare(
+                    b.asset
+                )
+        );
+
+    } else {
+
+        assetList.sort(
+            (a, b) =>
+                b.trades -
+                a.trades
+        );
+    }
+
+    renderFilteredAssetPerformance(
+        assetList
+    );
+}
+// ==========================================
+// RENDER FILTERED ASSETS
+// ==========================================
+
+function renderFilteredAssetPerformance(
+    assetList
+) {
+
+    const container =
+        document.getElementById(
+            "assetsTableContainer"
+        );
+
+    const count =
+        document.getElementById(
+            "assetFilterCount"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (count) {
+
+        count.textContent =
+            `${assetList.length} matching assets`;
+    }
+
+    if (assetList.length === 0) {
+
+        container.innerHTML = `
+            <div class="trade-loading">
+                No assets match your filters.
+            </div>
+        `;
+
+        return;
+    }
+
+    const rows =
+        assetList.map(asset => {
+
+            const profitClass =
+                asset.netProfit > 0
+                    ? "profit-positive"
+                    : asset.netProfit < 0
+                        ? "profit-negative"
+                        : "";
+
+            return `
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${escapeHtml(
+                                asset.asset
+                            )}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            asset.trades
+                        )}
+                    </td>
+
+                    <td class="result-win">
+                        ${formatNumber(
+                            asset.wins
+                        )}
+                    </td>
+
+                    <td class="result-loss">
+                        ${formatNumber(
+                            asset.losses
+                        )}
+                    </td>
+
+                    <td>
+                        ${formatNumber(
+                            asset.draws
+                        )}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${asset.winRate.toFixed(1)}%
+                        </strong>
+                    </td>
+
+                    <td class="${profitClass}">
+                        ${formatMoney(
+                            asset.netProfit
+                        )}
+                    </td>
+
+                </tr>
+            `;
+        })
+        .join("");
+
+    container.innerHTML = `
+        <table class="trades-table">
+
+            <thead>
+                <tr>
+                    <th>ASSET</th>
+                    <th>TRADES</th>
+                    <th>WINS</th>
+                    <th>LOSSES</th>
+                    <th>DRAWS</th>
+                    <th>WIN RATE</th>
+                    <th>NET P/L</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${rows}
+            </tbody>
+
+        </table>
+    `;
+}
+function clearAssetFilters() {
+
+    const search =
+        document.getElementById(
+            "assetSearch"
+        );
+
+    const minTrades =
+        document.getElementById(
+            "assetMinTrades"
+        );
+
+    const winRate =
+        document.getElementById(
+            "assetWinRate"
+        );
+
+    const performance =
+        document.getElementById(
+            "assetPerformance"
+        );
+
+    const sort =
+        document.getElementById(
+            "assetSort"
+        );
+
+    if (search) {
+        search.value = "";
+    }
+
+    if (minTrades) {
+        minTrades.value = "0";
+    }
+
+    if (winRate) {
+        winRate.value = "0";
+    }
+
+    if (performance) {
+        performance.value = "all";
+    }
+
+    if (sort) {
+        sort.value = "trades";
+    }
+
+    applyAssetFilters();
+}
+// ==========================================
+// RENDER ASSET PERFORMANCE
+// ==========================================
+
+function renderAssetPerformance(trades) {
+
+    const container =
+        document.getElementById(
+            "assetsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    const assets = {};
+
+    trades.forEach(trade => {
+
+        const asset =
+            String(
+                trade.asset || "UNKNOWN"
+            );
+
+        if (!assets[asset]) {
+
+            assets[asset] = {
+                asset: asset,
+                trades: 0,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                netProfit: 0
+            };
+        }
+
+        const stats =
+            assets[asset];
+
+        stats.trades++;
+
+        const result =
+            String(
+                trade.result || ""
+            ).toUpperCase();
+
+        if (result === "WIN") {
+            stats.wins++;
+        }
+
+        else if (result === "LOSS") {
+            stats.losses++;
+        }
+
+        else if (result === "DRAW") {
+            stats.draws++;
+        }
+
+        stats.netProfit +=
+            Number(
+                trade.profit || 0
+            );
+    });
+
+    const assetList =
+        Object.values(assets)
+            .sort(
+                (a, b) =>
+                    b.trades - a.trades
+            );
+
+    const totalTrades =
+        trades.length;
+
+    const totalNetProfit =
+        trades.reduce(
+            (sum, trade) =>
+                sum +
+                Number(
+                    trade.profit || 0
+                ),
+            0
+        );
+
+    // Only consider assets with meaningful trade volume
+// so a tiny sample cannot become "Best Asset".
+const bestAsset =
+    [...assetList]
+        .filter(
+            asset =>
+                asset.trades >= 20
+        )
+        .sort(
+            (a, b) => {
+
+                const rateA =
+                    a.wins / a.trades;
+
+                const rateB =
+                    b.wins / b.trades;
+
+                // Highest win rate first
+                if (rateB !== rateA) {
+                    return rateB - rateA;
+                }
+
+                // If tied, prefer higher net P/L
+                return b.netProfit - a.netProfit;
+            }
+        )[0];
+
+    setText(
+        "assetTotalCount",
+        formatNumber(
+            assetList.length
+        )
+    );
+
+    setText(
+        "assetTradeCount",
+        formatNumber(
+            totalTrades
+        )
+    );
+
+    setText(
+        "assetBestAsset",
+        bestAsset
+            ? bestAsset.asset
+            : "—"
+    );
+
+    setText(
+        "assetBestRate",
+        bestAsset
+            ? `${(
+                (bestAsset.wins /
+                bestAsset.trades) *
+                100
+            ).toFixed(1)}%`
+            : "—"
+    );
+
+    setText(
+        "assetNetProfit",
+        formatMoney(
+            totalNetProfit
+        )
+    );
+
+    if (assetList.length === 0) {
+
+        container.innerHTML = `
+            <div class="trade-loading">
+                No asset data available.
+            </div>
+        `;
+
+        return;
+    }
+
+    const rows =
+        assetList
+            .map(asset => {
+
+                const winRate =
+                    asset.trades > 0
+                        ? (
+                            asset.wins /
+                            asset.trades
+                        ) * 100
+                        : 0;
+
+                const profitClass =
+                    asset.netProfit > 0
+                        ? "profit-positive"
+                        : asset.netProfit < 0
+                            ? "profit-negative"
+                            : "";
+
+                return `
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    asset.asset
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${formatNumber(
+                                asset.trades
+                            )}
+                        </td>
+
+                        <td class="result-win">
+                            ${formatNumber(
+                                asset.wins
+                            )}
+                        </td>
+
+                        <td class="result-loss">
+                            ${formatNumber(
+                                asset.losses
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatNumber(
+                                asset.draws
+                            )}
+                        </td>
+
+                        <td>
+                            <strong>
+                                ${winRate.toFixed(1)}%
+                            </strong>
+                        </td>
+
+                        <td class="${profitClass}">
+                            ${formatMoney(
+                                asset.netProfit
+                            )}
+                        </td>
+
+                    </tr>
+                `;
+            })
+            .join("");
+
+    container.innerHTML = `
+        <table class="trades-table">
+
+            <thead>
+
+                <tr>
+                    <th>ASSET</th>
+                    <th>TRADES</th>
+                    <th>WINS</th>
+                    <th>LOSSES</th>
+                    <th>DRAWS</th>
+                    <th>WIN RATE</th>
+                    <th>NET P/L</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+                ${rows}
+            </tbody>
+
+        </table>
+    `;
+}
 async function showPerformancePage() {
 
     const content =
         document.querySelector(".main-area .content");
 
     if (!content) {
-        console.error("Performance page content container not found.");
+        console.error("Performance content not found.");
         return;
     }
 
@@ -4837,9 +8008,7 @@ async function showPerformancePage() {
                         <strong
                             id="perfTotalProfit"
                             class="stat-win"
-                        >
-                            —
-                        </strong>
+                        >—</strong>
                     </div>
 
                     <div class="performance-card">
@@ -4847,16 +8016,12 @@ async function showPerformancePage() {
                         <strong
                             id="perfTotalLoss"
                             class="stat-loss"
-                        >
-                            —
-                        </strong>
+                        >—</strong>
                     </div>
 
                     <div class="performance-card">
                         <span>NET P/L</span>
-                        <strong id="perfNetProfit2">
-                            —
-                        </strong>
+                        <strong id="perfNetProfit2">—</strong>
                     </div>
 
                 </div>
@@ -4900,28 +8065,28 @@ async function showPerformancePage() {
         </div>
     `;
 
-    async function loadPerformance() {
+    const loadPerformance = async () => {
 
-        const status =
-            document.getElementById("performanceStatus");
+        const token =
+            localStorage.getItem("adminToken");
+
+        if (!token) {
+            logout();
+            return;
+        }
 
         try {
 
-            if (status) {
-                status.textContent =
-                    "Loading performance...";
-            }
-
-            const token =
-                localStorage.getItem("adminToken");
-
-            const response =
-                await fetch(`${API}/admin/performance`, {
+            const response = await fetch(
+                `${API}/admin/performance/summary`,
+                {
+                    method: "GET",
                     headers: {
                         Authorization:
                             `Bearer ${token}`
                     }
-                });
+                }
+            );
 
             if (!response.ok) {
                 throw new Error(
@@ -4932,44 +8097,39 @@ async function showPerformancePage() {
             const data =
                 await response.json();
 
-            console.log(
-                "Performance API:",
-                data
-            );
-
-            const report =
-                data.performance || {};
-
             const stats =
-                report.statistics ||
-                report.stats ||
-                report;
+                data.statistics || {};
+
+            console.log(
+                "REAL PERFORMANCE:",
+                stats
+            );
 
             setText(
                 "perfTotalTrades",
                 formatNumber(
-                    stats.total_trades || 0
+                    stats.total_trades
                 )
             );
 
             setText(
                 "perfWins",
                 formatNumber(
-                    stats.wins || 0
+                    stats.wins
                 )
             );
 
             setText(
                 "perfLosses",
                 formatNumber(
-                    stats.losses || 0
+                    stats.losses
                 )
             );
 
             setText(
                 "perfDraws",
                 formatNumber(
-                    stats.draws || 0
+                    stats.draws
                 )
             );
 
@@ -4983,32 +8143,32 @@ async function showPerformancePage() {
             setText(
                 "perfTotalProfit",
                 formatMoney(
-                    stats.total_profit || 0
+                    stats.total_profit
                 )
             );
 
             setText(
                 "perfTotalLoss",
                 formatMoney(
-                    -(Math.abs(
+                    -Math.abs(
                         Number(
                             stats.total_loss || 0
                         )
-                    ))
+                    )
                 )
             );
 
             setText(
                 "perfNetProfit",
                 formatMoney(
-                    stats.net_profit || 0
+                    stats.net_profit
                 )
             );
 
             setText(
                 "perfNetProfit2",
                 formatMoney(
-                    stats.net_profit || 0
+                    stats.net_profit
                 )
             );
 
@@ -5033,10 +8193,10 @@ async function showPerformancePage() {
                 )
             );
 
-            if (status) {
-                status.textContent =
-                    "Live database";
-            }
+            setText(
+                "performanceStatus",
+                "Live database"
+            );
 
         } catch (error) {
 
@@ -5045,12 +8205,12 @@ async function showPerformancePage() {
                 error
             );
 
-            if (status) {
-                status.textContent =
-                    "Unable to load performance.";
-            }
+            setText(
+                "performanceStatus",
+                "Unable to load performance."
+            );
         }
-    }
+    };
 
     document
         .getElementById("performanceRefresh")
