@@ -775,3 +775,353 @@ def admin_delete_subscription(
         "success": True,
         "message": "Subscription deleted.",
     }
+
+
+# ==========================================
+# COUPONS
+# ==========================================
+
+
+@router.get("/coupons")
+def admin_get_coupons(
+    user: dict = Depends(require_admin),
+):
+    rows = database.fetch_all("""
+        SELECT
+            id,
+            code,
+            discount_type,
+            discount_value,
+            max_uses,
+            used_count,
+            status,
+            expires_at,
+            created_at,
+            updated_at
+        FROM coupons
+        ORDER BY created_at DESC
+    """)
+
+    coupons = [dict(row) for row in rows]
+
+    return {
+        "success": True,
+        "coupons": coupons,
+        "total": len(coupons),
+    }
+
+
+# ==========================================
+# CREATE COUPON
+# ==========================================
+
+
+@router.post("/coupons")
+def admin_create_coupon(
+    payload: dict,
+    user: dict = Depends(require_admin),
+):
+    code = str(payload.get("code") or "").strip().upper()
+    discount_type = str(payload.get("discount_type") or "percent").strip().lower()
+
+    discount_value = payload.get("discount_value", 0)
+    max_uses = payload.get("max_uses")
+    status = str(payload.get("status") or "active").strip().lower()
+    expires_at = payload.get("expires_at")
+
+    if not code:
+        raise HTTPException(
+            status_code=400,
+            detail="Coupon code is required.",
+        )
+
+    if discount_type not in ("percent", "fixed"):
+        raise HTTPException(
+            status_code=400,
+            detail="Discount type must be percent or fixed.",
+        )
+
+    try:
+        discount_value = float(discount_value)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail="Discount value must be a number.",
+        )
+
+    if discount_value < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Discount value cannot be negative.",
+        )
+
+    if discount_type == "percent" and discount_value > 100:
+        raise HTTPException(
+            status_code=400,
+            detail="Percentage discount cannot exceed 100.",
+        )
+
+    if max_uses is not None and max_uses != "":
+        try:
+            max_uses = int(max_uses)
+        except (TypeError, ValueError):
+            raise HTTPException(
+                status_code=400,
+                detail="Maximum uses must be a whole number.",
+            )
+
+        if max_uses < 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Maximum uses must be at least 1.",
+            )
+    else:
+        max_uses = None
+
+    if status not in ("active", "inactive"):
+        raise HTTPException(
+            status_code=400,
+            detail="Status must be active or inactive.",
+        )
+
+    now = datetime.now(timezone.utc).isoformat()
+    coupon_id = str(uuid.uuid4())
+
+    try:
+        database.execute(
+            """
+            INSERT INTO coupons (
+                id,
+                code,
+                discount_type,
+                discount_value,
+                max_uses,
+                used_count,
+                status,
+                expires_at,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+            """,
+            (
+                coupon_id,
+                code,
+                discount_type,
+                discount_value,
+                max_uses,
+                status,
+                expires_at,
+                now,
+                now,
+            ),
+        )
+
+    except Exception as error:
+        if "UNIQUE" in str(error).upper():
+            raise HTTPException(
+                status_code=409,
+                detail="Coupon code already exists.",
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to create coupon.",
+        )
+
+    return {
+        "success": True,
+        "message": "Coupon created.",
+        "coupon": {
+            "id": coupon_id,
+            "code": code,
+            "discount_type": discount_type,
+            "discount_value": discount_value,
+            "max_uses": max_uses,
+            "used_count": 0,
+            "status": status,
+            "expires_at": expires_at,
+            "created_at": now,
+            "updated_at": now,
+        },
+    }
+
+
+# ==========================================
+# UPDATE COUPON
+# ==========================================
+
+
+@router.patch("/coupons/{coupon_id}")
+def admin_update_coupon(
+    coupon_id: str,
+    payload: dict,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM coupons
+        WHERE id = ?
+        """,
+        (coupon_id,),
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="Coupon not found.",
+        )
+
+    allowed_fields = {
+        "code",
+        "discount_type",
+        "discount_value",
+        "max_uses",
+        "status",
+        "expires_at",
+    }
+
+    updates = []
+    values = []
+
+    for field in allowed_fields:
+
+        if field not in payload:
+            continue
+
+        value = payload[field]
+
+        if field == "code":
+            value = str(value or "").strip().upper()
+
+            if not value:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Coupon code cannot be empty.",
+                )
+
+        elif field == "discount_type":
+            value = str(value).strip().lower()
+
+            if value not in ("percent", "fixed"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Discount type must be percent or fixed.",
+                )
+
+        elif field == "discount_value":
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Discount value must be a number.",
+                )
+
+            if value < 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Discount value cannot be negative.",
+                )
+
+        elif field == "max_uses":
+            if value in ("", None):
+                value = None
+            else:
+                try:
+                    value = int(value)
+                except (TypeError, ValueError):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Maximum uses must be a whole number.",
+                    )
+
+        elif field == "status":
+            value = str(value).strip().lower()
+
+            if value not in ("active", "inactive"):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Status must be active or inactive.",
+                )
+
+        updates.append(f"{field} = ?")
+        values.append(value)
+
+    if not updates:
+        raise HTTPException(
+            status_code=400,
+            detail="No changes provided.",
+        )
+
+    updates.append("updated_at = ?")
+    values.append(datetime.now(timezone.utc).isoformat())
+
+    values.append(coupon_id)
+
+    try:
+        database.execute(
+            f"""
+            UPDATE coupons
+            SET {", ".join(updates)}
+            WHERE id = ?
+            """,
+            tuple(values),
+        )
+
+    except Exception as error:
+        if "UNIQUE" in str(error).upper():
+            raise HTTPException(
+                status_code=409,
+                detail="Coupon code already exists.",
+            )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to update coupon.",
+        )
+
+    return {
+        "success": True,
+        "message": "Coupon updated.",
+    }
+
+
+# ==========================================
+# DELETE COUPON
+# ==========================================
+
+
+@router.delete("/coupons/{coupon_id}")
+def admin_delete_coupon(
+    coupon_id: str,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM coupons
+        WHERE id = ?
+        """,
+        (coupon_id,),
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="Coupon not found.",
+        )
+
+    database.execute(
+        """
+        DELETE FROM coupons
+        WHERE id = ?
+        """,
+        (coupon_id,),
+    )
+
+    return {
+        "success": True,
+        "message": "Coupon deleted.",
+    }
