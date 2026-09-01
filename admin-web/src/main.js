@@ -7998,18 +7998,17 @@ function renderCouponsTable(
                             <div class="coupon-actions">
 
                                 <button
-                                    class="coupon-action-button"
-                                    onclick="editCoupon('${coupon.id}')"
-                                >
-                                    EDIT
-                                </button>
-
-                                <button
-                                    class="coupon-action-button"
-                                    onclick="deleteCoupon('${coupon.id}')"
-                                >
-                                    DELETE
-                                </button>
+    class="coupon-action-button coupon-edit-button"
+    data-coupon-id="${coupon.id}"
+>
+    EDIT
+</button>
+<button
+    class="coupon-action-button coupon-delete-button"
+    data-coupon-id="${coupon.id}"
+>
+    DELETE
+</button>
 
                             </div>
                         </td>
@@ -8019,9 +8018,8 @@ function renderCouponsTable(
             }
         ).join("");
 
-    container.innerHTML = `
+        container.innerHTML = `
         <table class="coupons-table">
-
             <thead>
                 <tr>
                     <th>CODE</th>
@@ -8032,13 +8030,23 @@ function renderCouponsTable(
                     <th>ACTION</th>
                 </tr>
             </thead>
-
             <tbody>
                 ${rows}
             </tbody>
-
         </table>
     `;
+
+    container.querySelectorAll(".coupon-edit-button").forEach(button => {
+        button.addEventListener("click", () => {
+            editCoupon(button.dataset.couponId);
+        });
+    });
+
+    container.querySelectorAll(".coupon-delete-button").forEach(button => {
+        button.addEventListener("click", () => {
+            deleteCoupon(button.dataset.couponId);
+        });
+    });
 }
 // ==========================================
 // NEW COUPON MODAL
