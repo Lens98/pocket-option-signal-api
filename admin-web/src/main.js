@@ -7595,14 +7595,16 @@ function clearSubscriptionFilters() {
 async function showCouponsPage() {
 
     const container =
-        document.getElementById("pageContent");
+        document.querySelector(".main-area .content");
 
     if (!container) {
         return;
     }
 
     container.innerHTML = `
-        <div class="page-header">
+        <div class="coupons-page">
+
+            <div class="page-header">
 
             <div>
                 <h1>Coupons</h1>
@@ -7706,6 +7708,7 @@ async function showCouponsPage() {
             </div>
 
         </div>
+         </div>
     `;
 
 
@@ -7726,6 +7729,1082 @@ async function showCouponsPage() {
 
 
     await loadCouponsData();
+}
+// ==========================================
+// LOAD COUPONS DATA
+// ==========================================
+
+async function loadCouponsData() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const container =
+        document.getElementById(
+            "couponsTableContainer"
+        );
+
+    if (!token) {
+        console.error(
+            "Admin token not found."
+        );
+        return;
+    }
+
+    if (!container) {
+        console.error(
+            "Coupons table container not found."
+        );
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="loading-state">
+            Loading coupons...
+        </div>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/coupons`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Coupons API response:",
+            data
+        );
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                `Coupon request failed: ${response.status}`
+            );
+        }
+
+        if (data.success !== true) {
+
+            throw new Error(
+                data.detail ||
+                "Failed to load coupons."
+            );
+        }
+
+        const coupons =
+            Array.isArray(data.coupons)
+                ? data.coupons
+                : [];
+
+        updateCouponStatistics(
+            coupons
+        );
+
+        renderCouponsTable(
+            coupons
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Coupon data failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="loading-state" style="color:#ef4444;">
+                Failed to load coupons.
+            </div>
+        `;
+    }
+}
+
+
+// ==========================================
+// COUPON STATISTICS
+// ==========================================
+
+function updateCouponStatistics(
+    coupons
+) {
+
+    const total =
+        coupons.length;
+
+    const active =
+        coupons.filter(
+            coupon =>
+                String(coupon.status || "")
+                    .toLowerCase() === "active"
+        ).length;
+
+    const used =
+        coupons.reduce(
+            (sum, coupon) =>
+                sum +
+                Number(
+                    coupon.used_count || 0
+                ),
+            0
+        );
+
+    const totalElement =
+        document.getElementById(
+            "couponsTotal"
+        );
+
+    const activeElement =
+        document.getElementById(
+            "couponsActive"
+        );
+
+    const usedElement =
+        document.getElementById(
+            "couponsUsed"
+        );
+
+    if (totalElement) {
+        totalElement.textContent =
+            total;
+    }
+
+    if (activeElement) {
+        activeElement.textContent =
+            active;
+    }
+
+    if (usedElement) {
+        usedElement.textContent =
+            used;
+    }
+}
+
+
+// ==========================================
+// RENDER COUPONS TABLE
+// ==========================================
+
+function renderCouponsTable(
+    coupons
+) {
+
+    const container =
+        document.getElementById(
+            "couponsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (!coupons.length) {
+
+        container.innerHTML = `
+            <div class="loading-state">
+                No coupons found.
+            </div>
+        `;
+
+        return;
+    }
+
+    const rows =
+        coupons.map(
+            coupon => {
+
+                const discountType =
+                    String(
+                        coupon.discount_type || ""
+                    ).toLowerCase();
+
+                const discountValue =
+                    Number(
+                        coupon.discount_value || 0
+                    );
+
+                const discount =
+                    discountType === "percent"
+                        ? `${discountValue}%`
+                        : `$${discountValue.toFixed(2)}`;
+
+                const maxUses =
+                    coupon.max_uses === null ||
+                    coupon.max_uses === undefined
+                        ? "Unlimited"
+                        : coupon.max_uses;
+
+                const used =
+                    Number(
+                        coupon.used_count || 0
+                    );
+
+                const status =
+                    String(
+                        coupon.status || "inactive"
+                    ).toLowerCase();
+
+                const expires =
+                    coupon.expires_at
+                        ? formatDateTime(
+                            coupon.expires_at
+                        )
+                        : "Never";
+
+                return `
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    coupon.code || ""
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${discount}
+                        </td>
+
+                        <td>
+                            ${used} / ${maxUses}
+                        </td>
+
+                        <td>
+                            <span class="coupon-status ${status}">
+                                ${escapeHtml(
+                                    status.toUpperCase()
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                expires
+                            )}
+                        </td>
+
+                        <td>
+                            <div class="coupon-actions">
+
+                                <button
+                                    class="coupon-action-button"
+                                    onclick="editCoupon('${coupon.id}')"
+                                >
+                                    EDIT
+                                </button>
+
+                                <button
+                                    class="coupon-action-button"
+                                    onclick="deleteCoupon('${coupon.id}')"
+                                >
+                                    DELETE
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+
+    container.innerHTML = `
+        <table class="coupons-table">
+
+            <thead>
+                <tr>
+                    <th>CODE</th>
+                    <th>DISCOUNT</th>
+                    <th>USES</th>
+                    <th>STATUS</th>
+                    <th>EXPIRES</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${rows}
+            </tbody>
+
+        </table>
+    `;
+}
+// ==========================================
+// NEW COUPON MODAL
+// ==========================================
+
+function showNewCouponModal() {
+
+    const existing =
+        document.getElementById("couponModal");
+
+    if (existing) {
+        existing.remove();
+    }
+
+    const modal =
+        document.createElement("div");
+
+    modal.id = "couponModal";
+
+    modal.innerHTML = `
+        <div class="coupon-modal-overlay">
+
+            <div class="coupon-modal">
+
+                <div class="coupon-modal-header">
+                    <div>
+                        <h2>New Coupon</h2>
+                        <p>Create a promotional discount code</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="closeCouponModal"
+                        class="coupon-modal-close"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                <div class="coupon-modal-body">
+
+                    <label>
+                        Coupon Code
+                    </label>
+
+                    <input
+                        type="text"
+                        id="couponCode"
+                        placeholder="WELCOME10"
+                        maxlength="50"
+                    >
+
+                    <label>
+                        Discount Type
+                    </label>
+
+                    <select id="couponDiscountType">
+                        <option value="percent">
+                            Percentage
+                        </option>
+
+                        <option value="fixed">
+                            Fixed Amount
+                        </option>
+                    </select>
+
+                    <label>
+                        Discount Value
+                    </label>
+
+                    <input
+                        type="number"
+                        id="couponDiscountValue"
+                        placeholder="10"
+                        min="0"
+                        step="0.01"
+                    >
+
+                    <label>
+                        Maximum Uses
+                    </label>
+
+                    <input
+                        type="number"
+                        id="couponMaxUses"
+                        placeholder="Unlimited"
+                        min="1"
+                    >
+
+                    <label>
+                        Expiration Date
+                    </label>
+
+                    <input
+                        type="datetime-local"
+                        id="couponExpiresAt"
+                    >
+
+                </div>
+
+                <div class="coupon-modal-footer">
+
+                    <button
+                        type="button"
+                        id="cancelCouponButton"
+                        class="coupon-cancel-button"
+                    >
+                        CANCEL
+                    </button>
+
+                    <button
+                        type="button"
+                        id="createCouponButton"
+                        class="coupon-save-button"
+                    >
+                        CREATE COUPON
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+
+    document
+        .getElementById("closeCouponModal")
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    document
+        .getElementById("cancelCouponButton")
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    document
+        .getElementById("createCouponButton")
+        ?.addEventListener(
+            "click",
+            createCoupon
+        );
+}
+// ==========================================
+// CREATE COUPON
+// ==========================================
+
+async function createCoupon() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const code =
+        document
+            .getElementById("couponCode")
+            ?.value
+            .trim()
+            .toUpperCase();
+
+    const discountType =
+        document
+            .getElementById("couponDiscountType")
+            ?.value;
+
+    const discountValue =
+        document
+            .getElementById("couponDiscountValue")
+            ?.value;
+
+    const maxUses =
+        document
+            .getElementById("couponMaxUses")
+            ?.value;
+
+    const expiresAt =
+        document
+            .getElementById("couponExpiresAt")
+            ?.value;
+
+
+    if (!code) {
+        alert("Enter a coupon code.");
+        return;
+    }
+
+    if (!discountValue) {
+        alert("Enter a discount value.");
+        return;
+    }
+
+
+    const payload = {
+        code: code,
+        discount_type: discountType,
+        discount_value: Number(discountValue),
+        max_uses:
+            maxUses === ""
+                ? null
+                : Number(maxUses),
+        expires_at:
+            expiresAt === ""
+                ? null
+                : new Date(expiresAt).toISOString()
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/coupons`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        Authorization:
+                            `Bearer ${token}`
+                    },
+
+                    body:
+                        JSON.stringify(payload)
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Create coupon response:",
+            data
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Failed to create coupon."
+            );
+        }
+
+
+        document
+            .getElementById("couponModal")
+            ?.remove();
+
+
+        await loadCouponsData();
+
+
+    } catch (error) {
+
+        console.error(
+            "Create coupon failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to create coupon."
+        );
+    }
+}
+// ==========================================
+// EDIT COUPON
+// ==========================================
+
+async function editCoupon(couponId) {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    if (!token) {
+        alert("Authentication required.");
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/coupons`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                "Failed to load coupon."
+            );
+        }
+
+        const coupon =
+            (data.coupons || []).find(
+                item =>
+                    String(item.id) ===
+                    String(couponId)
+            );
+
+        if (!coupon) {
+            alert("Coupon not found.");
+            return;
+        }
+
+        const existing =
+            document.getElementById(
+                "couponModal"
+            );
+
+        if (existing) {
+            existing.remove();
+        }
+
+        const modal =
+            document.createElement("div");
+
+        modal.id = "couponModal";
+
+        const expiresValue =
+            coupon.expires_at
+                ? new Date(
+                    coupon.expires_at
+                )
+                    .toISOString()
+                    .slice(0, 16)
+                : "";
+
+        modal.innerHTML = `
+            <div class="coupon-modal-overlay">
+
+                <div class="coupon-modal">
+
+                    <div class="coupon-modal-header">
+
+                        <div>
+                            <h2>Edit Coupon</h2>
+
+                            <p>
+                                Update promotional discount code
+                            </p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="closeCouponModal"
+                            class="coupon-modal-close"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+
+                    <div class="coupon-modal-body">
+
+                        <label>
+                            Coupon Code
+                        </label>
+
+                        <input
+                            type="text"
+                            id="couponCode"
+                            value="${escapeHtml(
+                                coupon.code || ""
+                            )}"
+                            maxlength="50"
+                        >
+
+
+                        <label>
+                            Discount Type
+                        </label>
+
+                        <select
+                            id="couponDiscountType"
+                        >
+
+                            <option
+                                value="percent"
+                                ${coupon.discount_type === "percent"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Percentage
+                            </option>
+
+                            <option
+                                value="fixed"
+                                ${coupon.discount_type === "fixed"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Fixed Amount
+                            </option>
+
+                        </select>
+
+
+                        <label>
+                            Discount Value
+                        </label>
+
+                        <input
+                            type="number"
+                            id="couponDiscountValue"
+                            value="${Number(
+                                coupon.discount_value || 0
+                            )}"
+                            min="0"
+                            step="0.01"
+                        >
+
+
+                        <label>
+                            Maximum Uses
+                        </label>
+
+                        <input
+                            type="number"
+                            id="couponMaxUses"
+                            value="${coupon.max_uses ?? ""}"
+                            placeholder="Unlimited"
+                            min="1"
+                        >
+
+
+                        <label>
+                            Expiration Date
+                        </label>
+
+                        <input
+                            type="datetime-local"
+                            id="couponExpiresAt"
+                            value="${expiresValue}"
+                        >
+
+                    </div>
+
+
+                    <div class="coupon-modal-footer">
+
+                        <button
+                            type="button"
+                            id="cancelCouponButton"
+                            class="coupon-cancel-button"
+                        >
+                            CANCEL
+                        </button>
+
+                        <button
+                            type="button"
+                            id="saveCouponButton"
+                            class="coupon-save-button"
+                        >
+                            SAVE CHANGES
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+
+        document
+            .getElementById(
+                "closeCouponModal"
+            )
+            ?.addEventListener(
+                "click",
+                () => modal.remove()
+            );
+
+
+        document
+            .getElementById(
+                "cancelCouponButton"
+            )
+            ?.addEventListener(
+                "click",
+                () => modal.remove()
+            );
+
+
+        document
+            .getElementById(
+                "saveCouponButton"
+            )
+            ?.addEventListener(
+                "click",
+                () =>
+                    updateCoupon(
+                        couponId
+                    )
+            );
+
+    } catch (error) {
+
+        console.error(
+            "Edit coupon failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to load coupon."
+        );
+    }
+}
+
+
+// ==========================================
+// UPDATE COUPON
+// ==========================================
+
+async function updateCoupon(couponId) {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const code =
+        document
+            .getElementById("couponCode")
+            ?.value
+            .trim()
+            .toUpperCase();
+
+    const discountType =
+        document
+            .getElementById(
+                "couponDiscountType"
+            )
+            ?.value;
+
+    const discountValue =
+        document
+            .getElementById(
+                "couponDiscountValue"
+            )
+            ?.value;
+
+    const maxUses =
+        document
+            .getElementById(
+                "couponMaxUses"
+            )
+            ?.value;
+
+    const expiresAt =
+        document
+            .getElementById(
+                "couponExpiresAt"
+            )
+            ?.value;
+
+
+    if (!code) {
+        alert("Enter a coupon code.");
+        return;
+    }
+
+    if (!discountValue) {
+        alert("Enter a discount value.");
+        return;
+    }
+
+
+    const payload = {
+
+        code: code,
+
+        discount_type:
+            discountType,
+
+        discount_value:
+            Number(discountValue),
+
+        max_uses:
+            maxUses === ""
+                ? null
+                : Number(maxUses),
+
+        expires_at:
+            expiresAt === ""
+                ? null
+                : new Date(
+                    expiresAt
+                ).toISOString()
+
+    };
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/coupons/${couponId}`,
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        Authorization:
+                            `Bearer ${token}`
+                    },
+
+                    body:
+                        JSON.stringify(
+                            payload
+                        )
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Update coupon response:",
+            data
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Failed to update coupon."
+            );
+
+        }
+
+
+        document
+            .getElementById(
+                "couponModal"
+            )
+            ?.remove();
+
+
+        await loadCouponsData();
+
+
+    } catch (error) {
+
+        console.error(
+            "Update coupon failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to update coupon."
+        );
+
+    }
+
+}
+
+
+// ==========================================
+// DELETE COUPON
+// ==========================================
+
+async function deleteCoupon(couponId) {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    if (!token) {
+        alert("Authentication required.");
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete this coupon?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/coupons/${couponId}`,
+                {
+                    method: "DELETE",
+
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Delete coupon response:",
+            data
+        );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Failed to delete coupon."
+            );
+
+        }
+
+
+        await loadCouponsData();
+
+
+    } catch (error) {
+
+        console.error(
+            "Delete coupon failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to delete coupon."
+        );
+
+    }
+
 }
 // ==========================================
 // ASSETS PAGE
