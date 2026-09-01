@@ -1430,20 +1430,26 @@ function showDashboard(user) {
                 }
 
 
-                // ==========================
-                // OTHER PAGES
-                // ==========================
-
-                showComingSoon(
-                    item.textContent.trim()
-                );
+               // ==========================
+              // OTHER PAGES
+             // ==========================
+           if (page === "trades") {
+           showTradesPage();
+        } else if (page === "performance") {
+    showPerformancePage();
+      } else {
+    showComingSoon(
+        item.textContent.trim()
+    );
+}
 
             }
+
         );
 
     });
-}
 
+}
 
 // ==========================================
 // LOAD REAL STATS
@@ -2967,29 +2973,6 @@ async function showUserDetails(user) {
 
                 </div>
 
-               <div class="user-performance">
-
-    <div class="user-performance-header">
-
-        <div>
-            <h3>
-                Trading Performance
-            </h3>
-
-            <span>
-                Real recorded trades
-            </span>
-        </div>
-
-        <div
-            id="userPerformanceStatus"
-            class="performance-loading"
-        >
-            Loading...
-        </div>
-
-    </div>
-
 
     <!-- TRADE STATISTICS -->
 
@@ -3184,23 +3167,19 @@ async function showUserDetails(user) {
     </div>
 
 
-    <!-- RECENT TRADES -->
-
+        <!-- RECENT TRADES -->
     <div class="performance-section-title">
         RECENT TRADES
     </div>
 
     <div class="user-trades-container">
-
         <div class="user-trades-header">
-
             <span>ASSET</span>
             <span>TYPE</span>
             <span>RESULT</span>
             <span>CONF.</span>
             <span>PROFIT</span>
             <span>TIME</span>
-
         </div>
 
         <div
@@ -3211,25 +3190,98 @@ async function showUserDetails(user) {
                 Loading trades...
             </div>
         </div>
-
     </div>
 
 </div>
 
-            </div>
+<div class="user-modal-actions">
 
-            <button
-                id="closeUserModalButton"
-                class="modal-primary-button"
-            >
-                CLOSE
-            </button>
+    <button
+        id="closeUserModalButton"
+        class="modal-primary-button"
+    >
+        CLOSE
+    </button>
 
-        </div>
+    ${
+        !isAdmin
+            ? `
+                <button
+                    id="deleteUserButton"
+                    class="modal-danger-button"
+                >
+                    DELETE USER
+                </button>
+            `
+            : ""
+    }
 
-    `;
+</div>
+
+</div>
+`;
 
     document.body.appendChild(modal);
+    document
+    .getElementById("deleteUserButton")
+    ?.addEventListener("click", async () => {
+
+        const confirmed = confirm(
+            `Delete ${user.email}?\n\nThis will permanently delete this user and their account data.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            const token =
+                localStorage.getItem("adminToken");
+
+            const response =
+                await fetch(
+                    `${API}/admin/users/${user.id}`,
+                    {
+                        method: "DELETE",
+                        headers: {
+                            Authorization:
+                                `Bearer ${token}`
+                        }
+                    }
+                );
+
+            const data =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.detail ||
+                    "Failed to delete user."
+                );
+            }
+
+            alert("User deleted successfully.");
+
+            document
+                .getElementById("userDetailsModal")
+                ?.remove();
+
+            await loadUsers();
+
+        } catch (error) {
+
+            console.error(
+                "Delete user failed:",
+                error
+            );
+
+            alert(
+                error.message ||
+                "Failed to delete user."
+            );
+        }
+    });
 
 
     // ======================================
@@ -3662,345 +3714,354 @@ function renderUserRecentTrades(trades) {
 // ==========================================
 
 function setText(id, value) {
-
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-        element.textContent =
-            value;
-    }
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
 }
-
+function logout() {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminUser");
+    showLogin();
+}
 
 function formatNumber(value) {
-
-    const number =
-        Number(value || 0);
-
-    return number.toLocaleString(
-        "en-US"
-    );
+    return Number(value || 0).toLocaleString("en-US");
 }
 
-
 function formatMoney(value) {
-
-    const number =
-        Number(value || 0);
-
-    const sign =
-        number > 0
-            ? "+"
-            : "";
-
+    const number = Number(value || 0);
+    const sign = number > 0 ? "+" : "";
     return `${sign}$${number.toFixed(2)}`;
 }
 
-
 function formatPercent(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
+    if (value === null || value === undefined || value === "") {
         return "—";
     }
-
     return `${Number(value).toFixed(1)}%`;
 }
 
-
 function formatDateTime(value) {
+    if (!value) return "—";
 
-    if (!value) {
-        return "—";
-    }
+    const date = new Date(value);
 
-    const date =
-        new Date(value);
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
+    if (Number.isNaN(date.getTime())) {
         return String(value);
     }
 
-    return date.toLocaleString(
-        "en-US",
-        {
-            month: "short",
-            day: "numeric",
-            hour: "numeric",
-            minute: "2-digit"
-        }
-    );
+    return date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+    });
 }
-
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
 // ==========================================
 // USER HELPERS
 // ==========================================
 
-function getInitials(
-    email
-) {
+function getInitials(email) {
+    const value = String(email || "");
+    if (!value) return "U";
 
-    const value =
-        String(
-            email || ""
-        );
-
-
-    if (!value) {
-        return "U";
-    }
-
-
-    const first =
-        value.charAt(
-            0
-        ).toUpperCase();
-
-
-    const at =
-        value.indexOf(
-            "@"
-        );
-
+    const first = value.charAt(0).toUpperCase();
+    const at = value.indexOf("@");
 
     const second =
-        at > 1
-            ? value.charAt(
-                1
-            ).toUpperCase()
-            : "";
+        at > 1 ? value.charAt(1).toUpperCase() : "";
 
-
-    return (
-        first +
-        second
-    );
-
+    return first + second;
 }
 
+function shortenId(id) {
+    const value = String(id || "");
 
-function shortenId(
-    id
-) {
-
-    const value =
-        String(
-            id || ""
-        );
-
-
-    if (
-        value.length <= 14
-    ) {
-
+    if (value.length <= 14) {
         return value;
-
     }
 
-
-    return (
-        value.substring(
-            0,
-            8
-        ) +
+    return value.substring(0, 8) +
         "..." +
-        value.substring(
-            value.length - 4
-        )
-    );
-
+        value.substring(value.length - 4);
 }
 
+function formatDate(value) {
+    if (!value) return "—";
 
-function formatDate(
-    value
-) {
+    const date = new Date(value);
 
-    if (!value) {
-        return "—";
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
     }
 
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-
-        return String(
-            value
-        );
-
-    }
-
-
-    return date.toLocaleDateString(
-        "en-US",
-        {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        }
-    );
-
+    return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+    });
 }
-
 // ==========================================
-// COMING SOON
+// TRADES PAGE
 // ==========================================
 
-function showComingSoon(page) {
+let adminTradesCache = [];
+let adminTradesPage = 1;
+let adminTradesPerPage = 25;
 
-    console.log(
-        `${page} section is planned next.`
-    );
+async function showTradesPage() {
 
+    const content =
+        document.querySelector(".main-area .content");
 
-    setTimeout(
-        () => {
-
-            document
-                .querySelectorAll(
-                    ".nav-item"
-                )
-                .forEach((item) => {
-
-                    item.classList.toggle(
-                        "active",
-                        item.dataset.page ===
-                            "dashboard"
-                    );
-
-                });
-
-        },
-        500
-    );
-}
-
-
-// ==========================================
-// HELPERS
-// ==========================================
-
-function setText(
-    id,
-    value
-) {
-
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-        element.textContent =
-            value;
-    }
-}
-
-
-function formatNumber(value) {
-
-    return Number(
-        value
-    ).toLocaleString(
-        "en-US"
-    );
-
-}
-
-
-function logout() {
-
-    localStorage.removeItem(
-        "adminToken"
-    );
-
-    localStorage.removeItem(
-        "adminUser"
-    );
-
-    showLogin();
-
-}
-
-
-function escapeHtml(value) {
-
-    return String(value)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
-}
-
-
-// ==========================================
-// RESTORE ADMIN SESSION
-// ==========================================
-
-async function checkExistingSession() {
-
-    const token =
-        localStorage.getItem(
-            "adminToken"
-        );
-
-    const savedUser =
-        localStorage.getItem(
-            "adminUser"
-        );
-
-
-    if (
-        !token ||
-        !savedUser
-    ) {
-
-        showLogin();
-
+    if (!content) {
+        console.error("Trades page content container not found.");
         return;
     }
 
+    content.innerHTML = `
+        <div class="page-content">
+
+            <div class="page-header">
+                <div>
+                    <h1>Trades</h1>
+                    <p>Real recorded trading activity</p>
+                </div>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="trades-kpi-grid">
+
+                <div class="trades-kpi">
+                    <span>TOTAL TRADES</span>
+                    <strong id="tradesTotal">—</strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>WINS</span>
+                    <strong id="tradesWins" class="win">—</strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>LOSSES</span>
+                    <strong id="tradesLosses" class="loss">—</strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>WIN RATE</span>
+                    <strong id="tradesWinRate">—</strong>
+                </div>
+
+                <div class="trades-kpi">
+                    <span>NET P/L</span>
+                    <strong id="tradesProfit" class="gold">—</strong>
+                </div>
+
+            </div>
+
+            <!-- TRADES PANEL -->
+            <div class="panel trades-panel">
+
+                <!-- FILTERS -->
+                <div class="trades-filters">
+
+                    <input
+                        id="tradeSearch"
+                        type="text"
+                        placeholder="Search ID, asset, or user ID..."
+                    >
+
+                    <select id="tradeActionFilter">
+                        <option value="ALL">All Types</option>
+                        <option value="CALL">CALL</option>
+                        <option value="PUT">PUT</option>
+                    </select>
+
+                    <select id="tradeResultFilter">
+                        <option value="ALL">All Results</option>
+                        <option value="WIN">WIN</option>
+                        <option value="LOSS">LOSS</option>
+                        <option value="DRAW">DRAW</option>
+                    </select>
+
+                    <select id="tradeStatusFilter">
+                        <option value="ALL">All Status</option>
+                        <option value="OPEN">OPEN</option>
+                        <option value="CLOSED">CLOSED</option>
+                    </select>
+
+                    <select id="tradeAssetFilter">
+                        <option value="ALL">All Assets</option>
+                    </select>
+
+                    <button
+                        id="clearTradeFilters"
+                        class="trades-clear"
+                    >
+                        CLEAR
+                    </button>
+
+                </div>
+
+                <!-- TOOLBAR -->
+                <div class="trades-toolbar">
+
+                    <span
+                        id="tradesCount"
+                        class="trades-count"
+                    >
+                        Loading trades...
+                    </span>
+
+                    <div class="trades-toolbar-right">
+
+                        <label>
+                            Show
+                            <select id="tradesPerPage">
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </label>
+
+                        <button
+                            id="refreshTrades"
+                            class="trades-refresh"
+                        >
+                            REFRESH
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <!-- TABLE -->
+                <div
+                    id="tradesTableContainer"
+                    class="trades-table-wrap"
+                >
+                    <div class="trade-loading">
+                        Loading trades...
+                    </div>
+                </div>
+
+                <!-- PAGINATION -->
+                <div
+                    id="tradesPagination"
+                    class="trades-pagination"
+                ></div>
+
+            </div>
+
+        </div>
+    `;
+
+    await loadAdminTrades();
+
+    document
+        .getElementById("refreshTrades")
+        ?.addEventListener(
+            "click",
+            loadAdminTrades
+        );
+
+    document
+        .getElementById("tradeSearch")
+        ?.addEventListener(
+            "input",
+            applyTradeFilters
+        );
+
+    document
+        .getElementById("tradeActionFilter")
+        ?.addEventListener(
+            "change",
+            applyTradeFilters
+        );
+
+    document
+        .getElementById("tradeResultFilter")
+        ?.addEventListener(
+            "change",
+            applyTradeFilters
+        );
+
+    document
+        .getElementById("tradeStatusFilter")
+        ?.addEventListener(
+            "change",
+            applyTradeFilters
+        );
+
+    document
+        .getElementById("tradeAssetFilter")
+        ?.addEventListener(
+            "change",
+            applyTradeFilters
+        );
+
+    document
+        .getElementById("clearTradeFilters")
+        ?.addEventListener(
+            "click",
+            clearTradeFilters
+        );
+
+    document
+        .getElementById("tradesPerPage")
+        ?.addEventListener(
+            "change",
+            (event) => {
+
+                adminTradesPerPage =
+                    Number(event.target.value);
+
+                adminTradesPage = 1;
+
+                renderFilteredTrades();
+
+            }
+        );
+}
+
+
+// ==========================================
+// LOAD ADMIN TRADES
+// ==========================================
+
+async function loadAdminTrades() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const container =
+        document.getElementById(
+            "tradesTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
 
     try {
 
+        container.innerHTML = `
+            <div class="trade-loading">
+                Loading trades...
+            </div>
+        `;
+
         const response =
             await fetch(
-                `${API}/auth/admin/test`,
+                `${API}/admin/trades`,
                 {
-                    method: "GET",
-
                     headers: {
                         Authorization:
                             `Bearer ${token}`
@@ -4008,66 +4069,1053 @@ async function checkExistingSession() {
                 }
             );
 
-
         if (!response.ok) {
-
             throw new Error(
-                "Admin session expired."
+                "Failed to load trades."
             );
-
         }
-
 
         const data =
             await response.json();
 
+        adminTradesCache =
+            data.trades || [];
 
-        if (
-            data.success !== true
-        ) {
+        adminTradesPage = 1;
 
-            throw new Error(
-                "Admin access denied."
-            );
+        populateTradeAssetFilter();
 
-        }
+        updateTradeStatistics();
 
-
-        const user =
-            JSON.parse(
-                savedUser
-            );
-
-
-        showDashboard(
-            user
-        );
-
-
-        await loadStats();
-
+        renderFilteredTrades();
 
     } catch (error) {
 
-        console.log(
-            "Admin session invalid:",
+        console.error(
+            "Admin trades failed:",
             error
         );
 
-
-        localStorage.removeItem(
-            "adminToken"
-        );
-
-        localStorage.removeItem(
-            "adminUser"
-        );
-
-
-        showLogin();
-
+        container.innerHTML = `
+            <div class="trade-error">
+                Failed to load trades.
+            </div>
+        `;
     }
 }
 
+
+// ==========================================
+// ASSET FILTER
+// ==========================================
+
+function populateTradeAssetFilter() {
+
+    const select =
+        document.getElementById(
+            "tradeAssetFilter"
+        );
+
+    if (!select) {
+        return;
+    }
+
+    const assets =
+        [
+            ...new Set(
+                adminTradesCache
+                    .map(trade =>
+                        trade.asset
+                    )
+                    .filter(Boolean)
+            )
+        ]
+        .sort();
+
+    select.innerHTML = `
+        <option value="ALL">
+            All Assets
+        </option>
+    `;
+
+    assets.forEach(asset => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = asset;
+        option.textContent = asset;
+
+        select.appendChild(option);
+
+    });
+}
+
+
+// ==========================================
+// STATISTICS
+// ==========================================
+
+function updateTradeStatistics() {
+
+    const trades =
+        adminTradesCache;
+
+    const total =
+        trades.length;
+
+    const wins =
+        trades.filter(
+            trade =>
+                String(
+                    trade.result || ""
+                ).toUpperCase() === "WIN"
+        ).length;
+
+    const losses =
+        trades.filter(
+            trade =>
+                String(
+                    trade.result || ""
+                ).toUpperCase() === "LOSS"
+        ).length;
+
+    const draws =
+        trades.filter(
+            trade =>
+                String(
+                    trade.result || ""
+                ).toUpperCase() === "DRAW"
+        ).length;
+
+    const completed =
+        wins + losses;
+
+    const winRate =
+        completed
+            ? ((wins / completed) * 100).toFixed(2)
+            : "0.00";
+
+    const netProfit =
+        trades.reduce(
+            (sum, trade) =>
+                sum +
+                Number(
+                    trade.profit || 0
+                ),
+            0
+        );
+
+    setText(
+        "tradesTotal",
+        formatNumber(total)
+    );
+
+    setText(
+        "tradesWins",
+        formatNumber(wins)
+    );
+
+    setText(
+        "tradesLosses",
+        formatNumber(losses)
+    );
+
+    setText(
+        "tradesWinRate",
+        `${winRate}%`
+    );
+
+    setText(
+        "tradesProfit",
+        formatMoney(netProfit)
+    );
+
+    setText(
+        "tradesCount",
+        `${formatNumber(total)} trades • ${draws} draws`
+    );
+}
+
+
+// ==========================================
+// FILTER TRADES
+// ==========================================
+
+function applyTradeFilters() {
+
+    adminTradesPage = 1;
+
+    renderFilteredTrades();
+}
+
+
+// ==========================================
+// CLEAR FILTERS
+// ==========================================
+
+function clearTradeFilters() {
+
+    const search =
+        document.getElementById(
+            "tradeSearch"
+        );
+
+    const action =
+        document.getElementById(
+            "tradeActionFilter"
+        );
+
+    const result =
+        document.getElementById(
+            "tradeResultFilter"
+        );
+
+    const status =
+        document.getElementById(
+            "tradeStatusFilter"
+        );
+
+    const asset =
+        document.getElementById(
+            "tradeAssetFilter"
+        );
+
+    if (search) {
+        search.value = "";
+    }
+
+    if (action) {
+        action.value = "ALL";
+    }
+
+    if (result) {
+        result.value = "ALL";
+    }
+
+    if (status) {
+        status.value = "ALL";
+    }
+
+    if (asset) {
+        asset.value = "ALL";
+    }
+
+    adminTradesPage = 1;
+
+    renderFilteredTrades();
+}
+
+
+// ==========================================
+// FILTER + PAGINATION
+// ==========================================
+
+function getFilteredTrades() {
+
+    const search =
+        (
+            document.getElementById(
+                "tradeSearch"
+            )?.value || ""
+        )
+        .trim()
+        .toLowerCase();
+
+    const action =
+        document.getElementById(
+            "tradeActionFilter"
+        )?.value || "ALL";
+
+    const result =
+        document.getElementById(
+            "tradeResultFilter"
+        )?.value || "ALL";
+
+    const status =
+        document.getElementById(
+            "tradeStatusFilter"
+        )?.value || "ALL";
+
+    const asset =
+        document.getElementById(
+            "tradeAssetFilter"
+        )?.value || "ALL";
+
+    return adminTradesCache.filter(
+        trade => {
+
+            const tradeId =
+                String(
+                    trade.id || ""
+                ).toLowerCase();
+
+            const tradeAsset =
+                String(
+                    trade.asset || ""
+                ).toLowerCase();
+
+            const userId =
+                String(
+                    trade.user_id || ""
+                ).toLowerCase();
+
+            const tradeAction =
+                String(
+                    trade.action || ""
+                ).toUpperCase();
+
+            const tradeResult =
+                String(
+                    trade.result || ""
+                ).toUpperCase();
+
+            const tradeStatus =
+                String(
+                    trade.status || ""
+                ).toUpperCase();
+
+            if (
+                search &&
+                !tradeId.includes(search) &&
+                !tradeAsset.includes(search) &&
+                !userId.includes(search)
+            ) {
+                return false;
+            }
+
+            if (
+                action !== "ALL" &&
+                tradeAction !== action
+            ) {
+                return false;
+            }
+
+            if (
+                result !== "ALL" &&
+                tradeResult !== result
+            ) {
+                return false;
+            }
+
+            if (
+                status !== "ALL" &&
+                tradeStatus !== status
+            ) {
+                return false;
+            }
+
+            if (
+                asset !== "ALL" &&
+                String(
+                    trade.asset || ""
+                ) !== asset
+            ) {
+                return false;
+            }
+
+            return true;
+        }
+    );
+}
+
+
+// ==========================================
+// RENDER FILTERED TRADES
+// ==========================================
+
+function renderFilteredTrades() {
+
+    const filtered =
+        getFilteredTrades();
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                filtered.length /
+                adminTradesPerPage
+            )
+        );
+
+    if (
+        adminTradesPage >
+        totalPages
+    ) {
+        adminTradesPage =
+            totalPages;
+    }
+
+    const start =
+        (
+            adminTradesPage - 1
+        ) *
+        adminTradesPerPage;
+
+    const end =
+        start +
+        adminTradesPerPage;
+
+    const pageTrades =
+        filtered.slice(
+            start,
+            end
+        );
+
+    renderAdminTrades(
+        pageTrades,
+        filtered.length
+    );
+
+    renderTradePagination(
+        filtered.length,
+        totalPages
+    );
+}
+
+
+// ==========================================
+// RENDER TRADE TABLE
+// ==========================================
+
+function renderAdminTrades(
+    trades,
+    filteredTotal
+) {
+
+    const container =
+        document.getElementById(
+            "tradesTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (!trades.length) {
+
+        container.innerHTML = `
+            <div class="trade-empty">
+                No trades match your filters.
+            </div>
+        `;
+
+        return;
+    }
+
+    const rows =
+        trades.map(
+            trade => {
+
+                const result =
+                    String(
+                        trade.result || "—"
+                    ).toUpperCase();
+
+                const action =
+                    String(
+                        trade.action || "—"
+                    ).toUpperCase();
+
+                const resultClass =
+                    result === "WIN"
+                        ? "trade-win"
+                        : result === "LOSS"
+                            ? "trade-loss"
+                            : result === "DRAW"
+                                ? "trade-draw"
+                                : "trade-neutral";
+
+                const actionClass =
+                    action === "CALL"
+                        ? "trade-call"
+                        : action === "PUT"
+                            ? "trade-put"
+                            : "trade-neutral";
+
+                const profit =
+                    Number(
+                        trade.profit || 0
+                    );
+
+                const profitClass =
+                    profit > 0
+                        ? "trade-profit-positive"
+                        : profit < 0
+                            ? "trade-profit-negative"
+                            : "trade-neutral";
+
+                return `
+                    <tr>
+
+                        <td class="trade-id">
+                            ${escapeHtml(
+                                shortenId(
+                                    trade.id
+                                )
+                            )}
+                        </td>
+
+                        <td class="trade-asset">
+                            ${escapeHtml(
+                                trade.asset || "—"
+                            )}
+                        </td>
+
+                        <td class="${actionClass}">
+                            ${escapeHtml(action)}
+                        </td>
+
+                        <td class="${resultClass}">
+                            ${escapeHtml(result)}
+                        </td>
+
+                        <td>
+                            ${formatPercent(
+                                trade.confidence
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatPercent(
+                                trade.probability
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatPercent(
+                                trade.agreement_score
+                            )}
+                        </td>
+
+                        <td>
+                            <span class="trade-badge trade-grade">
+                                ${escapeHtml(
+                                    trade.grade || "—"
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                trade.risk || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                trade.trend || "—"
+                            )}
+                        </td>
+
+                        <td class="${profitClass}">
+                            ${formatMoney(profit)}
+                        </td>
+
+                        <td class="trade-status">
+                            ${escapeHtml(
+                                trade.status || "—"
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDateTime(
+                                trade.entry_time
+                            )}
+                        </td>
+
+                        <td>
+                            ${formatDateTime(
+                                trade.exit_time
+                            )}
+                        </td>
+
+                    </tr>
+                `;
+            }
+        )
+        .join("");
+
+    container.innerHTML = `
+        <table class="trades-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>ASSET</th>
+                    <th>TYPE</th>
+                    <th>RESULT</th>
+                    <th>CONF.</th>
+                    <th>PROB.</th>
+                    <th>AGREE.</th>
+                    <th>GRADE</th>
+                    <th>RISK</th>
+                    <th>TREND</th>
+                    <th>PROFIT</th>
+                    <th>STATUS</th>
+                    <th>ENTRY</th>
+                    <th>EXIT</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${rows}
+            </tbody>
+
+        </table>
+    `;
+
+    setText(
+        "tradesCount",
+        `${formatNumber(filteredTotal)} matching trades`
+    );
+}
+
+
+// ==========================================
+// PAGINATION
+// ==========================================
+
+function renderTradePagination(
+    total,
+    totalPages
+) {
+
+    const pagination =
+        document.getElementById(
+            "tradesPagination"
+        );
+
+    if (!pagination) {
+        return;
+    }
+
+    if (total === 0) {
+
+        pagination.innerHTML = "";
+
+        return;
+    }
+
+    pagination.innerHTML = `
+        <div class="pagination-info">
+            Page ${adminTradesPage}
+            of ${totalPages}
+        </div>
+
+        <div class="pagination-buttons">
+
+            <button
+                class="pagination-button"
+                ${adminTradesPage === 1 ? "disabled" : ""}
+                onclick="changeTradesPage(${adminTradesPage - 1})"
+            >
+                ← PREVIOUS
+            </button>
+
+            <span class="pagination-current">
+                ${adminTradesPage}
+            </span>
+
+            <button
+                class="pagination-button"
+                ${adminTradesPage === totalPages ? "disabled" : ""}
+                onclick="changeTradesPage(${adminTradesPage + 1})"
+            >
+                NEXT →
+            </button>
+
+        </div>
+    `;
+}
+
+
+// ==========================================
+// CHANGE PAGE
+// ==========================================
+
+function changeTradesPage(page) {
+
+    const filtered =
+        getFilteredTrades();
+
+    const totalPages =
+        Math.max(
+            1,
+            Math.ceil(
+                filtered.length /
+                adminTradesPerPage
+            )
+        );
+
+    if (
+        page < 1 ||
+        page > totalPages
+    ) {
+        return;
+    }
+
+    adminTradesPage = page;
+
+    renderFilteredTrades();
+}
+// ==========================================
+// PERFORMANCE PAGE
+// ==========================================
+
+async function showPerformancePage() {
+
+    const content =
+        document.querySelector(".main-area .content");
+
+    if (!content) {
+        console.error("Performance page content container not found.");
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="page-content">
+
+            <div class="page-header">
+                <div>
+                    <h1>Performance</h1>
+                    <p>Real trading performance and AI analytics</p>
+                </div>
+
+                <button
+                    id="performanceRefresh"
+                    class="secondary-button"
+                >
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <div class="performance-page-grid">
+
+                <div class="performance-card">
+                    <span>TOTAL TRADES</span>
+                    <strong id="perfTotalTrades">—</strong>
+                </div>
+
+                <div class="performance-card">
+                    <span>WINS</span>
+                    <strong id="perfWins" class="stat-win">—</strong>
+                </div>
+
+                <div class="performance-card">
+                    <span>LOSSES</span>
+                    <strong id="perfLosses" class="stat-loss">—</strong>
+                </div>
+
+                <div class="performance-card">
+                    <span>DRAWS</span>
+                    <strong id="perfDraws">—</strong>
+                </div>
+
+                <div class="performance-card">
+                    <span>WIN RATE</span>
+                    <strong id="perfWinRate">—</strong>
+                </div>
+
+                <div class="performance-card">
+                    <span>NET P/L</span>
+                    <strong id="perfNetProfit">—</strong>
+                </div>
+
+            </div>
+
+            <div class="performance-panel">
+
+                <div class="performance-panel-title">
+                    FINANCIAL PERFORMANCE
+                </div>
+
+                <div class="performance-page-grid">
+
+                    <div class="performance-card">
+                        <span>TOTAL PROFIT</span>
+                        <strong
+                            id="perfTotalProfit"
+                            class="stat-win"
+                        >
+                            —
+                        </strong>
+                    </div>
+
+                    <div class="performance-card">
+                        <span>TOTAL LOSS</span>
+                        <strong
+                            id="perfTotalLoss"
+                            class="stat-loss"
+                        >
+                            —
+                        </strong>
+                    </div>
+
+                    <div class="performance-card">
+                        <span>NET P/L</span>
+                        <strong id="perfNetProfit2">
+                            —
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="performance-panel">
+
+                <div class="performance-panel-title">
+                    SIGNAL QUALITY
+                </div>
+
+                <div class="performance-page-grid">
+
+                    <div class="performance-card">
+                        <span>AVG CONFIDENCE</span>
+                        <strong id="perfConfidence">—</strong>
+                    </div>
+
+                    <div class="performance-card">
+                        <span>AVG PROBABILITY</span>
+                        <strong id="perfProbability">—</strong>
+                    </div>
+
+                    <div class="performance-card">
+                        <span>AVG AGREEMENT</span>
+                        <strong id="perfAgreement">—</strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                id="performanceStatus"
+                class="performance-loading"
+            >
+                Loading performance...
+            </div>
+
+        </div>
+    `;
+
+    async function loadPerformance() {
+
+        const status =
+            document.getElementById("performanceStatus");
+
+        try {
+
+            if (status) {
+                status.textContent =
+                    "Loading performance...";
+            }
+
+            const token =
+                localStorage.getItem("adminToken");
+
+            const response =
+                await fetch(`${API}/admin/performance`, {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                });
+
+            if (!response.ok) {
+                throw new Error(
+                    "Failed to load performance."
+                );
+            }
+
+            const data =
+                await response.json();
+
+            console.log(
+                "Performance API:",
+                data
+            );
+
+            const report =
+                data.performance || {};
+
+            const stats =
+                report.statistics ||
+                report.stats ||
+                report;
+
+            setText(
+                "perfTotalTrades",
+                formatNumber(
+                    stats.total_trades || 0
+                )
+            );
+
+            setText(
+                "perfWins",
+                formatNumber(
+                    stats.wins || 0
+                )
+            );
+
+            setText(
+                "perfLosses",
+                formatNumber(
+                    stats.losses || 0
+                )
+            );
+
+            setText(
+                "perfDraws",
+                formatNumber(
+                    stats.draws || 0
+                )
+            );
+
+            setText(
+                "perfWinRate",
+                formatPercent(
+                    stats.win_rate
+                )
+            );
+
+            setText(
+                "perfTotalProfit",
+                formatMoney(
+                    stats.total_profit || 0
+                )
+            );
+
+            setText(
+                "perfTotalLoss",
+                formatMoney(
+                    -(Math.abs(
+                        Number(
+                            stats.total_loss || 0
+                        )
+                    ))
+                )
+            );
+
+            setText(
+                "perfNetProfit",
+                formatMoney(
+                    stats.net_profit || 0
+                )
+            );
+
+            setText(
+                "perfNetProfit2",
+                formatMoney(
+                    stats.net_profit || 0
+                )
+            );
+
+            setText(
+                "perfConfidence",
+                formatPercent(
+                    stats.average_confidence
+                )
+            );
+
+            setText(
+                "perfProbability",
+                formatPercent(
+                    stats.average_probability
+                )
+            );
+
+            setText(
+                "perfAgreement",
+                formatPercent(
+                    stats.average_agreement
+                )
+            );
+
+            if (status) {
+                status.textContent =
+                    "Live database";
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Performance load failed:",
+                error
+            );
+
+            if (status) {
+                status.textContent =
+                    "Unable to load performance.";
+            }
+        }
+    }
+
+    document
+        .getElementById("performanceRefresh")
+        ?.addEventListener(
+            "click",
+            loadPerformance
+        );
+
+    await loadPerformance();
+}
+// ==========================================
+// COMING SOON
+// ==========================================
+
+function showComingSoon(page) {
+    console.log(`${page} section is planned next.`);
+
+    setTimeout(() => {
+        document.querySelectorAll(".nav-item").forEach(item => {
+            item.classList.toggle(
+                "active",
+                item.dataset.page === "dashboard"
+            );
+        });
+    }, 500);
+}
+async function checkExistingSession() {
+    const token = localStorage.getItem("adminToken");
+    const savedUser = localStorage.getItem("adminUser");
+
+    if (!token || !savedUser) {
+        showLogin();
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API}/auth/admin/test`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error("Admin session expired.");
+        }
+
+        const data = await response.json();
+
+        if (data.success !== true) {
+            throw new Error("Admin access denied.");
+        }
+
+        const user = JSON.parse(savedUser);
+
+        showDashboard(user);
+        await loadStats();
+
+    } catch (error) {
+        console.error("Admin session invalid:", error);
+
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+
+        showLogin();
+    }
+}
 
 checkExistingSession();

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from app.api.auth import require_admin
 from app.database.database import database
@@ -175,6 +175,119 @@ def admin_performance(
     return {
         "success": True,
         "performance": report,
+    }
+
+
+# ==========================================
+# PERFORMANCE SUMMARY
+# ==========================================
+
+
+@router.get("/performance/summary")
+def admin_performance_summary(
+    user: dict = Depends(require_admin),
+):
+    rows = database.fetch_all("""
+        SELECT
+            result,
+            profit,
+            confidence,
+            probability,
+            agreement_score
+        FROM trades
+    """)
+
+    total_trades = len(rows)
+
+    wins = sum(1 for row in rows if str(row["result"] or "").upper() == "WIN")
+
+    losses = sum(1 for row in rows if str(row["result"] or "").upper() == "LOSS")
+
+    draws = sum(1 for row in rows if str(row["result"] or "").upper() == "DRAW")
+
+    completed = wins + losses
+
+    win_rate = round((wins / completed) * 100, 2) if completed else 0
+
+    profits = [
+        float(row["profit"] or 0) for row in rows if float(row["profit"] or 0) > 0
+    ]
+
+    losses_amounts = [
+        float(row["profit"] or 0) for row in rows if float(row["profit"] or 0) < 0
+    ]
+
+    total_profit = sum(profits)
+
+    total_loss = abs(sum(losses_amounts))
+
+    net_profit = total_profit - total_loss
+
+    confidence_values = [
+        float(row["confidence"]) for row in rows if row["confidence"] is not None
+    ]
+
+    probability_values = [
+        float(row["probability"]) for row in rows if row["probability"] is not None
+    ]
+
+    agreement_values = [
+        float(row["agreement_score"])
+        for row in rows
+        if row["agreement_score"] is not None
+    ]
+
+    average_confidence = (
+        round(
+            sum(confidence_values) / len(confidence_values),
+            2,
+        )
+        if confidence_values
+        else 0
+    )
+
+    average_probability = (
+        round(
+            sum(probability_values) / len(probability_values),
+            2,
+        )
+        if probability_values
+        else 0
+    )
+
+    average_agreement = (
+        round(
+            sum(agreement_values) / len(agreement_values),
+            2,
+        )
+        if agreement_values
+        else 0
+    )
+
+    return {
+        "success": True,
+        "statistics": {
+            "total_trades": total_trades,
+            "wins": wins,
+            "losses": losses,
+            "draws": draws,
+            "win_rate": win_rate,
+            "total_profit": round(
+                total_profit,
+                2,
+            ),
+            "total_loss": round(
+                total_loss,
+                2,
+            ),
+            "net_profit": round(
+                net_profit,
+                2,
+            ),
+            "average_confidence": average_confidence,
+            "average_probability": average_probability,
+            "average_agreement": average_agreement,
+        },
     }
 
 
@@ -376,3 +489,92 @@ def admin_user_performance(
         },
         "trades": trades,
     }
+
+
+# ==========================================
+# DELETE USER
+# ==========================================
+
+
+@router.delete("/users/{user_id}")
+def admin_delete_user(
+    user_id: str,
+    user: dict = Depends(require_admin),
+):
+    # Get the user
+    user_row = database.fetch_one(
+        """
+        SELECT id, email, role
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,),
+    )
+
+    if not user_row:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found.",
+        )
+
+    # Never allow an admin account to be deleted
+    if user_row["role"] == "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Administrator accounts cannot be deleted.",
+        )
+
+    # Never allow the currently logged-in admin to delete itself
+    if str(user.get("id")) == str(user_id):
+        raise HTTPException(
+            status_code=403,
+            detail="You cannot delete your own account.",
+        )
+
+    connection = database.connection
+
+    try:
+        cursor = connection.cursor()
+
+        # Delete user's trading history
+        cursor.execute(
+            "DELETE FROM trades WHERE user_id = ?",
+            (user_id,),
+        )
+
+        # Delete user's sessions
+        cursor.execute(
+            "DELETE FROM sessions WHERE user_id = ?",
+            (user_id,),
+        )
+
+        # Delete user's preferences
+        cursor.execute(
+            "DELETE FROM user_preferences WHERE user_id = ?",
+            (user_id,),
+        )
+
+        # Delete the user
+        cursor.execute(
+            "DELETE FROM users WHERE id = ?",
+            (user_id,),
+        )
+
+        if cursor.rowcount != 1:
+            raise Exception("User deletion failed.")
+
+        connection.commit()
+
+        return {
+            "success": True,
+            "message": "User deleted successfully.",
+            "user_id": user_id,
+        }
+
+    except Exception as error:
+        connection.rollback()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to delete user.",
+        ) from error
