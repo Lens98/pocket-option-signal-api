@@ -1416,48 +1416,38 @@ function showDashboard(user) {
                 }
 
 
-                // ==========================
-                // USERS
-                // ==========================
+                if (page === "trades") {
 
-                if (
-                    page === "users"
-                ) {
+                     await showTradesPage();
 
-                    await showUsersPage();
+                } else if (page === "performance") {
 
-                    return;
+                     await showPerformancePage();
+
+                } else if (page === "assets") {
+
+                    await showAssetsPage();
+
+                } else if (page === "signals") {
+
+                   await showSignalsPage();
+
+                 } else if (page === "subscriptions") {
+
+                      await showSubscriptionsPage();
+
+                } else if (page === "coupons") {
+
+                   await showCouponsPage();
+
+                } else {
+
+                showComingSoon(
+                   item.textContent.trim()
+               );
+
                 }
-
-
-          if (page === "trades") {
-
-    await showTradesPage();
-
-} else if (page === "performance") {
-
-    await showPerformancePage();
-
-} else if (page === "assets") {
-
-    await showAssetsPage();
-
-} else if (page === "signals") {
-
-    await showSignalsPage();
-
-} else if (page === "subscriptions") {
-
-    await showSubscriptionsPage();
-
-} else {
-
-    showComingSoon(
-        item.textContent.trim()
-    );
-}
-
-            }
+                }
 
         );
 
@@ -7021,16 +7011,16 @@ function renderSubscriptionsTable(subscriptions) {
                                 </td>
 
                                 <td>
-                                    ${formatDateTime(
-                                             subscription.expires_at
-                                     )}
-                                </td>
+    ${formatDateTime(
+        subscription.started_at
+    )}
+</td>
 
-                                <td>
-                                    ${formatSubscriptionDate(
-                                        subscription.expires_at
-                                    )}
-                                </td>
+<td>
+    ${formatDateTime(
+        subscription.expires_at
+    )}
+</td>
 
                                 <td>
 
@@ -7057,27 +7047,418 @@ function renderSubscriptionsTable(subscriptions) {
     `;
 
     container
-        .querySelectorAll(
-            ".subscription-view-button"
-        )
-        .forEach(button => {
+    .querySelectorAll(".subscription-view-button")
+    .forEach(button => {
+        button.addEventListener(
+            "click",
+            () => {
+                const id =
+                    button.dataset.subscriptionId;
 
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const id =
-                        button.dataset.subscriptionId;
-
-                    console.log(
-                        "Subscription selected:",
-                        id
+                const subscription =
+                    adminSubscriptionsCache.find(
+                        item => String(item.id) === String(id)
                     );
 
+                if (!subscription) {
+                    alert("Subscription not found.");
+                    return;
                 }
-            );
 
-        });
+                showSubscriptionDetailsModal(subscription);
+            }
+        );
+    });
+}
+// ==========================================
+// EDIT SUBSCRIPTION MODAL
+// ==========================================
+
+function showSubscriptionDetailsModal(subscription) {
+
+    document
+        .getElementById("subscriptionDetailsModal")
+        ?.remove();
+
+    const modal = document.createElement("div");
+
+    modal.id = "subscriptionDetailsModal";
+    modal.className = "subscription-modal-overlay";
+
+    // Convert database date to datetime-local value
+    function toDateTimeLocal(value) {
+
+        if (!value) {
+            return "";
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+            return "";
+        }
+
+        const year = date.getFullYear();
+        const month = String(
+            date.getMonth() + 1
+        ).padStart(2, "0");
+
+        const day = String(
+            date.getDate()
+        ).padStart(2, "0");
+
+        const hours = String(
+            date.getHours()
+        ).padStart(2, "0");
+
+        const minutes = String(
+            date.getMinutes()
+        ).padStart(2, "0");
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    modal.innerHTML = `
+
+        <div class="subscription-modal">
+
+            <div class="subscription-modal-header">
+
+                <div>
+                    <h2>Edit Subscription</h2>
+
+                    <p>
+                        Manage subscription access
+                    </p>
+                </div>
+
+                <button
+                    type="button"
+                    id="closeSubscriptionEditModal"
+                    class="modal-close"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="subscription-modal-body">
+
+                <!-- USER -->
+
+                <label>USER</label>
+
+                <input
+                    type="text"
+                    value="${escapeHtml(
+                        subscription.email ||
+                        subscription.user_id ||
+                        "Unknown"
+                    )}"
+                    disabled
+                >
+
+
+                <!-- PLAN -->
+
+                <label>PLAN</label>
+
+                <select id="editSubscriptionPlan">
+
+                    <option
+                        value="NONE"
+                        ${String(subscription.plan).toUpperCase() === "NONE" ? "selected" : ""}
+                    >
+                        NONE
+                    </option>
+
+                    <option
+                        value="MONTHLY"
+                        ${String(subscription.plan).toUpperCase() === "MONTHLY" ? "selected" : ""}
+                    >
+                        MONTHLY
+                    </option>
+
+                    <option
+                        value="YEARLY"
+                        ${String(subscription.plan).toUpperCase() === "YEARLY" ? "selected" : ""}
+                    >
+                        YEARLY
+                    </option>
+
+                    <option
+                        value="LIFETIME"
+                        ${String(subscription.plan).toUpperCase() === "LIFETIME" ? "selected" : ""}
+                    >
+                        LIFETIME
+                    </option>
+
+                </select>
+
+
+                <!-- STATUS -->
+
+                <label>STATUS</label>
+
+                <select id="editSubscriptionStatus">
+
+                    <option
+                        value="active"
+                        ${String(subscription.status).toLowerCase() === "active" ? "selected" : ""}
+                    >
+                        ACTIVE
+                    </option>
+
+                    <option
+                        value="inactive"
+                        ${String(subscription.status).toLowerCase() === "inactive" ? "selected" : ""}
+                    >
+                        INACTIVE
+                    </option>
+
+                    <option
+                        value="expired"
+                        ${String(subscription.status).toLowerCase() === "expired" ? "selected" : ""}
+                    >
+                        EXPIRED
+                    </option>
+
+                </select>
+
+
+                <!-- START DATE -->
+
+                <label>START DATE</label>
+
+                <input
+                    type="datetime-local"
+                    id="editSubscriptionStartedAt"
+                    value="${toDateTimeLocal(
+                        subscription.started_at
+                    )}"
+                >
+
+
+                <!-- EXPIRATION DATE -->
+
+                <label>EXPIRATION DATE</label>
+
+                <input
+                    type="datetime-local"
+                    id="editSubscriptionExpiresAt"
+                    value="${toDateTimeLocal(
+                        subscription.expires_at
+                    )}"
+                >
+
+            </div>
+
+
+            <div class="subscription-modal-footer">
+
+                <button
+                    type="button"
+                    id="cancelSubscriptionEdit"
+                    class="clear-button"
+                >
+                    CANCEL
+                </button>
+
+                <button
+                    type="button"
+                    id="saveSubscriptionEdit"
+                    class="primary-button"
+                >
+                    SAVE CHANGES
+                </button>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+
+    // ==========================================
+    // CLOSE
+    // ==========================================
+
+    document
+        .getElementById(
+            "closeSubscriptionEditModal"
+        )
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    document
+        .getElementById(
+            "cancelSubscriptionEdit"
+        )
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    // ==========================================
+    // SAVE CHANGES
+    // ==========================================
+
+    document
+        .getElementById(
+            "saveSubscriptionEdit"
+        )
+        ?.addEventListener(
+            "click",
+            async () => {
+
+                const button =
+                    document.getElementById(
+                        "saveSubscriptionEdit"
+                    );
+
+                const plan =
+                    document.getElementById(
+                        "editSubscriptionPlan"
+                    )?.value;
+
+                const status =
+                    document.getElementById(
+                        "editSubscriptionStatus"
+                    )?.value;
+
+                const startedAt =
+                    document.getElementById(
+                        "editSubscriptionStartedAt"
+                    )?.value;
+
+                const expiresAt =
+                    document.getElementById(
+                        "editSubscriptionExpiresAt"
+                    )?.value;
+
+
+                if (!plan) {
+                    alert("Please select a plan.");
+                    return;
+                }
+
+                if (!status) {
+                    alert("Please select a status.");
+                    return;
+                }
+
+
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = "SAVING...";
+                }
+
+
+                try {
+
+                    const response =
+                        await fetch(
+                            `${API}/admin/subscriptions/${subscription.id}`,
+                            {
+                                method: "PATCH",
+
+                                headers: {
+                                    "Content-Type":
+                                        "application/json",
+
+                                    Authorization:
+                                        `Bearer ${localStorage.getItem("adminToken")}`
+                                },
+
+                                body: JSON.stringify({
+
+                                    plan: plan,
+
+                                    status: status,
+
+                                    started_at:
+                                        startedAt
+                                            ? new Date(
+                                                startedAt
+                                            ).toISOString()
+                                            : null,
+
+                                    expires_at:
+                                        expiresAt
+                                            ? new Date(
+                                                expiresAt
+                                            ).toISOString()
+                                            : null
+
+                                })
+                            }
+                        );
+
+
+                    const data =
+                        await response.json();
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            data.detail ||
+                            "Failed to update subscription."
+                        );
+
+                    }
+
+
+                    if (data.success !== true) {
+
+                        throw new Error(
+                            "Subscription update failed."
+                        );
+
+                    }
+
+
+                    modal.remove();
+
+                    await loadSubscriptionsData();
+
+                    alert(
+                        "Subscription updated successfully."
+                    );
+
+
+                } catch (error) {
+
+                    console.error(
+                        "Update subscription failed:",
+                        error
+                    );
+
+                    alert(
+                        error.message ||
+                        "Failed to update subscription."
+                    );
+
+
+                    if (button) {
+
+                        button.disabled = false;
+
+                        button.textContent =
+                            "SAVE CHANGES";
+
+                    }
+
+                }
+
+            }
+        );
 }
 // ==========================================
 // SUBSCRIPTION FILTERS
@@ -7207,7 +7588,145 @@ function clearSubscriptionFilters() {
 
     applySubscriptionFilters();
 }
+// ==========================================
+// COUPONS PAGE
+// ==========================================
 
+async function showCouponsPage() {
+
+    const container =
+        document.getElementById("pageContent");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="page-header">
+
+            <div>
+                <h1>Coupons</h1>
+
+                <p>
+                    Manage promotional discount codes
+                </p>
+            </div>
+
+            <div class="page-header-actions">
+
+                <button
+                    id="newCouponButton"
+                    class="primary-button"
+                >
+                    + New Coupon
+                </button>
+
+                <button
+                    id="couponsRefresh"
+                    class="refresh-button"
+                >
+                    ↻ Refresh
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    TOTAL COUPONS
+                </div>
+
+                <div
+                    id="couponsTotal"
+                    class="stat-value"
+                >
+                    0
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    ACTIVE
+                </div>
+
+                <div
+                    id="couponsActive"
+                    class="stat-value"
+                >
+                    0
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <div class="stat-label">
+                    USED
+                </div>
+
+                <div
+                    id="couponsUsed"
+                    class="stat-value"
+                >
+                    0
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="content-card">
+
+            <div class="table-header">
+
+                <div>
+                    <h2>Coupons</h2>
+
+                    <p>
+                        Promotional codes
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div
+                id="couponsTableContainer"
+                class="table-container"
+            >
+
+                <div class="loading-state">
+                    Loading coupons...
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    document
+        .getElementById("couponsRefresh")
+        ?.addEventListener(
+            "click",
+            loadCouponsData
+        );
+
+
+    document
+        .getElementById("newCouponButton")
+        ?.addEventListener(
+            "click",
+            showNewCouponModal
+        );
+
+
+    await loadCouponsData();
+}
 // ==========================================
 // ASSETS PAGE
 // ==========================================

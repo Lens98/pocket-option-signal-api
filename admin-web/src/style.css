@@ -2851,3 +2851,118 @@ td {
     background: #1b2d50;
     border-color: #4f6ee8;
 }
+/* ==========================================
+   SUBSCRIPTION MODAL
+   ========================================== */
+
+.subscription-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0, 0, 0, 0.75);
+    padding: 24px;
+}
+
+.subscription-modal {
+    width: min(520px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+
+    background: #101a2f;
+    border: 1px solid #26385c;
+    border-radius: 14px;
+
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.55);
+
+    color: #ffffff;
+}
+
+.subscription-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid #26385c;
+}
+
+.subscription-modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.subscription-modal-header p {
+    margin: 6px 0 0;
+    color: #8fa3c7;
+    font-size: 13px;
+}
+
+.subscription-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 24px;
+}
+
+.subscription-modal-body label {
+    margin-top: 8px;
+
+    color: #8fa3c7;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.subscription-modal-body select,
+.subscription-modal-body input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 11px 12px;
+
+    background: #0b1426;
+    color: #ffffff;
+
+    border: 1px solid #2a3d63;
+    border-radius: 8px;
+
+    outline: none;
+}
+
+.subscription-modal-body select:focus,
+.subscription-modal-body input:focus {
+    border-color: #526fa8;
+}
+
+.subscription-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+
+    padding: 18px 24px;
+
+    border-top: 1px solid #26385c;
+}
+
+.subscription-modal .modal-close {
+    border: none;
+    background: transparent;
+
+    color: #8fa3c7;
+
+    font-size: 28px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.subscription-modal .modal-close:hover {
+    color: #ffffff;
+}
