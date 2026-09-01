@@ -6332,6 +6332,192 @@ async function showNewSubscriptionModal() {
         );
 }
 // ==========================================
+// CREATE SUBSCRIPTION
+// ==========================================
+
+async function createSubscription() {
+
+    const userId =
+        document.getElementById(
+            "newSubscriptionUser"
+        )?.value;
+
+    const plan =
+        document.getElementById(
+            "newSubscriptionPlan"
+        )?.value;
+
+    const status =
+        document.getElementById(
+            "newSubscriptionStatus"
+        )?.value;
+
+    const startedAt =
+        document.getElementById(
+            "newSubscriptionStartedAt"
+        )?.value;
+
+    const expiresAt =
+        document.getElementById(
+            "newSubscriptionExpiresAt"
+        )?.value;
+
+
+    // ==========================================
+    // VALIDATION
+    // ==========================================
+
+    if (!userId) {
+
+        alert(
+            "Please select a user."
+        );
+
+        return;
+    }
+
+
+    if (!plan) {
+
+        alert(
+            "Please select a plan."
+        );
+
+        return;
+    }
+
+
+    if (!status) {
+
+        alert(
+            "Please select a status."
+        );
+
+        return;
+    }
+
+
+    const button =
+        document.getElementById(
+            "saveSubscriptionButton"
+        );
+
+
+    if (button) {
+
+        button.disabled = true;
+
+        button.textContent =
+            "CREATING...";
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/subscriptions`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        Authorization:
+                            `Bearer ${localStorage.getItem("adminToken")}`
+                    },
+
+                    body: JSON.stringify({
+
+                        user_id: userId,
+
+                        plan: plan,
+
+                        status: status,
+
+                        started_at:
+                            startedAt
+                                ? new Date(
+                                    startedAt
+                                ).toISOString()
+                                : undefined,
+
+                        expires_at:
+                            expiresAt
+                                ? new Date(
+                                    expiresAt
+                                ).toISOString()
+                                : null
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.detail ||
+                "Failed to create subscription."
+            );
+        }
+
+
+        if (data.success !== true) {
+
+            throw new Error(
+                "Subscription creation failed."
+            );
+        }
+
+
+        // ==========================================
+        // SUCCESS
+        // ==========================================
+
+        document
+            .getElementById(
+                "subscriptionModal"
+            )
+            ?.remove();
+
+
+        await loadSubscriptionsData();
+
+
+        alert(
+            "Subscription created successfully."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Create subscription failed:",
+            error
+        );
+
+        alert(
+            error.message ||
+            "Failed to create subscription."
+        );
+
+
+        if (button) {
+
+            button.disabled = false;
+
+            button.textContent =
+                "CREATE SUBSCRIPTION";
+        }
+    }
+}
+// ==========================================
 // SUBSCRIPTIONS PAGE
 // ==========================================
 
