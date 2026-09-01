@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-
+from datetime import datetime, timezone
+import uuid
 from app.api.auth import require_admin
 from app.database.database import database
 from app.database.trade_repository import TradeRepository
@@ -578,3 +579,199 @@ def admin_delete_user(
             status_code=500,
             detail="Failed to delete user.",
         ) from error
+
+
+# ==========================================
+# SUBSCRIPTIONS
+# ==========================================
+
+
+@router.get("/subscriptions")
+def admin_get_subscriptions(
+    user: dict = Depends(require_admin),
+):
+    rows = database.fetch_all("""
+        SELECT
+            subscriptions.id,
+            subscriptions.user_id,
+            users.email,
+            subscriptions.plan,
+            subscriptions.status,
+            subscriptions.started_at,
+            subscriptions.expires_at,
+            subscriptions.created_at,
+            subscriptions.updated_at
+        FROM subscriptions
+        LEFT JOIN users
+            ON users.id = subscriptions.user_id
+        ORDER BY subscriptions.created_at DESC
+    """)
+
+    subscriptions = [dict(row) for row in rows]
+
+    return {
+        "success": True,
+        "subscriptions": subscriptions,
+    }
+
+
+@router.post("/subscriptions")
+def admin_create_subscription(
+    payload: dict,
+    user: dict = Depends(require_admin),
+):
+    user_id = payload.get("user_id")
+    plan = payload.get("plan", "NONE")
+    status = payload.get("status", "active")
+
+    if not user_id:
+        raise HTTPException(status_code=400, detail="user_id is required.")
+
+    existing_user = database.fetch_one(
+        """
+        SELECT id
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,),
+    )
+
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    subscription_id = str(uuid.uuid4())
+
+    started_at = payload.get("started_at", now)
+
+    expires_at = payload.get("expires_at")
+
+    database.execute(
+        """
+        INSERT INTO subscriptions (
+            id,
+            user_id,
+            plan,
+            status,
+            started_at,
+            expires_at,
+            created_at,
+            updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            subscription_id,
+            user_id,
+            plan,
+            status,
+            started_at,
+            expires_at,
+            now,
+            now,
+        ),
+    )
+
+    return {
+        "success": True,
+        "subscription": {
+            "id": subscription_id,
+            "user_id": user_id,
+            "plan": plan,
+            "status": status,
+            "started_at": started_at,
+            "expires_at": expires_at,
+        },
+    }
+
+
+@router.patch("/subscriptions/{subscription_id}")
+def admin_update_subscription(
+    subscription_id: str,
+    payload: dict,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM subscriptions
+        WHERE id = ?
+        """,
+        (subscription_id,),
+    )
+
+    if not existing:
+        raise HTTPException(status_code=404, detail="Subscription not found.")
+
+    allowed_fields = {
+        "plan",
+        "status",
+        "started_at",
+        "expires_at",
+    }
+
+    updates = []
+    values = []
+
+    for field in allowed_fields:
+
+        if field in payload:
+
+            updates.append(f"{field} = ?")
+
+            values.append(payload[field])
+
+    if not updates:
+        raise HTTPException(status_code=400, detail="No valid fields to update.")
+
+    updates.append("updated_at = ?")
+
+    values.append(datetime.now(timezone.utc).isoformat())
+
+    values.append(subscription_id)
+
+    database.execute(
+        f"""
+        UPDATE subscriptions
+        SET {", ".join(updates)}
+        WHERE id = ?
+        """,
+        tuple(values),
+    )
+
+    return {
+        "success": True,
+        "message": "Subscription updated.",
+    }
+
+
+@router.delete("/subscriptions/{subscription_id}")
+def admin_delete_subscription(
+    subscription_id: str,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM subscriptions
+        WHERE id = ?
+        """,
+        (subscription_id,),
+    )
+
+    if not existing:
+        raise HTTPException(status_code=404, detail="Subscription not found.")
+
+    database.execute(
+        """
+        DELETE FROM subscriptions
+        WHERE id = ?
+        """,
+        (subscription_id,),
+    )
+
+    return {
+        "success": True,
+        "message": "Subscription deleted.",
+    }

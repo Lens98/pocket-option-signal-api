@@ -187,6 +187,33 @@ class Database:
 
             )
             """)
+        # ----------------------------------------
+        # Subscriptions
+        # ----------------------------------------
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS subscriptions (
+
+                id TEXT PRIMARY KEY,
+
+                user_id TEXT NOT NULL,
+
+                 plan TEXT NOT NULL DEFAULT 'NONE',
+
+                status TEXT NOT NULL DEFAULT 'inactive',
+
+                started_at TEXT,
+
+                expires_at TEXT,
+
+                created_at TEXT NOT NULL,
+
+                updated_at TEXT NOT NULL,
+
+               FOREIGN KEY (user_id)
+                   REFERENCES users(id)
+           )
+         """)
         self.connection.commit()
 
     # ----------------------------------------
