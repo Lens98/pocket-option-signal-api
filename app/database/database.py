@@ -214,6 +214,24 @@ class Database:
                    REFERENCES users(id)
            )
          """)
+        # ----------------------------------------
+        # Coupons
+        # ----------------------------------------
+
+        cursor.execute("""
+           CREATE TABLE IF NOT EXISTS coupons (
+               id TEXT PRIMARY KEY,
+               code TEXT UNIQUE NOT NULL,
+               discount_type TEXT NOT NULL DEFAULT 'percent',
+               discount_value REAL NOT NULL DEFAULT 0,
+               max_uses INTEGER,
+               used_count INTEGER NOT NULL DEFAULT 0,
+               status TEXT NOT NULL DEFAULT 'active',
+               expires_at TEXT,
+               created_at TEXT NOT NULL,
+               updated_at TEXT NOT NULL
+           )
+        """)
         self.connection.commit()
 
     # ----------------------------------------
