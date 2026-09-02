@@ -9462,15 +9462,17 @@ function renderPaymentsTable(
 
 async function showReportsPage() {
 
-    const content =
-         document.querySelector(".page-content");
+    const container =
+          document.querySelector(".main-area .content");
 
-    if (!content) {
-        console.error("Reports page content container not found.");
-        return;
-    }
+   if (!container) {
+    console.error(
+        "Reports page content container not found."
+    );
+    return;
+}
 
-    content.innerHTML = `
+    container.innerHTML = `
         <div class="reports-page">
 
             <div class="page-header">
@@ -9724,10 +9726,6 @@ async function showReportsPage() {
 }
 
 
-// ==========================================
-// LOAD REPORT DATA
-// ==========================================
-
 async function loadReportsData() {
 
     const status =
@@ -9749,9 +9747,20 @@ async function loadReportsData() {
             );
         }
 
+        const startDate =
+            document.getElementById(
+                "reportsStartDate"
+            )?.value || "";
+
+        const endDate =
+            document.getElementById(
+                "reportsEndDate"
+            )?.value || "";
+
         const [
             performanceResponse,
             usersResponse,
+            tradesResponse,
             paymentsResponse
         ] = await Promise.all([
 
@@ -9776,6 +9785,16 @@ async function loadReportsData() {
             ),
 
             fetch(
+                `${API}/admin/trades`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            ),
+
+            fetch(
                 `${API}/admin/payments`,
                 {
                     headers: {
@@ -9790,6 +9809,7 @@ async function loadReportsData() {
         if (
             !performanceResponse.ok ||
             !usersResponse.ok ||
+            !tradesResponse.ok ||
             !paymentsResponse.ok
         ) {
             throw new Error(
@@ -9803,38 +9823,215 @@ async function loadReportsData() {
         const usersData =
             await usersResponse.json();
 
+        const tradesData =
+            await tradesResponse.json();
+
         const paymentsData =
             await paymentsResponse.json();
 
-        const performance =
-            performanceData.performance || {};
+        /*
+         * PERFORMANCE SUMMARY
+         *
+         * Backend returns:
+         * performanceData.statistics
+         */
+
+        const statistics =
+            performanceData.statistics || {};
+
+        /*
+         * USERS
+         */
 
         const users =
             usersData.users || [];
 
-        const payments =
+        /*
+         * TRADES
+         */
+
+        let trades =
+            tradesData.trades || [];
+
+        /*
+         * PAYMENTS
+         */
+
+        let payments =
             paymentsData.payments || [];
 
-        const totalTrades =
-            Number(
-                performance.total_trades || 0
-            );
+        /*
+         * DATE FILTER
+         *
+         * The backend currently returns all
+         * trades/payments, so filtering is
+         * performed here in the frontend.
+         */
 
-        const wins =
-            Number(
-                performance.wins || 0
-            );
+        if (startDate || endDate) {
 
-        const losses =
-            Number(
-                performance.losses || 0
-            );
+            const start =
+                startDate
+                    ? new Date(
+                        `${startDate}T00:00:00`
+                    )
+                    : null;
+
+            const end =
+                endDate
+                    ? new Date(
+                        `${endDate}T23:59:59`
+                    )
+                    : null;
+
+            trades =
+                trades.filter(trade => {
+
+                    const rawDate =
+                        trade.entry_time ||
+                        trade.created_at ||
+                        trade.exit_time;
+
+                    if (!rawDate) {
+                        return false;
+                    }
+
+                    const tradeDate =
+                        new Date(rawDate);
+
+                    if (
+                        Number.isNaN(
+                            tradeDate.getTime()
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        start &&
+                        tradeDate < start
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        end &&
+                        tradeDate > end
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+
+            payments =
+                payments.filter(payment => {
+
+                    const rawDate =
+                        payment.paid_at ||
+                        payment.created_at;
+
+                    if (!rawDate) {
+                        return false;
+                    }
+
+                    const paymentDate =
+                        new Date(rawDate);
+
+                    if (
+                        Number.isNaN(
+                            paymentDate.getTime()
+                        )
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        start &&
+                        paymentDate < start
+                    ) {
+                        return false;
+                    }
+
+                    if (
+                        end &&
+                        paymentDate > end
+                    ) {
+                        return false;
+                    }
+
+                    return true;
+                });
+        }
+
+        /*
+         * TRADE STATISTICS
+         *
+         * When a date filter is active,
+         * calculate the statistics from
+         * the filtered trades.
+         *
+         * Without a date filter, use the
+         * backend performance summary.
+         */
+
+        let totalTrades;
+        let wins;
+        let losses;
+
+        if (startDate || endDate) {
+
+            totalTrades =
+                trades.length;
+
+            wins =
+                trades.filter(
+                    trade =>
+                        String(
+                            trade.result || ""
+                        ).toUpperCase() === "WIN"
+                ).length;
+
+            losses =
+                trades.filter(
+                    trade =>
+                        String(
+                            trade.result || ""
+                        ).toUpperCase() === "LOSS"
+                ).length;
+
+        } else {
+
+            totalTrades =
+                Number(
+                    statistics.total_trades || 0
+                );
+
+            wins =
+                Number(
+                    statistics.wins || 0
+                );
+
+            losses =
+                Number(
+                    statistics.losses || 0
+                );
+        }
+
+        const completedTrades =
+            wins + losses;
 
         const winRate =
-            totalTrades > 0
-                ? ((wins / totalTrades) * 100)
-                    .toFixed(1) + "%"
+            completedTrades > 0
+                ? (
+                    (wins / completedTrades) *
+                    100
+                ).toFixed(1) + "%"
                 : "0.0%";
+
+        /*
+         * PAYMENT STATISTICS
+         */
 
         const paidPayments =
             payments.filter(
@@ -9856,21 +10053,32 @@ async function loadReportsData() {
             paidPayments.reduce(
                 (total, payment) =>
                     total +
-                    Number(payment.amount || 0),
+                    Number(
+                        payment.amount || 0
+                    ),
                 0
             );
 
+        /*
+         * USERS WITH TRADES
+         *
+         * Use actual trade.user_id values
+         * instead of user.trade_count.
+         */
+
         const tradingUserIds =
             new Set(
-                users
-                    .filter(
-                        user =>
-                            Number(
-                                user.trade_count || 0
-                            ) > 0
+                trades
+                    .map(
+                        trade =>
+                            trade.user_id
                     )
-                    .map(user => user.id)
+                    .filter(Boolean)
             );
+
+        /*
+         * UPDATE UI
+         */
 
         const setText = (
             id,
@@ -9881,7 +10089,8 @@ async function loadReportsData() {
                 document.getElementById(id);
 
             if (element) {
-                element.textContent = value;
+                element.textContent =
+                    value;
             }
         };
 
@@ -9936,8 +10145,14 @@ async function loadReportsData() {
         );
 
         if (status) {
+
+            const filterText =
+                startDate || endDate
+                    ? " (filtered)"
+                    : "";
+
             status.textContent =
-                `Report updated: ${new Date().toLocaleString()}`;
+                `Report updated: ${new Date().toLocaleString()}${filterText}`;
         }
 
     } catch (error) {
