@@ -10683,7 +10683,7 @@ async function checkExistingSession() {
     try {
         const response = await fetch(`${API}/auth/admin/test`, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${localStorage.getItem("adminToken")}`
             }
         });
 
@@ -10735,7 +10735,7 @@ async function showNewPaymentModal() {
             await fetch(`${API}/admin/users`, {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${localStorage.getItem("adminToken")}`
                 }
             });
 
@@ -11140,7 +11140,7 @@ async function createPayment() {
 
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${localStorage.getItem("adminToken")}`
                 },
 
                 body: JSON.stringify({
@@ -11214,7 +11214,7 @@ async function editPayment(paymentId) {
             await fetch(`${API}/admin/payments`, {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${localStorage.getItem("adminToken")}`
                 }
             });
 
@@ -11655,7 +11655,7 @@ async function updatePayment(paymentId) {
 
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${localStorage.getItem("adminToken")}`
                     },
 
                     body: JSON.stringify({
@@ -11738,7 +11738,7 @@ async function deletePayment(paymentId) {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`
         }
     }
 );
