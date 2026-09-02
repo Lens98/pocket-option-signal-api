@@ -1440,10 +1440,10 @@ function showDashboard(user) {
 
                     await showCouponsPage();
                 } else if (page === "payments") {
-
-                    await showPaymentsPage();
-
-                } else {
+    await showPaymentsPage();
+} else if (page === "reports") {
+    await showReportsPage();
+} else {
 
                 showComingSoon(
                    item.textContent.trim()
@@ -9455,6 +9455,503 @@ function renderPaymentsTable(
             );
 
         });
+}
+// ==========================================
+// REPORTS PAGE
+// ==========================================
+
+async function showReportsPage() {
+
+    const content =
+        document.getElementById("pageContent");
+
+    if (!content) {
+        console.error("Reports page content container not found.");
+        return;
+    }
+
+    content.innerHTML = `
+        <div class="reports-page">
+
+            <div class="page-header">
+                <div>
+                    <h1>Reports</h1>
+                    <p>Trading, user, and payment reports</p>
+                </div>
+
+                <div class="page-header-actions">
+                    <button
+                        id="reportsRefresh"
+                        class="refresh-button"
+                    >
+                        REFRESH
+                    </button>
+                </div>
+            </div>
+
+            <!-- DATE FILTERS -->
+
+            <div class="content-card reports-filters">
+
+                <div class="reports-filter-group">
+
+                    <label for="reportsStartDate">
+                        START DATE
+                    </label>
+
+                    <input
+                        type="date"
+                        id="reportsStartDate"
+                    >
+
+                </div>
+
+                <div class="reports-filter-group">
+
+                    <label for="reportsEndDate">
+                        END DATE
+                    </label>
+
+                    <input
+                        type="date"
+                        id="reportsEndDate"
+                    >
+
+                </div>
+
+                <button
+                    id="reportsApply"
+                    class="primary-button"
+                >
+                    APPLY FILTER
+                </button>
+
+            </div>
+
+            <!-- REPORT OVERVIEW -->
+
+            <div class="reports-section">
+
+                <div class="reports-section-title">
+                    REPORT OVERVIEW
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            TOTAL TRADES
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportTotalTrades"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            WINS
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportWins"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            LOSSES
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportLosses"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            WIN RATE
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportWinRate"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- FINANCIAL REPORT -->
+
+            <div class="reports-section">
+
+                <div class="reports-section-title">
+                    FINANCIAL REPORT
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            TOTAL PAYMENTS
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportTotalPayments"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            PAID PAYMENTS
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportPaidPayments"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            PENDING PAYMENTS
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportPendingPayments"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            REVENUE
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportRevenue"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- USER REPORT -->
+
+            <div class="reports-section">
+
+                <div class="reports-section-title">
+                    USER REPORT
+                </div>
+
+                <div class="stats-grid">
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            TOTAL USERS
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportTotalUsers"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-label">
+                            USERS WITH TRADES
+                        </div>
+                        <div
+                            class="stat-value"
+                            id="reportTradingUsers"
+                        >
+                            —
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div
+                id="reportsStatus"
+                class="loading-state"
+            >
+                Loading report...
+            </div>
+
+        </div>
+    `;
+
+    const refreshButton =
+        document.getElementById("reportsRefresh");
+
+    if (refreshButton) {
+        refreshButton.addEventListener(
+            "click",
+            loadReportsData
+        );
+    }
+
+    const applyButton =
+        document.getElementById("reportsApply");
+
+    if (applyButton) {
+        applyButton.addEventListener(
+            "click",
+            loadReportsData
+        );
+    }
+
+    await loadReportsData();
+}
+
+
+// ==========================================
+// LOAD REPORT DATA
+// ==========================================
+
+async function loadReportsData() {
+
+    const status =
+        document.getElementById("reportsStatus");
+
+    try {
+
+        if (status) {
+            status.textContent =
+                "Loading report...";
+        }
+
+        const token =
+            localStorage.getItem("adminToken");
+
+        if (!token) {
+            throw new Error(
+                "Authentication required."
+            );
+        }
+
+        const [
+            performanceResponse,
+            usersResponse,
+            paymentsResponse
+        ] = await Promise.all([
+
+            fetch(
+                `${API}/admin/performance/summary`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            ),
+
+            fetch(
+                `${API}/admin/users`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            ),
+
+            fetch(
+                `${API}/admin/payments`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            )
+
+        ]);
+
+        if (
+            !performanceResponse.ok ||
+            !usersResponse.ok ||
+            !paymentsResponse.ok
+        ) {
+            throw new Error(
+                "Failed to load report data."
+            );
+        }
+
+        const performanceData =
+            await performanceResponse.json();
+
+        const usersData =
+            await usersResponse.json();
+
+        const paymentsData =
+            await paymentsResponse.json();
+
+        const performance =
+            performanceData.performance || {};
+
+        const users =
+            usersData.users || [];
+
+        const payments =
+            paymentsData.payments || [];
+
+        const totalTrades =
+            Number(
+                performance.total_trades || 0
+            );
+
+        const wins =
+            Number(
+                performance.wins || 0
+            );
+
+        const losses =
+            Number(
+                performance.losses || 0
+            );
+
+        const winRate =
+            totalTrades > 0
+                ? ((wins / totalTrades) * 100)
+                    .toFixed(1) + "%"
+                : "0.0%";
+
+        const paidPayments =
+            payments.filter(
+                payment =>
+                    String(
+                        payment.status || ""
+                    ).toLowerCase() === "paid"
+            );
+
+        const pendingPayments =
+            payments.filter(
+                payment =>
+                    String(
+                        payment.status || ""
+                    ).toLowerCase() === "pending"
+            );
+
+        const revenue =
+            paidPayments.reduce(
+                (total, payment) =>
+                    total +
+                    Number(payment.amount || 0),
+                0
+            );
+
+        const tradingUserIds =
+            new Set(
+                users
+                    .filter(
+                        user =>
+                            Number(
+                                user.trade_count || 0
+                            ) > 0
+                    )
+                    .map(user => user.id)
+            );
+
+        const setText = (
+            id,
+            value
+        ) => {
+
+            const element =
+                document.getElementById(id);
+
+            if (element) {
+                element.textContent = value;
+            }
+        };
+
+        setText(
+            "reportTotalTrades",
+            totalTrades
+        );
+
+        setText(
+            "reportWins",
+            wins
+        );
+
+        setText(
+            "reportLosses",
+            losses
+        );
+
+        setText(
+            "reportWinRate",
+            winRate
+        );
+
+        setText(
+            "reportTotalPayments",
+            payments.length
+        );
+
+        setText(
+            "reportPaidPayments",
+            paidPayments.length
+        );
+
+        setText(
+            "reportPendingPayments",
+            pendingPayments.length
+        );
+
+        setText(
+            "reportRevenue",
+            `$${revenue.toFixed(2)}`
+        );
+
+        setText(
+            "reportTotalUsers",
+            users.length
+        );
+
+        setText(
+            "reportTradingUsers",
+            tradingUserIds.size
+        );
+
+        if (status) {
+            status.textContent =
+                `Report updated: ${new Date().toLocaleString()}`;
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Reports load failed:",
+            error
+        );
+
+        if (status) {
+            status.textContent =
+                `Unable to load report: ${error.message}`;
+        }
+    }
 }
 // ==========================================
 // ASSETS PAGE
