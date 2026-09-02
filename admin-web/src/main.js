@@ -8995,6 +8995,46 @@ async function showPaymentsPage() {
         );
 
     }
+        const paymentsContainer =
+        document.getElementById(
+            "paymentsTableContainer"
+        );
+
+    if (paymentsContainer) {
+
+        paymentsContainer.addEventListener(
+            "click",
+            event => {
+
+                const editButton =
+                    event.target.closest(
+                        ".payment-edit-button"
+                    );
+
+                if (editButton) {
+
+                    editPayment(
+                        editButton.dataset.paymentId
+                    );
+
+                    return;
+                }
+
+                const deleteButton =
+                    event.target.closest(
+                        ".payment-delete-button"
+                    );
+
+                if (deleteButton) {
+
+                    deletePayment(
+                        deleteButton.dataset.paymentId
+                    );
+                }
+            }
+        );
+
+    }
 
 
     await loadPaymentsData();
@@ -11156,6 +11196,527 @@ async function createPayment() {
         if (button) {
             button.disabled = false;
             button.textContent = "CREATE PAYMENT";
+        }
+    }
+}
+// ==========================================
+// EDIT PAYMENT MODAL
+// ==========================================
+
+async function editPayment(paymentId) {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    try {
+
+        const response =
+            await fetch(`${API}/admin/payments`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+        const data =
+            await response.json();
+
+        if (!response.ok || data.success !== true) {
+            throw new Error(
+                data.detail || "Failed to load payment."
+            );
+        }
+
+        const payments =
+            Array.isArray(data.payments)
+                ? data.payments
+                : [];
+
+        const payment =
+            payments.find(
+                item =>
+                    String(item.id) ===
+                    String(paymentId)
+            );
+
+        if (!payment) {
+            throw new Error("Payment not found.");
+        }
+
+        const existing =
+            document.getElementById("paymentModal");
+
+        if (existing) {
+            existing.remove();
+        }
+
+        const modal =
+            document.createElement("div");
+
+        modal.id = "paymentModal";
+
+        modal.innerHTML = `
+            <div class="coupon-modal-overlay">
+
+                <div class="coupon-modal">
+
+                    <div class="coupon-modal-header">
+
+                        <div>
+                            <h2>Edit Payment</h2>
+                            <p>Update subscriber payment</p>
+                        </div>
+
+                        <button
+                            type="button"
+                            id="closePaymentModal"
+                            class="coupon-modal-close"
+                        >
+                            ×
+                        </button>
+
+                    </div>
+
+                    <div class="coupon-modal-body">
+
+                        <label>
+                            Subscriber
+                        </label>
+
+                        <input
+                            type="text"
+                            value="${escapeHtml(
+                                payment.email ||
+                                payment.user_id ||
+                                ""
+                            )}"
+                            disabled
+                        >
+
+                        <label>
+                            Amount
+                        </label>
+
+                        <input
+                            type="number"
+                            id="editPaymentAmount"
+                            value="${Number(
+                                payment.amount || 0
+                            ).toFixed(2)}"
+                            min="0"
+                            step="0.01"
+                        >
+
+                        <label>
+                            Currency
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editPaymentCurrency"
+                            value="${escapeHtml(
+                                payment.currency ||
+                                "USD"
+                            )}"
+                        >
+
+                        <label>
+                            Payment Method
+                        </label>
+
+                        <select id="editPaymentMethod">
+
+                            <option
+                                value="stripe"
+                                ${payment.payment_method === "stripe"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Stripe / Card
+                            </option>
+
+                            <option
+                                value="paypal"
+                                ${payment.payment_method === "paypal"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                PayPal
+                            </option>
+
+                            <option
+                                value="crypto"
+                                ${payment.payment_method === "crypto"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Crypto
+                            </option>
+
+                            <option
+                                value="cash_app"
+                                ${payment.payment_method === "cash_app"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Cash App
+                            </option>
+
+                            <option
+                                value="zelle"
+                                ${payment.payment_method === "zelle"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Zelle
+                            </option>
+
+                        </select>
+
+                        <div
+                            id="editCryptoPaymentFields"
+                            style="display:${
+                                payment.payment_method === "crypto"
+                                    ? "block"
+                                    : "none"
+                            };"
+                        >
+
+                            <label>
+                                Crypto Currency
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editPaymentCryptoCurrency"
+                                value="${escapeHtml(
+                                    payment.crypto_currency ||
+                                    ""
+                                )}"
+                                placeholder="USDT"
+                            >
+
+                            <label>
+                                Network
+                            </label>
+
+                            <input
+                                type="text"
+                                id="editPaymentNetwork"
+                                value="${escapeHtml(
+                                    payment.network ||
+                                    ""
+                                )}"
+                                placeholder="TRC20"
+                            >
+
+                        </div>
+
+                        <label>
+                            Transaction ID
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editPaymentTransactionId"
+                            value="${escapeHtml(
+                                payment.transaction_id ||
+                                ""
+                            )}"
+                        >
+
+                        <label>
+                            Wallet Address
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editPaymentWalletAddress"
+                            value="${escapeHtml(
+                                payment.wallet_address ||
+                                ""
+                            )}"
+                        >
+
+                        <label>
+                            Status
+                        </label>
+
+                        <select id="editPaymentStatus">
+
+                            <option
+                                value="paid"
+                                ${payment.status === "paid"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Paid
+                            </option>
+
+                            <option
+                                value="pending"
+                                ${payment.status === "pending"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Pending
+                            </option>
+
+                            <option
+                                value="failed"
+                                ${payment.status === "failed"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Failed
+                            </option>
+
+                            <option
+                                value="refunded"
+                                ${payment.status === "refunded"
+                                    ? "selected"
+                                    : ""}
+                            >
+                                Refunded
+                            </option>
+
+                        </select>
+
+                        <label>
+                            Description
+                        </label>
+
+                        <input
+                            type="text"
+                            id="editPaymentDescription"
+                            value="${escapeHtml(
+                                payment.description ||
+                                ""
+                            )}"
+                        >
+
+                    </div>
+
+                    <div class="coupon-modal-footer">
+
+                        <button
+                            type="button"
+                            id="cancelPaymentButton"
+                            class="coupon-cancel-button"
+                        >
+                            CANCEL
+                        </button>
+
+                        <button
+                            type="button"
+                            id="savePaymentButton"
+                            class="coupon-save-button"
+                        >
+                            SAVE CHANGES
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document
+            .getElementById("closePaymentModal")
+            ?.addEventListener(
+                "click",
+                () => modal.remove()
+            );
+
+        document
+            .getElementById("cancelPaymentButton")
+            ?.addEventListener(
+                "click",
+                () => modal.remove()
+            );
+
+        document
+            .getElementById("editPaymentMethod")
+            ?.addEventListener(
+                "change",
+                event => {
+
+                    const cryptoFields =
+                        document.getElementById(
+                            "editCryptoPaymentFields"
+                        );
+
+                    if (!cryptoFields) {
+                        return;
+                    }
+
+                    cryptoFields.style.display =
+                        event.target.value === "crypto"
+                            ? "block"
+                            : "none";
+                }
+            );
+
+        document
+            .getElementById("savePaymentButton")
+            ?.addEventListener(
+                "click",
+                () => updatePayment(paymentId)
+            );
+
+    } catch (error) {
+
+        alert(error.message);
+    }
+}
+// ==========================================
+// UPDATE PAYMENT
+// ==========================================
+
+async function updatePayment(paymentId) {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const amount =
+        document.getElementById("editPaymentAmount")?.value;
+
+    const currency =
+        document.getElementById("editPaymentCurrency")?.value
+            .trim()
+            .toUpperCase();
+
+    const paymentMethod =
+        document.getElementById("editPaymentMethod")?.value;
+
+    const cryptoCurrency =
+        document.getElementById("editPaymentCryptoCurrency")?.value
+            .trim()
+            .toUpperCase();
+
+    const network =
+        document.getElementById("editPaymentNetwork")?.value
+            .trim()
+            .toUpperCase();
+
+    const transactionId =
+        document.getElementById("editPaymentTransactionId")?.value
+            .trim();
+
+    const walletAddress =
+        document.getElementById("editPaymentWalletAddress")?.value
+            .trim();
+
+    const status =
+        document.getElementById("editPaymentStatus")?.value;
+
+    const description =
+        document.getElementById("editPaymentDescription")?.value
+            .trim();
+
+
+    if (!amount || Number(amount) < 0) {
+        alert("Please enter a valid payment amount.");
+        return;
+    }
+
+
+    if (paymentMethod === "crypto") {
+
+        if (!cryptoCurrency || !network) {
+            alert(
+                "Crypto currency and network are required."
+            );
+            return;
+        }
+
+    }
+
+
+    const button =
+        document.getElementById("savePaymentButton");
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "SAVING...";
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/payments/${paymentId}`,
+                {
+                    method: "PATCH",
+
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+
+                    body: JSON.stringify({
+                        amount: Number(amount),
+                        currency,
+                        payment_method: paymentMethod,
+
+                        crypto_currency:
+                            paymentMethod === "crypto"
+                                ? cryptoCurrency
+                                : null,
+
+                        network:
+                            paymentMethod === "crypto"
+                                ? network
+                                : null,
+
+                        transaction_id:
+                            transactionId || null,
+
+                        wallet_address:
+                            walletAddress || null,
+
+                        status,
+
+                        description:
+                            description || null
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok || data.success !== true) {
+            throw new Error(
+                data.detail ||
+                "Failed to update payment."
+            );
+        }
+
+
+        document
+            .getElementById("paymentModal")
+            ?.remove();
+
+
+        await loadPaymentsData();
+
+
+        alert("Payment updated successfully.");
+
+    } catch (error) {
+
+        alert(error.message);
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "SAVE CHANGES";
         }
     }
 }
