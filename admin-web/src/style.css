@@ -4345,3 +4345,96 @@ td {
         grid-template-columns: 1fr;
     }
 }
+/* =========================
+   Settings Page
+   ========================= */
+
+.settings-card {
+    padding: 28px;
+}
+
+.settings-section {
+    padding-bottom: 28px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-section:last-of-type {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.settings-section h2 {
+    margin: 0 0 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.settings-field {
+    margin-bottom: 20px;
+}
+
+.settings-field:last-child {
+    margin-bottom: 0;
+}
+
+.settings-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.settings-field input,
+.settings-field select {
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: #111827;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.settings-field input:focus,
+.settings-field select:focus {
+    border-color: rgba(99, 102, 241, 0.7);
+}
+
+.settings-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.settings-toggle:last-child {
+    margin-bottom: 0;
+}
+
+.settings-toggle input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.settings-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.settings-actions .primary-button {
+    padding: 11px 20px;
+}
+
+#settingsStatus {
+    font-size: 13px;
+    opacity: 0.8;
+}

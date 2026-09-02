@@ -10171,7 +10171,11 @@ async function loadReportsData() {
     }
 }
 async function showSettingsPage() {
-    const content = document.getElementById("page-content");
+    const content = document.querySelector(".main-area .content");
+    if (!content) {
+    console.error("Settings page content container not found.");
+    return;
+}
 
     content.innerHTML = `
         <div class="page-header">
