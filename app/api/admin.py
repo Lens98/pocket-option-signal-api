@@ -1125,3 +1125,409 @@ def admin_delete_coupon(
         "success": True,
         "message": "Coupon deleted.",
     }
+
+
+# ==========================================
+# PAYMENTS
+# ==========================================
+
+
+@router.get("/payments")
+def admin_get_payments(
+    user: dict = Depends(require_admin),
+):
+    rows = database.fetch_all("""
+        SELECT
+            payments.id,
+            payments.user_id,
+            users.email,
+            payments.subscription_id,
+            payments.amount,
+            payments.currency,
+            payments.payment_method,
+            payments.crypto_currency,
+            payments.network,
+            payments.transaction_id,
+            payments.wallet_address,
+            payments.status,
+            payments.description,
+            payments.paid_at,
+            payments.created_at,
+            payments.updated_at
+        FROM payments
+        LEFT JOIN users
+            ON users.id = payments.user_id
+        ORDER BY payments.created_at DESC
+    """)
+
+    payments = [dict(row) for row in rows]
+
+    return {
+        "success": True,
+        "payments": payments,
+        "total": len(payments),
+    }
+
+
+# ==========================================
+# CREATE PAYMENT
+# ==========================================
+
+
+@router.post("/payments")
+def admin_create_payment(
+    payload: dict,
+    user: dict = Depends(require_admin),
+):
+    user_id = payload.get("user_id")
+    subscription_id = payload.get("subscription_id")
+    amount = payload.get("amount", 0)
+    currency = str(payload.get("currency") or "USD").strip().upper()
+    payment_method = str(payload.get("payment_method") or "").strip().lower()
+
+    crypto_currency = payload.get("crypto_currency")
+    network = payload.get("network")
+    transaction_id = payload.get("transaction_id")
+    wallet_address = payload.get("wallet_address")
+    status = str(payload.get("status") or "pending").strip().lower()
+    description = payload.get("description")
+    paid_at = payload.get("paid_at")
+
+    if not user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="user_id is required.",
+        )
+
+    existing_user = database.fetch_one(
+        """
+        SELECT id
+        FROM users
+        WHERE id = ?
+        """,
+        (user_id,),
+    )
+
+    if not existing_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found.",
+        )
+
+    if subscription_id:
+        existing_subscription = database.fetch_one(
+            """
+            SELECT id
+            FROM subscriptions
+            WHERE id = ?
+            """,
+            (subscription_id,),
+        )
+
+        if not existing_subscription:
+            raise HTTPException(
+                status_code=404,
+                detail="Subscription not found.",
+            )
+
+    allowed_methods = {
+        "stripe",
+        "paypal",
+        "crypto",
+        "cash_app",
+        "zelle",
+    }
+
+    if payment_method not in allowed_methods:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Payment method must be stripe, paypal, " "crypto, cash_app, or zelle."
+            ),
+        )
+
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        raise HTTPException(
+            status_code=400,
+            detail="Amount must be a number.",
+        )
+
+    if amount < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Amount cannot be negative.",
+        )
+
+    allowed_statuses = {
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+    }
+
+    if status not in allowed_statuses:
+        raise HTTPException(
+            status_code=400,
+            detail=("Status must be pending, paid, " "failed, or refunded."),
+        )
+
+    if payment_method == "crypto":
+        crypto_currency = str(crypto_currency or "").strip().upper()
+
+        network = str(network or "").strip().upper()
+
+        if not crypto_currency:
+            raise HTTPException(
+                status_code=400,
+                detail="Crypto currency is required for crypto payments.",
+            )
+
+        if not network:
+            raise HTTPException(
+                status_code=400,
+                detail="Network is required for crypto payments.",
+            )
+    else:
+        crypto_currency = None
+        network = None
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    payment_id = str(uuid.uuid4())
+
+    database.execute(
+        """
+        INSERT INTO payments (
+            id,
+            user_id,
+            subscription_id,
+            amount,
+            currency,
+            payment_method,
+            crypto_currency,
+            network,
+            transaction_id,
+            wallet_address,
+            status,
+            description,
+            paid_at,
+            created_at,
+            updated_at
+        )
+        VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
+        """,
+        (
+            payment_id,
+            user_id,
+            subscription_id,
+            amount,
+            currency,
+            payment_method,
+            crypto_currency,
+            network,
+            transaction_id,
+            wallet_address,
+            status,
+            description,
+            paid_at,
+            now,
+            now,
+        ),
+    )
+
+    return {
+        "success": True,
+        "message": "Payment created.",
+        "payment": {
+            "id": payment_id,
+            "user_id": user_id,
+            "subscription_id": subscription_id,
+            "amount": amount,
+            "currency": currency,
+            "payment_method": payment_method,
+            "crypto_currency": crypto_currency,
+            "network": network,
+            "transaction_id": transaction_id,
+            "wallet_address": wallet_address,
+            "status": status,
+            "description": description,
+            "paid_at": paid_at,
+            "created_at": now,
+            "updated_at": now,
+        },
+    }
+
+
+# ==========================================
+# UPDATE PAYMENT
+# ==========================================
+
+
+@router.patch("/payments/{payment_id}")
+def admin_update_payment(
+    payment_id: str,
+    payload: dict,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM payments
+        WHERE id = ?
+        """,
+        (payment_id,),
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="Payment not found.",
+        )
+
+    allowed_fields = {
+        "subscription_id",
+        "amount",
+        "currency",
+        "payment_method",
+        "crypto_currency",
+        "network",
+        "transaction_id",
+        "wallet_address",
+        "status",
+        "description",
+        "paid_at",
+    }
+
+    updates = []
+    values = []
+
+    for field in allowed_fields:
+
+        if field not in payload:
+            continue
+
+        value = payload[field]
+
+        if field == "amount":
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Amount must be a number.",
+                )
+
+            if value < 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Amount cannot be negative.",
+                )
+
+        elif field == "currency":
+            value = str(value or "USD").strip().upper()
+
+        elif field == "payment_method":
+            value = str(value or "").strip().lower()
+
+            if value not in {
+                "stripe",
+                "paypal",
+                "crypto",
+                "cash_app",
+                "zelle",
+            }:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid payment method.",
+                )
+
+        elif field == "status":
+            value = str(value or "").strip().lower()
+
+            if value not in {
+                "pending",
+                "paid",
+                "failed",
+                "refunded",
+            }:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid payment status.",
+                )
+
+        elif field == "crypto_currency":
+            value = str(value).strip().upper() if value not in (None, "") else None
+
+        elif field == "network":
+            value = str(value).strip().upper() if value not in (None, "") else None
+
+        updates.append(f"{field} = ?")
+        values.append(value)
+
+    if not updates:
+        raise HTTPException(
+            status_code=400,
+            detail="No changes provided.",
+        )
+
+    updates.append("updated_at = ?")
+    values.append(datetime.now(timezone.utc).isoformat())
+
+    values.append(payment_id)
+
+    database.execute(
+        f"""
+        UPDATE payments
+        SET {", ".join(updates)}
+        WHERE id = ?
+        """,
+        tuple(values),
+    )
+
+    return {
+        "success": True,
+        "message": "Payment updated.",
+    }
+
+
+# ==========================================
+# DELETE PAYMENT
+# ==========================================
+
+
+@router.delete("/payments/{payment_id}")
+def admin_delete_payment(
+    payment_id: str,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM payments
+        WHERE id = ?
+        """,
+        (payment_id,),
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="Payment not found.",
+        )
+
+    database.execute(
+        """
+        DELETE FROM payments
+        WHERE id = ?
+        """,
+        (payment_id,),
+    )
+
+    return {
+        "success": True,
+        "message": "Payment deleted.",
+    }

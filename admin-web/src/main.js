@@ -1438,7 +1438,10 @@ function showDashboard(user) {
 
                 } else if (page === "coupons") {
 
-                   await showCouponsPage();
+                    await showCouponsPage();
+                } else if (page === "payments") {
+
+                    await showPaymentsPage();
 
                 } else {
 
@@ -8794,7 +8797,7 @@ async function deleteCoupon(couponId) {
             );
 
         }
-
+    
 
         await loadCouponsData();
 
@@ -8809,10 +8812,609 @@ async function deleteCoupon(couponId) {
         alert(
             error.message ||
             "Failed to delete coupon."
+                );
+    }
+}
+
+    // ==========================================
+  // PAYMENTS PAGE
+// ==========================================
+
+async function showPaymentsPage() {
+
+    const container =
+        document.querySelector(".main-area .content");
+
+    if (!container) {
+        console.error(
+            "Payments page content container not found."
+        );
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="payments-page">
+
+            <div class="page-header">
+
+                <div>
+                    <h1>Payments</h1>
+                    <p>Manage subscriber payments and transactions.</p>
+                </div>
+
+                <div class="page-header-actions">
+
+                    <button
+                        id="newPaymentButton"
+                        class="primary-button"
+                    >
+                        + NEW PAYMENT
+                    </button>
+
+                    <button
+                        id="paymentsRefresh"
+                        class="refresh-button"
+                    >
+                        REFRESH
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        TOTAL PAYMENTS
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="paymentsTotal"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        PAID
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="paymentsPaid"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        PENDING
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="paymentsPending"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        REVENUE
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="paymentsRevenue"
+                    >
+                        $0.00
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="content-card">
+
+                <div class="table-header">
+
+                    <div>
+                        <h2>Payment History</h2>
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="paymentsTableContainer"
+                    class="table-container"
+                >
+
+                    <div class="loading-state">
+                        Loading payments...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    const refreshButton =
+        document.getElementById(
+            "paymentsRefresh"
+        );
+
+    if (refreshButton) {
+
+        refreshButton.addEventListener(
+            "click",
+            async () => {
+
+                await loadPaymentsData();
+
+            }
         );
 
     }
 
+
+    const newPaymentButton =
+        document.getElementById(
+            "newPaymentButton"
+        );
+
+    if (newPaymentButton) {
+
+        newPaymentButton.addEventListener(
+            "click",
+            () => {
+
+                showNewPaymentModal();
+
+            }
+        );
+
+    }
+
+
+    await loadPaymentsData();
+
+}
+// ==========================================
+// LOAD PAYMENTS DATA
+// ==========================================
+
+async function loadPaymentsData() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const container =
+        document.getElementById(
+            "paymentsTableContainer"
+        );
+
+    if (!token) {
+        console.error(
+            "Admin token not found."
+        );
+        return;
+    }
+
+    if (!container) {
+        console.error(
+            "Payments table container not found."
+        );
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="loading-state">
+            Loading payments...
+        </div>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/admin/payments`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        console.log(
+            "Payments API response:",
+            data
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                data.detail ||
+                `Payment request failed: ${response.status}`
+            );
+        }
+
+        if (data.success !== true) {
+            throw new Error(
+                data.detail ||
+                "Failed to load payments."
+            );
+        }
+
+        const payments =
+            Array.isArray(data.payments)
+                ? data.payments
+                : [];
+
+        updatePaymentStatistics(
+            payments
+        );
+
+        renderPaymentsTable(
+            payments
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Payment data failed:",
+            error
+        );
+
+        container.innerHTML = `
+            <div class="loading-state" style="color:#ef4444;">
+                Failed to load payments.
+            </div>
+        `;
+    }
+}
+
+
+// ==========================================
+// PAYMENT STATISTICS
+// ==========================================
+
+function updatePaymentStatistics(
+    payments
+) {
+
+    const total =
+        payments.length;
+
+    const paid =
+        payments.filter(
+            payment =>
+                String(
+                    payment.status || ""
+                ).toLowerCase() === "paid"
+        ).length;
+
+    const pending =
+        payments.filter(
+            payment =>
+                String(
+                    payment.status || ""
+                ).toLowerCase() === "pending"
+        ).length;
+
+    const revenue =
+        payments.reduce(
+            (sum, payment) => {
+
+                const status =
+                    String(
+                        payment.status || ""
+                    ).toLowerCase();
+
+                if (status !== "paid") {
+                    return sum;
+                }
+
+                return (
+                    sum +
+                    Number(
+                        payment.amount || 0
+                    )
+                );
+            },
+            0
+        );
+
+    const totalElement =
+        document.getElementById(
+            "paymentsTotal"
+        );
+
+    const paidElement =
+        document.getElementById(
+            "paymentsPaid"
+        );
+
+    const pendingElement =
+        document.getElementById(
+            "paymentsPending"
+        );
+
+    const revenueElement =
+        document.getElementById(
+            "paymentsRevenue"
+        );
+
+    if (totalElement) {
+        totalElement.textContent =
+            total;
+    }
+
+    if (paidElement) {
+        paidElement.textContent =
+            paid;
+    }
+
+    if (pendingElement) {
+        pendingElement.textContent =
+            pending;
+    }
+
+    if (revenueElement) {
+        revenueElement.textContent =
+            `$${revenue.toFixed(2)}`;
+    }
+}
+
+
+// ==========================================
+// RENDER PAYMENTS TABLE
+// ==========================================
+
+function renderPaymentsTable(
+    payments
+) {
+
+    const container =
+        document.getElementById(
+            "paymentsTableContainer"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    if (!payments.length) {
+
+        container.innerHTML = `
+            <div class="loading-state">
+                No payments found.
+            </div>
+        `;
+
+        return;
+    }
+
+    const rows =
+        payments.map(
+            payment => {
+
+                const status =
+                    String(
+                        payment.status ||
+                        "pending"
+                    ).toLowerCase();
+
+                const method =
+                    String(
+                        payment.payment_method ||
+                        ""
+                    ).toLowerCase();
+
+                const methodLabels = {
+                    stripe: "Stripe / Card",
+                    paypal: "PayPal",
+                    crypto: "Crypto",
+                    cash_app: "Cash App",
+                    zelle: "Zelle"
+                };
+
+                const methodLabel =
+                    methodLabels[method] ||
+                    payment.payment_method ||
+                    "—";
+
+                const cryptoInfo =
+                    method === "crypto"
+                        ? `
+                            <div class="payment-crypto-info">
+                                ${escapeHtml(
+                                    payment.crypto_currency ||
+                                    ""
+                                )}
+                                ${
+                                    payment.network
+                                        ? ` / ${escapeHtml(payment.network)}`
+                                        : ""
+                                }
+                            </div>
+                          `
+                        : "";
+
+                const amount =
+                    Number(
+                        payment.amount || 0
+                    );
+
+                const date =
+                    payment.created_at
+                        ? formatDateTime(
+                            payment.created_at
+                        )
+                        : "—";
+
+                return `
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHtml(
+                                    payment.id ||
+                                    ""
+                                )}
+                            </strong>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(
+                                payment.user_id ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td>
+                            <strong>
+                                $${amount.toFixed(2)}
+                            </strong>
+                            <div class="payment-currency">
+                                ${escapeHtml(
+                                    payment.currency ||
+                                    "USD"
+                                )}
+                            </div>
+                        </td>
+
+                        <td>
+                            <span class="payment-method">
+                                ${escapeHtml(
+                                    methodLabel
+                                )}
+                            </span>
+                            ${cryptoInfo}
+                        </td>
+
+                        <td>
+                            <span
+                                class="payment-status ${escapeHtml(status)}"
+                            >
+                                ${escapeHtml(
+                                    status.toUpperCase()
+                                )}
+                            </span>
+                        </td>
+
+                        <td>
+                            ${escapeHtml(date)}
+                        </td>
+
+                        <td>
+                            <div class="payment-actions">
+
+                                <button
+                                    class="payment-action-button payment-edit-button"
+                                    data-payment-id="${payment.id}"
+                                >
+                                    EDIT
+                                </button>
+
+                                <button
+                                    class="payment-action-button payment-delete-button"
+                                    data-payment-id="${payment.id}"
+                                >
+                                    DELETE
+                                </button>
+
+                            </div>
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+
+    container.innerHTML = `
+        <table class="payments-table">
+
+            <thead>
+                <tr>
+                    <th>PAYMENT ID</th>
+                    <th>USER</th>
+                    <th>AMOUNT</th>
+                    <th>METHOD</th>
+                    <th>STATUS</th>
+                    <th>DATE</th>
+                    <th>ACTION</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                ${rows}
+            </tbody>
+
+        </table>
+    `;
+
+    container
+        .querySelectorAll(
+            ".payment-edit-button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    editPayment(
+                        button.dataset.paymentId
+                    );
+
+                }
+            );
+
+        });
+
+    container
+        .querySelectorAll(
+            ".payment-delete-button"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    deletePayment(
+                        button.dataset.paymentId
+                    );
+
+                }
+            );
+
+        });
 }
 // ==========================================
 // ASSETS PAGE

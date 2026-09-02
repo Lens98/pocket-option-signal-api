@@ -232,6 +232,35 @@ class Database:
                updated_at TEXT NOT NULL
            )
         """)
+
+        # ----------------------------------------
+        # Payments
+        # ----------------------------------------
+
+        cursor.execute("""
+           CREATE TABLE IF NOT EXISTS payments (
+               id TEXT PRIMARY KEY,
+               user_id TEXT NOT NULL,
+               subscription_id TEXT,
+               amount REAL NOT NULL DEFAULT 0,
+               currency TEXT NOT NULL DEFAULT 'USD',
+               payment_method TEXT NOT NULL,
+               crypto_currency TEXT,
+               network TEXT,
+               transaction_id TEXT,
+               wallet_address TEXT,
+               status TEXT NOT NULL DEFAULT 'pending',
+               description TEXT,
+               paid_at TEXT,
+               created_at TEXT NOT NULL,
+               updated_at TEXT NOT NULL,
+               FOREIGN KEY (user_id)
+                   REFERENCES users(id),
+               FOREIGN KEY (subscription_id)
+                   REFERENCES subscriptions(id)
+           )
+        """)
+
         self.connection.commit()
 
     # ----------------------------------------
