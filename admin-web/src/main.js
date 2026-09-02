@@ -10671,5 +10671,493 @@ async function checkExistingSession() {
         showLogin();
     }
 }
+// ==========================================
+// NEW PAYMENT MODAL
+// ==========================================
+
+async function showNewPaymentModal() {
+
+    const existing =
+        document.getElementById("paymentModal");
+
+    if (existing) {
+        existing.remove();
+    }
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    let users = [];
+
+    try {
+
+        const response =
+            await fetch(`${API}/admin/users`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+        const data =
+            await response.json();
+
+        if (!response.ok || data.success !== true) {
+            throw new Error(
+                data.detail || "Failed to load users."
+            );
+        }
+
+        users =
+            Array.isArray(data.users)
+                ? data.users
+                : [];
+
+    } catch (error) {
+
+        alert(error.message);
+        return;
+    }
+
+    const modal =
+        document.createElement("div");
+
+    modal.id = "paymentModal";
+
+    modal.innerHTML = `
+        <div class="coupon-modal-overlay">
+
+            <div class="coupon-modal">
+
+                <div class="coupon-modal-header">
+
+                    <div>
+                        <h2>New Payment</h2>
+                        <p>Record a subscriber payment</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="closePaymentModal"
+                        class="coupon-modal-close"
+                    >
+                        ×
+                    </button>
+
+                </div>
+
+                <div class="coupon-modal-body">
+
+                    <label>
+                        Subscriber
+                    </label>
+
+                    <select id="paymentUserId">
+
+                        <option value="">
+                            Select subscriber
+                        </option>
+
+                        ${users
+                            .filter(
+                                user =>
+                                    user.role !== "admin"
+                            )
+                            .map(
+                                user => `
+                                    <option value="${user.id}">
+                                        ${escapeHtml(user.email)}
+                                    </option>
+                                `
+                            )
+                            .join("")}
+
+                    </select>
+
+
+                    <label>
+                        Amount
+                    </label>
+
+                    <input
+                        type="number"
+                        id="paymentAmount"
+                        placeholder="29.99"
+                        min="0"
+                        step="0.01"
+                    >
+
+
+                    <label>
+                        Currency
+                    </label>
+
+                    <select id="paymentCurrency">
+
+                        <option value="USD">
+                            USD
+                        </option>
+
+                    </select>
+
+
+                    <label>
+                        Payment Method
+                    </label>
+
+                    <select id="paymentMethod">
+
+                        <option value="stripe">
+                            Stripe / Card
+                        </option>
+
+                        <option value="paypal">
+                            PayPal
+                        </option>
+
+                        <option value="crypto">
+                            Crypto
+                        </option>
+
+                        <option value="cash_app">
+                            Cash App
+                        </option>
+
+                        <option value="zelle">
+                            Zelle
+                        </option>
+
+                    </select>
+
+
+                    <div id="cryptoPaymentFields"
+                         style="display:none;">
+
+                        <label>
+                            Crypto Currency
+                        </label>
+
+                        <input
+                            type="text"
+                            id="paymentCryptoCurrency"
+                            placeholder="USDT"
+                        >
+
+                        <label>
+                            Network
+                        </label>
+
+                        <input
+                            type="text"
+                            id="paymentNetwork"
+                            placeholder="TRC20"
+                        >
+
+                    </div>
+
+
+                    <label>
+                        Transaction ID
+                    </label>
+
+                    <input
+                        type="text"
+                        id="paymentTransactionId"
+                        placeholder="Transaction ID"
+                    >
+
+
+                    <label>
+                        Wallet Address
+                    </label>
+
+                    <input
+                        type="text"
+                        id="paymentWalletAddress"
+                        placeholder="Wallet address (optional)"
+                    >
+
+
+                    <label>
+                        Status
+                    </label>
+
+                    <select id="paymentStatus">
+
+                        <option value="paid">
+                            Paid
+                        </option>
+
+                        <option value="pending">
+                            Pending
+                        </option>
+
+                        <option value="failed">
+                            Failed
+                        </option>
+
+                        <option value="refunded">
+                            Refunded
+                        </option>
+
+                    </select>
+
+
+                    <label>
+                        Description
+                    </label>
+
+                    <input
+                        type="text"
+                        id="paymentDescription"
+                        placeholder="Monthly subscription"
+                    >
+
+                </div>
+
+
+                <div class="coupon-modal-footer">
+
+                    <button
+                        type="button"
+                        id="cancelPaymentButton"
+                        class="coupon-cancel-button"
+                    >
+                        CANCEL
+                    </button>
+
+                    <button
+                        type="button"
+                        id="createPaymentButton"
+                        class="coupon-save-button"
+                    >
+                        CREATE PAYMENT
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+
+    document
+        .getElementById("closePaymentModal")
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    document
+        .getElementById("cancelPaymentButton")
+        ?.addEventListener(
+            "click",
+            () => modal.remove()
+        );
+
+
+    document
+        .getElementById("paymentMethod")
+        ?.addEventListener(
+            "change",
+            event => {
+
+                const cryptoFields =
+                    document.getElementById(
+                        "cryptoPaymentFields"
+                    );
+
+                if (!cryptoFields) {
+                    return;
+                }
+
+                cryptoFields.style.display =
+                    event.target.value === "crypto"
+                        ? "block"
+                        : "none";
+            }
+        );
+
+
+    document
+        .getElementById("createPaymentButton")
+        ?.addEventListener(
+            "click",
+            createPayment
+        );
+}
+// ==========================================
+// CREATE PAYMENT
+// ==========================================
+
+async function createPayment() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    const userId =
+        document
+            .getElementById("paymentUserId")
+            ?.value;
+
+    const amount =
+        document
+            .getElementById("paymentAmount")
+            ?.value;
+
+    const currency =
+        document
+            .getElementById("paymentCurrency")
+            ?.value;
+
+    const paymentMethod =
+        document
+            .getElementById("paymentMethod")
+            ?.value;
+
+    const cryptoCurrency =
+        document
+            .getElementById("paymentCryptoCurrency")
+            ?.value
+            .trim();
+
+    const network =
+        document
+            .getElementById("paymentNetwork")
+            ?.value
+            .trim();
+
+    const transactionId =
+        document
+            .getElementById("paymentTransactionId")
+            ?.value
+            .trim();
+
+    const walletAddress =
+        document
+            .getElementById("paymentWalletAddress")
+            ?.value
+            .trim();
+
+    const status =
+        document
+            .getElementById("paymentStatus")
+            ?.value;
+
+    const description =
+        document
+            .getElementById("paymentDescription")
+            ?.value
+            .trim();
+
+
+    if (!userId) {
+        alert("Please select a subscriber.");
+        return;
+    }
+
+    if (!amount || Number(amount) < 0) {
+        alert("Please enter a valid payment amount.");
+        return;
+    }
+
+    if (!paymentMethod) {
+        alert("Please select a payment method.");
+        return;
+    }
+
+    if (
+        paymentMethod === "crypto" &&
+        (!cryptoCurrency || !network)
+    ) {
+        alert(
+            "Crypto currency and network are required."
+        );
+        return;
+    }
+
+
+    const button =
+        document.getElementById(
+            "createPaymentButton"
+        );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "CREATING...";
+    }
+
+
+    try {
+
+        const response =
+            await fetch(`${API}/admin/payments`, {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    user_id: userId,
+                    amount: Number(amount),
+                    currency,
+                    payment_method: paymentMethod,
+                    crypto_currency:
+                        paymentMethod === "crypto"
+                            ? cryptoCurrency
+                            : null,
+                    network:
+                        paymentMethod === "crypto"
+                            ? network
+                            : null,
+                    transaction_id:
+                        transactionId || null,
+                    wallet_address:
+                        walletAddress || null,
+                    status,
+                    description:
+                        description || null
+                })
+            });
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok || data.success !== true) {
+            throw new Error(
+                data.detail ||
+                "Failed to create payment."
+            );
+        }
+
+
+        document
+            .getElementById("paymentModal")
+            ?.remove();
+
+
+        await loadPaymentsData();
+
+
+        alert("Payment created successfully.");
+
+    } catch (error) {
+
+        alert(error.message);
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "CREATE PAYMENT";
+        }
+    }
+}
 
 checkExistingSession();
