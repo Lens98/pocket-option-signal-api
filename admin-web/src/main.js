@@ -9463,7 +9463,7 @@ function renderPaymentsTable(
 async function showReportsPage() {
 
     const content =
-        document.getElementById("pageContent");
+         document.querySelector(".page-content");
 
     if (!content) {
         console.error("Reports page content container not found.");
