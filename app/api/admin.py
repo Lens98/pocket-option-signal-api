@@ -1531,3 +1531,60 @@ def admin_delete_payment(
         "success": True,
         "message": "Payment deleted.",
     }
+
+
+@router.get("/settings")
+def get_admin_settings(user: dict = Depends(require_admin)):
+    row = database.fetch_one("""
+        SELECT
+            id,
+            app_name,
+            maintenance_mode,
+            allow_registrations,
+            enable_signals,
+            default_timeframe,
+            minimum_confidence,
+            minimum_agreement,
+            updated_at
+        FROM admin_settings
+        WHERE id = 1
+    """)
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Admin settings not found")
+
+    return {"success": True, "settings": dict(row)}
+
+
+@router.patch("/settings")
+def update_admin_settings(settings: dict, user: dict = Depends(require_admin)):
+    current = database.fetch_one("SELECT * FROM admin_settings WHERE id = 1")
+
+    if not current:
+        raise HTTPException(status_code=404, detail="Admin settings not found")
+
+    allowed_fields = {
+        "app_name",
+        "maintenance_mode",
+        "allow_registrations",
+        "enable_signals",
+        "default_timeframe",
+        "minimum_confidence",
+        "minimum_agreement",
+    }
+
+    updates = {key: value for key, value in settings.items() if key in allowed_fields}
+
+    if not updates:
+        return {"success": True, "settings": dict(current)}
+
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    set_clause = ", ".join(f"{key} = ?" for key in updates)
+    values = list(updates.values())
+
+    database.execute(f"UPDATE admin_settings SET {set_clause} WHERE id = 1", values)
+
+    updated = database.fetch_one("SELECT * FROM admin_settings WHERE id = 1")
+
+    return {"success": True, "settings": dict(updated)}

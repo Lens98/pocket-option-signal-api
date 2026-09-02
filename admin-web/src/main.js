@@ -1443,6 +1443,8 @@ function showDashboard(user) {
     await showPaymentsPage();
 } else if (page === "reports") {
     await showReportsPage();
+} else if (page === "settings") {
+    await showSettingsPage();
 } else {
 
                 showComingSoon(
@@ -10165,6 +10167,203 @@ async function loadReportsData() {
         if (status) {
             status.textContent =
                 `Unable to load report: ${error.message}`;
+        }
+    }
+}
+async function showSettingsPage() {
+    const content = document.getElementById("page-content");
+
+    content.innerHTML = `
+        <div class="page-header">
+            <div>
+                <h1>Settings</h1>
+                <p>Manage global AI PRO system settings.</p>
+            </div>
+        </div>
+
+        <div class="content-card settings-card">
+            <div class="settings-section">
+                <h2>General</h2>
+
+                <div class="settings-field">
+                    <label for="settingAppName">App Name</label>
+                    <input
+                        id="settingAppName"
+                        type="text"
+                        placeholder="Pocket Option AI PRO"
+                    >
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>System</h2>
+
+                <label class="settings-toggle">
+                    <input type="checkbox" id="settingMaintenance">
+                    <span>Maintenance Mode</span>
+                </label>
+
+                <label class="settings-toggle">
+                    <input type="checkbox" id="settingRegistrations">
+                    <span>Allow New Registrations</span>
+                </label>
+
+                <label class="settings-toggle">
+                    <input type="checkbox" id="settingSignals">
+                    <span>Enable Signals</span>
+                </label>
+            </div>
+
+            <div class="settings-section">
+                <h2>AI Signal Settings</h2>
+
+                <div class="settings-field">
+                    <label for="settingTimeframe">Default Timeframe</label>
+                    <select id="settingTimeframe">
+                        <option value="1m">1m</option>
+                        <option value="5m">5m</option>
+                        <option value="15m">15m</option>
+                        <option value="30m">30m</option>
+                        <option value="1h">1h</option>
+                    </select>
+                </div>
+
+                <div class="settings-field">
+                    <label for="settingConfidence">
+                        Minimum Confidence (%)
+                    </label>
+                    <input
+                        id="settingConfidence"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                    >
+                </div>
+
+                <div class="settings-field">
+                    <label for="settingAgreement">
+                        Minimum Agreement (%)
+                    </label>
+                    <input
+                        id="settingAgreement"
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="1"
+                    >
+                </div>
+            </div>
+
+            <div class="settings-actions">
+                <button class="primary-button" onclick="saveAdminSettings()">
+                    Save Settings
+                </button>
+
+                <span id="settingsStatus"></span>
+            </div>
+        </div>
+    `;
+
+    await loadAdminSettings();
+}
+async function loadAdminSettings() {
+    const status = document.getElementById("settingsStatus");
+
+    try {
+        const token = localStorage.getItem("adminToken");
+
+        const response = await fetch(`${API}/admin/settings`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Failed to load settings");
+        }
+
+        const settings = data.settings;
+
+        document.getElementById("settingAppName").value =
+            settings.app_name || "";
+
+        document.getElementById("settingMaintenance").checked =
+            Boolean(settings.maintenance_mode);
+
+        document.getElementById("settingRegistrations").checked =
+            Boolean(settings.allow_registrations);
+
+        document.getElementById("settingSignals").checked =
+            Boolean(settings.enable_signals);
+
+        document.getElementById("settingTimeframe").value =
+            settings.default_timeframe || "5m";
+
+        document.getElementById("settingConfidence").value =
+            settings.minimum_confidence ?? 70;
+
+        document.getElementById("settingAgreement").value =
+            settings.minimum_agreement ?? 70;
+
+        if (status) {
+            status.textContent = "Settings loaded";
+        }
+
+    } catch (error) {
+        console.error("Failed to load admin settings:", error);
+
+        if (status) {
+            status.textContent = error.message;
+        }
+    }
+}
+async function saveAdminSettings() {
+    const status = document.getElementById("settingsStatus");
+
+    try {
+        const token = localStorage.getItem("adminToken");
+
+        const payload = {
+            app_name: document.getElementById("settingAppName").value.trim(),
+            maintenance_mode: document.getElementById("settingMaintenance").checked ? 1 : 0,
+            allow_registrations: document.getElementById("settingRegistrations").checked ? 1 : 0,
+            enable_signals: document.getElementById("settingSignals").checked ? 1 : 0,
+            default_timeframe: document.getElementById("settingTimeframe").value,
+            minimum_confidence: Number(
+                document.getElementById("settingConfidence").value
+            ),
+            minimum_agreement: Number(
+                document.getElementById("settingAgreement").value
+            )
+        };
+
+        const response = await fetch(`${API}/admin/settings`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || "Failed to save settings");
+        }
+
+        if (status) {
+            status.textContent = "Settings saved successfully";
+        }
+
+    } catch (error) {
+        console.error("Failed to save admin settings:", error);
+
+        if (status) {
+            status.textContent = error.message;
         }
     }
 }

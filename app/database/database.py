@@ -260,6 +260,58 @@ class Database:
                    REFERENCES subscriptions(id)
            )
         """)
+        # ----------------------------------------
+        # Admin Settings
+        # ----------------------------------------
+
+        cursor.execute("""
+           CREATE TABLE IF NOT EXISTS admin_settings (
+
+               id INTEGER PRIMARY KEY CHECK (id = 1),
+
+               app_name TEXT NOT NULL DEFAULT 'Pocket Option AI PRO',
+
+               maintenance_mode INTEGER NOT NULL DEFAULT 0,
+
+               allow_registrations INTEGER NOT NULL DEFAULT 1,
+
+               enable_signals INTEGER NOT NULL DEFAULT 1,
+
+               default_timeframe TEXT NOT NULL DEFAULT '5m',
+
+               minimum_confidence REAL NOT NULL DEFAULT 70,
+
+               minimum_agreement REAL NOT NULL DEFAULT 70,
+
+               updated_at TEXT NOT NULL
+
+           )
+        """)
+
+        cursor.execute("""
+           INSERT OR IGNORE INTO admin_settings (
+               id,
+               app_name,
+               maintenance_mode,
+               allow_registrations,
+               enable_signals,
+               default_timeframe,
+               minimum_confidence,
+               minimum_agreement,
+               updated_at
+           )
+           VALUES (
+               1,
+               'Pocket Option AI PRO',
+               0,
+               1,
+               1,
+               '5m',
+               70,
+               70,
+               datetime('now')
+           )
+        """)
 
         self.connection.commit()
 
