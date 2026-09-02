@@ -4072,10 +4072,9 @@ td {
 
 .reports-page {
     width: 100%;
-    padding: 24px;
 }
 
-.reports-header {
+.reports-page .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -4083,203 +4082,179 @@ td {
     margin-bottom: 24px;
 }
 
-.reports-title h2 {
+.reports-page .page-header h1 {
     margin: 0;
-    font-size: 24px;
+    font-size: 28px;
     font-weight: 700;
 }
 
-.reports-title p {
+.reports-page .page-header p {
     margin: 6px 0 0;
     font-size: 14px;
     opacity: 0.65;
 }
 
-.reports-actions {
+.reports-page .page-header-actions {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.reports-filter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 16px;
-    margin-bottom: 24px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color, #e5e7eb);
-    background: var(--card-bg, #ffffff);
-}
-
-.reports-filter label {
+.reports-page .refresh-button,
+.reports-page .primary-button {
+    min-height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
     font-size: 13px;
     font-weight: 600;
 }
 
-.reports-filter input {
-    height: 38px;
-    padding: 0 10px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color, #d1d5db);
-    background: inherit;
+.reports-page .refresh-button {
+    background: var(--card-bg);
     color: inherit;
 }
 
-.reports-section {
+.reports-page .refresh-button:hover {
+    opacity: 0.85;
+}
+
+.reports-page .primary-button {
+    border-color: transparent;
+    background: var(--accent-color);
+    color: #ffffff;
+}
+
+.reports-page .primary-button:hover {
+    opacity: 0.9;
+}
+
+/* DATE FILTERS */
+
+.reports-page .reports-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding: 18px;
+}
+
+.reports-page .reports-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.reports-page .reports-filter-group label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    opacity: 0.7;
+}
+
+.reports-page .reports-filter-group input {
+    width: 180px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg, transparent);
+    color: inherit;
+    font-size: 13px;
+}
+
+.reports-page .reports-filter-group input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* REPORT SECTIONS */
+
+.reports-page .reports-section {
     margin-bottom: 30px;
 }
 
-.reports-section-title {
-    margin: 0 0 14px;
-    font-size: 17px;
+.reports-page .reports-section-title {
+    margin-bottom: 14px;
+    font-size: 14px;
     font-weight: 700;
+    letter-spacing: 0.04em;
 }
 
-.reports-cards {
+/* STAT CARDS */
+
+.reports-page .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
 }
 
-.report-card {
+.reports-page .stat-card {
+    min-height: 110px;
     padding: 20px;
-    border-radius: 14px;
-    border: 1px solid var(--border-color, #e5e7eb);
-    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.report-card-label {
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 600;
+.reports-page .stat-label {
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     opacity: 0.65;
 }
 
-.report-card-value {
+.reports-page .stat-value {
     font-size: 28px;
-    font-weight: 750;
+    font-weight: 700;
     line-height: 1.2;
 }
 
-.report-card-subtitle {
-    margin-top: 6px;
+/* STATUS */
+
+.reports-page .loading-state {
+    margin-top: 10px;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
     font-size: 12px;
-    opacity: 0.55;
-}
-
-.report-card.success {
-    border-left: 4px solid #22c55e;
-}
-
-.report-card.danger {
-    border-left: 4px solid #ef4444;
-}
-
-.report-card.warning {
-    border-left: 4px solid #f59e0b;
-}
-
-.report-card.info {
-    border-left: 4px solid #3b82f6;
-}
-
-.reports-table-container {
-    overflow-x: auto;
-    border-radius: 12px;
-    border: 1px solid var(--border-color, #e5e7eb);
-    background: var(--card-bg, #ffffff);
-}
-
-.reports-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.reports-table th,
-.reports-table td {
-    padding: 13px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border-color, #e5e7eb);
-    font-size: 13px;
-}
-
-.reports-table th {
-    font-weight: 700;
-    background: rgba(127, 127, 127, 0.06);
-}
-
-.reports-table tr:last-child td {
-    border-bottom: none;
-}
-
-.report-status {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 9px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.report-status.paid {
-    background: rgba(34, 197, 94, 0.12);
-    color: #16a34a;
-}
-
-.report-status.pending {
-    background: rgba(245, 158, 11, 0.12);
-    color: #d97706;
-}
-
-.report-status.failed {
-    background: rgba(239, 68, 68, 0.12);
-    color: #dc2626;
-}
-
-.reports-empty {
-    padding: 40px 20px;
-    text-align: center;
-    font-size: 14px;
-    opacity: 0.6;
-}
-
-.reports-loading {
-    padding: 50px 20px;
-    text-align: center;
-    font-size: 14px;
     opacity: 0.65;
 }
 
-/* Reports responsive layout */
+/* RESPONSIVE */
 
 @media (max-width: 1100px) {
-    .reports-cards {
+
+    .reports-page .stats-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 700px) {
-    .reports-page {
-        padding: 16px;
-    }
 
-    .reports-header {
+    .reports-page .page-header {
         flex-direction: column;
         align-items: flex-start;
     }
 
-    .reports-actions {
+    .reports-page .page-header-actions {
         width: 100%;
     }
 
-    .reports-filter {
+    .reports-page .reports-filters {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
     }
 
-    .reports-cards {
+    .reports-page .reports-filter-group input {
+        width: 100%;
+    }
+
+    .reports-page .stats-grid {
         grid-template-columns: 1fr;
     }
 }
