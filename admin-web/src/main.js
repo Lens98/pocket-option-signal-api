@@ -11720,5 +11720,54 @@ async function updatePayment(paymentId) {
         }
     }
 }
+async function deletePayment(paymentId) {
+
+    const confirmed = confirm(
+        "Are you sure you want to delete this payment?"
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API}/admin/payments/${paymentId}`,
+            {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                credentials: "include"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.detail ||
+                data.message ||
+                "Failed to delete payment"
+            );
+        }
+
+        await loadPaymentsData();
+
+        alert("Payment deleted successfully.");
+
+    } catch (error) {
+
+        console.error(
+            "Delete payment error:",
+            error
+        );
+
+        alert(
+            `Failed to delete payment: ${error.message}`
+        );
+    }
+}
 
 checkExistingSession();
