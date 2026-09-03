@@ -10260,14 +10260,17 @@ async function showSettingsPage() {
             </div>
 
             <div class="settings-actions">
-                <button class="primary-button" onclick="saveAdminSettings()">
-                    Save Settings
-                </button>
+                <button class="primary-button" id="saveSettingsButton">
+                Save Settings
+               </button>
 
                 <span id="settingsStatus"></span>
             </div>
         </div>
     `;
+    document
+    .getElementById("saveSettingsButton")
+    .addEventListener("click", saveAdminSettings);
 
     await loadAdminSettings();
 }
