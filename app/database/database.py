@@ -261,6 +261,29 @@ class Database:
            )
         """)
         # ----------------------------------------
+        # Admin Logs
+        # ----------------------------------------
+
+        cursor.execute("""
+           CREATE TABLE IF NOT EXISTS admin_logs (
+
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+               admin_id TEXT,
+
+               action TEXT NOT NULL,
+
+               target_type TEXT,
+
+               target_id TEXT,
+
+               details TEXT,
+
+               created_at TEXT NOT NULL
+
+           )
+        """)
+        # ----------------------------------------
         # Admin Settings
         # ----------------------------------------
 

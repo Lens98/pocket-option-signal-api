@@ -1446,7 +1446,10 @@ function showDashboard(user) {
 } else if (page === "settings") {
     await showSettingsPage();
 } else if (page === "admins") {
-    await showAdminsPage();
+                    await showAdminsPage();
+                    } else if (page === "logs") {
+
+    await showLogsPage();
 } else {
 
                 showComingSoon(
@@ -3993,6 +3996,226 @@ async function loadAdmins() {
         container.innerHTML = `
             <div class="trade-empty">
                 Failed to load administrators.
+            </div>
+        `;
+
+        if (count) {
+            count.textContent = "Error";
+        }
+
+    }
+
+}
+// ==========================================
+// LOGS PAGE
+// ==========================================
+
+async function showLogsPage() {
+
+    const content =
+        document.querySelector(".main-area .content");
+
+    if (!content) {
+        console.error("Logs page content container not found.");
+        return;
+    }
+
+    content.innerHTML = `
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div>
+                    <h1>Logs</h1>
+                    <p>Administrative activity and system actions</p>
+                </div>
+
+                <button
+                    id="refreshLogs"
+                    class="trades-refresh"
+                >
+                    REFRESH
+                </button>
+
+            </div>
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Activity Logs</h2>
+                        <p>Recent administrator actions</p>
+                    </div>
+
+                    <span
+                        id="logsResultCount"
+                        class="trades-count"
+                    >
+                        Loading logs...
+                    </span>
+
+                </div>
+
+                <div
+                    id="logsTableContainer"
+                    class="trades-table-wrap"
+                >
+
+                    <div class="trade-loading">
+                        Loading logs...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+    await loadLogs();
+
+    document
+        .getElementById("refreshLogs")
+        ?.addEventListener(
+            "click",
+            loadLogs
+        );
+
+}
+
+
+async function loadLogs() {
+
+    const container =
+        document.getElementById("logsTableContainer");
+
+    const count =
+        document.getElementById("logsResultCount");
+
+    if (!container) {
+        console.error("Logs table container not found.");
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="trade-loading">
+            Loading logs...
+        </div>
+    `;
+
+    try {
+
+        const token =
+            localStorage.getItem("adminToken");
+
+        const response =
+            await fetch(
+                `${API}/admin/logs`,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.detail || "Failed to load logs."
+            );
+        }
+
+        const logs =
+            data.logs || [];
+
+        if (count) {
+            count.textContent =
+                `${logs.length} log${logs.length === 1 ? "" : "s"}`;
+        }
+
+        if (logs.length === 0) {
+
+            container.innerHTML = `
+                <div class="trade-empty">
+                    No activity logs found.
+                </div>
+            `;
+
+            return;
+        }
+
+        container.innerHTML = `
+
+            <table class="trades-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TIME</th>
+                        <th>ADMIN</th>
+                        <th>ACTION</th>
+                        <th>TARGET</th>
+                        <th>DETAILS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    ${logs.map(log => `
+
+                        <tr>
+
+                            <td>
+                                ${escapeHtml(String(log.id ?? "—"))}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(formatDate(log.created_at))}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(log.admin_email || log.admin_id || "—")}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(log.action || "—")}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(
+                                    log.target_type
+                                        ? `${log.target_type}: ${log.target_id || "—"}`
+                                        : "—"
+                                )}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(log.details || "—")}
+                            </td>
+
+                        </tr>
+
+                    `).join("")}
+
+                </tbody>
+
+            </table>
+
+        `;
+
+    } catch (error) {
+
+        console.error("Failed to load logs:", error);
+
+        container.innerHTML = `
+            <div class="trade-empty">
+                Failed to load logs.
             </div>
         `;
 

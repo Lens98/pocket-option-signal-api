@@ -6,10 +6,68 @@ from app.database.database import database
 from app.database.trade_repository import TradeRepository
 from app.services.performance_analyzer import PerformanceAnalyzer
 
+
+def write_admin_log(
+    admin_id,
+    action,
+    target_type=None,
+    target_id=None,
+    details=None,
+):
+    database.execute(
+        """
+        INSERT INTO admin_logs (
+            admin_id,
+            action,
+            target_type,
+            target_id,
+            details,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            str(admin_id) if admin_id is not None else None,
+            action,
+            target_type,
+            str(target_id) if target_id is not None else None,
+            details,
+            datetime.now(timezone.utc).isoformat(),
+        ),
+    )
+
+
 router = APIRouter(
     prefix="/admin",
     tags=["Admin"],
 )
+
+
+@router.get("/logs")
+def admin_logs(user: dict = Depends(require_admin)):
+    rows = database.fetch_all("""
+        SELECT
+            admin_logs.id,
+            admin_logs.admin_id,
+            users.email AS admin_email,
+            admin_logs.action,
+            admin_logs.target_type,
+            admin_logs.target_id,
+            admin_logs.details,
+            admin_logs.created_at
+        FROM admin_logs
+        LEFT JOIN users
+            ON users.id = admin_logs.admin_id
+        ORDER BY admin_logs.created_at DESC
+        LIMIT 500
+    """)
+
+    return {
+        "success": True,
+        "logs": [dict(row) for row in rows],
+        "total": len(rows),
+    }
+
 
 trade_repository = TradeRepository()
 performance_analyzer = PerformanceAnalyzer()
