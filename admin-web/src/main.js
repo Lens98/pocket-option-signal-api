@@ -1445,6 +1445,8 @@ function showDashboard(user) {
     await showReportsPage();
 } else if (page === "settings") {
     await showSettingsPage();
+} else if (page === "admins") {
+    await showAdminsPage();
 } else {
 
                 showComingSoon(
@@ -3816,6 +3818,190 @@ function formatDate(value) {
         month: "short",
         day: "numeric"
     });
+}
+// ==========================================
+// ADMINS PAGE
+// ==========================================
+
+async function showAdminsPage() {
+
+    const content =
+        document.querySelector(".main-area .content");
+
+    if (!content) {
+        console.error("Admins page content container not found.");
+        return;
+    }
+
+    content.innerHTML = `
+
+        <div class="page-content">
+
+            <div class="page-header">
+
+                <div>
+                    <h1>Admins</h1>
+                    <p>Manage administrator accounts</p>
+                </div>
+
+                <button
+                    id="refreshAdmins"
+                    class="trades-refresh"
+                >
+                    REFRESH
+                </button>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h2>Administrator Accounts</h2>
+                        <p>Accounts with administrator access</p>
+                    </div>
+
+                    <span
+                        id="adminsResultCount"
+                        class="trades-count"
+                    >
+                        Loading admins...
+                    </span>
+
+                </div>
+
+
+                <div
+                    id="adminsTableContainer"
+                    class="trades-table-wrap"
+                >
+
+                    <div class="trade-loading">
+                        Loading administrators...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    await loadAdmins();
+
+
+    document
+        .getElementById("refreshAdmins")
+        ?.addEventListener(
+            "click",
+            loadAdmins
+        );
+
+}
+async function loadAdmins() {
+
+    const container =
+        document.getElementById("adminsTableContainer");
+
+    const count =
+        document.getElementById("adminsResultCount");
+
+    if (!container) {
+        console.error("Admins table container not found.");
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="trade-loading">
+            Loading administrators...
+        </div>
+    `;
+
+    try {
+
+        const token = localStorage.getItem("adminToken");
+
+        const response = await fetch(
+            `${API}/admin/users`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.detail || "Failed to load administrators."
+            );
+        }
+
+        const admins = data.users.filter(
+            user => user.role === "admin"
+        );
+
+        if (count) {
+            count.textContent =
+                `${admins.length} administrator${admins.length === 1 ? "" : "s"}`;
+        }
+
+        if (admins.length === 0) {
+            container.innerHTML = `
+                <div class="trade-empty">
+                    No administrator accounts found.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `
+            <table class="trades-table">
+
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    ${admins.map(admin => `
+                        <tr>
+                            <td>${escapeHtml(String(admin.id))}</td>
+                            <td>${escapeHtml(admin.email || "")}</td>
+                            <td>${escapeHtml(admin.role || "")}</td>
+                            <td>${escapeHtml(formatDate(admin.created_at))}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+
+            </table>
+        `;
+
+    } catch (error) {
+
+        console.error("Failed to load administrators:", error);
+
+        container.innerHTML = `
+            <div class="trade-empty">
+                Failed to load administrators.
+            </div>
+        `;
+
+        if (count) {
+            count.textContent = "Error";
+        }
+
+    }
+
 }
 // ==========================================
 // TRADES PAGE
