@@ -1447,16 +1447,21 @@ function showDashboard(user) {
     await showSettingsPage();
 } else if (page === "admins") {
                     await showAdminsPage();
-                    } else if (page === "logs") {
+                  } else if (page === "logs") {
 
     await showLogsPage();
+
+} else if (page === "api-keys") {
+
+    await showApiKeysPage();
+
 } else {
 
-                showComingSoon(
-                   item.textContent.trim()
-               );
+    showComingSoon(
+        item.textContent.trim()
+    );
 
-                }
+}
                 }
 
         );
@@ -11981,6 +11986,182 @@ async function showPerformancePage() {
         );
 
     await loadPerformance();
+}
+// ==========================================
+// API KEYS PAGE
+// ==========================================
+
+async function showApiKeysPage() {
+
+    app.innerHTML = `
+
+        <div class="admin-shell">
+
+            <div class="page-header">
+
+                <div>
+                    <h1>API Keys</h1>
+                    <p>Manage subscriber API access.</p>
+                </div>
+
+                <button
+                    class="primary-btn"
+                    id="createApiKeyBtn"
+                >
+                    Create API Key
+                </button>
+
+            </div>
+
+            <div class="content-card">
+
+                <div class="table-header">
+
+                    <h2>API Keys</h2>
+
+                    <span id="apiKeysStatus">
+                        Loading...
+                    </span>
+
+                </div>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>User</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Last Used</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="apiKeysTableBody">
+                            <tr>
+                                <td colspan="5">
+                                    Loading API keys...
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+    document
+        .getElementById("createApiKeyBtn")
+        ?.addEventListener("click", () => {
+            alert("API key creation form will be added next.");
+        });
+
+    await loadApiKeys();
+
+}
+async function loadApiKeys() {
+
+    const token =
+        localStorage.getItem("adminToken");
+
+    if (!token) {
+        logout();
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            `${API}/admin/api-keys`,
+            {
+                method: "GET",
+                headers: {
+                    Authorization:
+                        `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                "Failed to load API keys."
+            );
+        }
+
+        const data =
+            await response.json();
+
+        const keys =
+            data.api_keys || [];
+
+        const tbody =
+            document.getElementById(
+                "apiKeysTableBody"
+            );
+
+        if (!keys.length) {
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        No API keys found.
+                    </td>
+                </tr>
+            `;
+
+        } else {
+
+            tbody.innerHTML = keys.map(key => `
+
+                <tr>
+
+                    <td>${escapeHtml(key.name)}</td>
+
+                    <td>${escapeHtml(
+                        key.user_email || key.user_id
+                    )}</td>
+
+                    <td>${escapeHtml(key.status)}</td>
+
+                    <td>${formatDate(key.created_at)}</td>
+
+                    <td>${key.last_used_at
+                        ? formatDate(key.last_used_at)
+                        : "Never"
+                    }</td>
+
+                </tr>
+
+            `).join("");
+
+        }
+
+        setText(
+            "apiKeysStatus",
+            `${keys.length} API key(s)`
+        );
+
+    } catch (error) {
+
+        console.error(
+            "API Keys load failed:",
+            error
+        );
+
+        setText(
+            "apiKeysStatus",
+            "Unable to load API keys."
+        );
+
+    }
+
 }
 // ==========================================
 // COMING SOON

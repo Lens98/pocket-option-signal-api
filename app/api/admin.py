@@ -1,5 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime, timezone
+from pydantic import BaseModel
+
+
+class CreateApiKeyRequest(BaseModel):
+    user_id: str
+    name: str
+
+
 import uuid
 from app.api.auth import require_admin
 from app.database.database import database
@@ -1749,32 +1757,64 @@ def get_api_keys(user: dict = Depends(require_admin)):
     }
 
 
-# ==========================================
-# API KEYS
-# ==========================================
+@router.post("/api-keys")
+def create_api_key(
+    payload: CreateApiKeyRequest,
+    user: dict = Depends(require_admin),
+):
+    target_user = database.fetch_one(
+        "SELECT id, email FROM users WHERE id = ?",
+        (payload.user_id,),
+    )
 
+    if not target_user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found.",
+        )
 
-@router.get("/api-keys")
-def get_api_keys(user: dict = Depends(require_admin)):
+    api_key_id = str(uuid.uuid4())
+    raw_key = "sk_" + secrets.token_urlsafe(32)
+    key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
 
-    rows = database.fetch_all("""
-        SELECT
-            api_keys.id,
-            api_keys.user_id,
-            users.email AS user_email,
-            api_keys.name,
-            api_keys.status,
-            api_keys.created_at,
-            api_keys.last_used_at,
-            api_keys.expires_at
-        FROM api_keys
-        LEFT JOIN users
-            ON users.id = api_keys.user_id
-        ORDER BY api_keys.created_at DESC
-    """)
+    database.execute(
+        """
+        INSERT INTO api_keys (
+            id,
+            user_id,
+            name,
+            key_hash,
+            status,
+            created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (
+            api_key_id,
+            payload.user_id,
+            payload.name,
+            key_hash,
+            "active",
+            datetime.now(timezone.utc).isoformat(),
+        ),
+    )
+
+    write_admin_log(
+        admin_id=user["id"],
+        action="create_api_key",
+        target_type="api_key",
+        target_id=api_key_id,
+        details=f"Created API key '{payload.name}' for {target_user['email']}.",
+    )
 
     return {
         "success": True,
-        "api_keys": [dict(row) for row in rows],
-        "total": len(rows),
+        "api_key": {
+            "id": api_key_id,
+            "user_id": payload.user_id,
+            "name": payload.name,
+            "key": raw_key,
+            "status": "active",
+        },
+        "message": "API key created. Save this key now; it will not be shown again.",
     }
