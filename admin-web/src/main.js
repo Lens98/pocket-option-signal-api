@@ -11993,61 +11993,60 @@ async function showPerformancePage() {
 
 async function showApiKeysPage() {
 
-    app.innerHTML = `
+    const content =
+        document.querySelector(".main-area .content");
 
-        <div class="admin-shell">
+    if (!content) {
+        console.error("API Keys page content container not found.");
+        return;
+    }
+
+    content.innerHTML = `
+
+        <div class="page-content">
 
             <div class="page-header">
 
                 <div>
                     <h1>API Keys</h1>
-                    <p>Manage subscriber API access.</p>
+                    <p>Manage subscriber API access</p>
                 </div>
 
                 <button
-                    class="primary-btn"
                     id="createApiKeyBtn"
+                    class="trades-refresh"
                 >
-                    Create API Key
+                    CREATE API KEY
                 </button>
 
             </div>
 
-            <div class="content-card">
+            <div class="panel">
 
-                <div class="table-header">
+                <div class="panel-header">
 
-                    <h2>API Keys</h2>
+                    <div>
+                        <h2>API Keys</h2>
+                        <p>Manage API access for subscriber accounts</p>
+                    </div>
 
-                    <span id="apiKeysStatus">
-                        Loading...
+                    <span
+                        id="apiKeysStatus"
+                        class="trades-count"
+                    >
+                        Loading API keys...
                     </span>
 
                 </div>
 
-                <div class="table-wrapper">
+                <div
+                    id="apiKeysTableContainer"
+                    class="trades-table-wrap"
+                >
 
-                    <table>
-
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>User</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th>Last Used</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="apiKeysTableBody">
-                            <tr>
-                                <td colspan="5">
-                                    Loading API keys...
-                                </td>
-                            </tr>
-                        </tbody>
-
-                    </table>
+                    <div class="trade-loading">
+                        Loading API keys...
+                    </div>
 
                 </div>
 
@@ -12101,45 +12100,65 @@ async function loadApiKeys() {
         const keys =
             data.api_keys || [];
 
-        const tbody =
+        const container =
             document.getElementById(
-                "apiKeysTableBody"
+                "apiKeysTableContainer"
             );
 
         if (!keys.length) {
 
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5">
-                        No API keys found.
-                    </td>
-                </tr>
+            container.innerHTML = `
+                <div class="trade-loading">
+                    No API keys found.
+                </div>
             `;
 
         } else {
 
-            tbody.innerHTML = keys.map(key => `
+            container.innerHTML = `
 
-                <tr>
+                <table>
 
-                    <td>${escapeHtml(key.name)}</td>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>User</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Last Used</th>
+                        </tr>
+                    </thead>
 
-                    <td>${escapeHtml(
-                        key.user_email || key.user_id
-                    )}</td>
+                    <tbody>
 
-                    <td>${escapeHtml(key.status)}</td>
+                        ${keys.map(key => `
 
-                    <td>${formatDate(key.created_at)}</td>
+                            <tr>
 
-                    <td>${key.last_used_at
-                        ? formatDate(key.last_used_at)
-                        : "Never"
-                    }</td>
+                                <td>${escapeHtml(key.name)}</td>
 
-                </tr>
+                                <td>${escapeHtml(
+                                    key.user_email || key.user_id
+                                )}</td>
 
-            `).join("");
+                                <td>${escapeHtml(key.status)}</td>
+
+                                <td>${formatDate(key.created_at)}</td>
+
+                                <td>${key.last_used_at
+                                    ? formatDate(key.last_used_at)
+                                    : "Never"
+                                }</td>
+
+                            </tr>
+
+                        `).join("")}
+
+                    </tbody>
+
+                </table>
+
+            `;
 
         }
 
