@@ -5,6 +5,8 @@ from app.api.auth import require_admin
 from app.database.database import database
 from app.database.trade_repository import TradeRepository
 from app.services.performance_analyzer import PerformanceAnalyzer
+import hashlib
+import secrets
 
 
 def write_admin_log(
@@ -1714,3 +1716,65 @@ def update_admin_settings(settings: dict, user: dict = Depends(require_admin)):
     )
 
     return {"success": True, "settings": dict(updated)}
+
+
+# ==========================================
+# API KEYS
+# ==========================================
+
+
+@router.get("/api-keys")
+def get_api_keys(user: dict = Depends(require_admin)):
+
+    rows = database.fetch_all("""
+        SELECT
+            api_keys.id,
+            api_keys.user_id,
+            users.email AS user_email,
+            api_keys.name,
+            api_keys.status,
+            api_keys.created_at,
+            api_keys.last_used_at,
+            api_keys.expires_at
+        FROM api_keys
+        LEFT JOIN users
+            ON users.id = api_keys.user_id
+        ORDER BY api_keys.created_at DESC
+    """)
+
+    return {
+        "success": True,
+        "api_keys": [dict(row) for row in rows],
+        "total": len(rows),
+    }
+
+
+# ==========================================
+# API KEYS
+# ==========================================
+
+
+@router.get("/api-keys")
+def get_api_keys(user: dict = Depends(require_admin)):
+
+    rows = database.fetch_all("""
+        SELECT
+            api_keys.id,
+            api_keys.user_id,
+            users.email AS user_email,
+            api_keys.name,
+            api_keys.status,
+            api_keys.created_at,
+            api_keys.last_used_at,
+            api_keys.expires_at
+        FROM api_keys
+        LEFT JOIN users
+            ON users.id = api_keys.user_id
+        ORDER BY api_keys.created_at DESC
+    """)
+
+    return {
+        "success": True,
+        "api_keys": [dict(row) for row in rows],
+        "total": len(rows),
+    }

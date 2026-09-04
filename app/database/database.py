@@ -284,6 +284,33 @@ class Database:
            )
         """)
         # ----------------------------------------
+        # API Keys
+        # ----------------------------------------
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS api_keys (
+
+                id TEXT PRIMARY KEY,
+
+                user_id TEXT NOT NULL,
+
+                name TEXT NOT NULL,
+
+                key_hash TEXT NOT NULL UNIQUE,
+
+                status TEXT NOT NULL DEFAULT 'active',
+
+                created_at TEXT NOT NULL,
+
+                last_used_at TEXT,
+
+                expires_at TEXT,
+
+                FOREIGN KEY (user_id) REFERENCES users(id)
+
+            )
+        """)
+        # ----------------------------------------
         # Admin Settings
         # ----------------------------------------
 
