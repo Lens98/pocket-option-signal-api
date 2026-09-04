@@ -1366,127 +1366,67 @@ function showDashboard(user) {
 // SIDEBAR
 // ======================================
 
-document
-    .querySelectorAll(".nav-item")
-    .forEach((item) => {
+document.addEventListener("click", async (event) => {
+    const item = event.target.closest(".nav-item");
 
-        item.addEventListener(
-            "click",
-            async () => {
+    if (!item) {
+        return;
+    }
 
-                const page =
-                    item.dataset.page;
+    const page = item.dataset.page;
 
-                document
-                    .querySelectorAll(".nav-item")
-                    .forEach((nav) => {
+    document
+        .querySelectorAll(".nav-item")
+        .forEach((nav) => {
+            nav.classList.remove("active");
+        });
 
-                        nav.classList.remove(
-                            "active"
-                        );
+    item.classList.add("active");
 
-                    });
-
-                item.classList.add(
-                    "active"
-                );
-
-                // ==========================
-                // DASHBOARD
-                // ==========================
-
-                if (page === "dashboard") {
-
-                    showDashboard(
-                        JSON.parse(
-                            localStorage.getItem(
-                                "adminUser"
-                            )
-                        )
-                    );
-
-                    await loadStats();
-
-                    return;
-
-                }
-
-                // ==========================
-                // USERS
-                // ==========================
-
-                if (page === "users") {
-
-                    await showUsersPage();
-
-                    return;
-
-                }
-
-                // ==========================
-                // OTHER PAGES
-                // ==========================
-
-                if (page === "trades") {
-
-                    await showTradesPage();
-
-                } else if (page === "performance") {
-
-                    await showPerformancePage();
-
-                } else if (page === "assets") {
-
-                    await showAssetsPage();
-
-                } else if (page === "signals") {
-
-                    await showSignalsPage();
-
-                } else if (page === "subscriptions") {
-
-                    await showSubscriptionsPage();
-
-                } else if (page === "coupons") {
-
-                    await showCouponsPage();
-
-                } else if (page === "payments") {
-
-                    await showPaymentsPage();
-
-                } else if (page === "reports") {
-
-                    await showReportsPage();
-
-                } else if (page === "settings") {
-
-                    await showSettingsPage();
-
-                } else if (page === "admins") {
-
-                    await showAdminsPage();
-
-                } else if (page === "logs") {
-
-                    await showLogsPage();
-
-                } else if (page === "api-keys") {
-
-                    await showApiKeysPage();
-
-                } else {
-
-                    showComingSoon(
-                        item.textContent.trim()
-                    );
-
-                }
-
-            }
+    if (page === "dashboard") {
+        showDashboard(
+            JSON.parse(
+                localStorage.getItem("adminUser")
+            )
         );
 
-    });
+        await loadStats();
+        return;
+    }
+
+    if (page === "users") {
+        await showUsersPage();
+        return;
+    }
+
+    if (page === "trades") {
+        await showTradesPage();
+    } else if (page === "performance") {
+        await showPerformancePage();
+    } else if (page === "assets") {
+        await showAssetsPage();
+    } else if (page === "signals") {
+        await showSignalsPage();
+    } else if (page === "subscriptions") {
+        await showSubscriptionsPage();
+    } else if (page === "coupons") {
+        await showCouponsPage();
+    } else if (page === "payments") {
+        await showPaymentsPage();
+    } else if (page === "reports") {
+        await showReportsPage();
+    } else if (page === "settings") {
+        await showSettingsPage();
+    } else if (page === "admins") {
+        await showAdminsPage();
+    } else if (page === "logs") {
+        await showLogsPage();
+    } else if (page === "api-keys") {
+        await showApiKeysPage();
+    } else {
+        showComingSoon(item.textContent.trim());
+    }
+});
 // ==========================================
 // LOAD REAL STATS
 // ==========================================
