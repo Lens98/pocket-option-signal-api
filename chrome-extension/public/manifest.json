@@ -6,10 +6,12 @@
     "permissions": [
         "storage",
         "activeTab",
-        "scripting"
+        "scripting",
+        "tabs"
     ],
     "host_permissions": [
-        "http://127.0.0.1:8000/*",
+        "https://pocket-option-signal-api-production.up.railway.app/*",
+        "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
     ],
     "background": {
@@ -19,6 +21,18 @@
     "content_scripts": [
         {
             "matches": [
+                "https://pocketoption.com/*",
+                "https://*.pocketoption.com/*"
+            ],
+            "js": [
+                "src/injected.js"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
+        },
+        {
+            "matches": [
+                "https://pocketoption.com/*",
                 "https://*.pocketoption.com/*"
             ],
             "js": [
@@ -33,6 +47,7 @@
                 "src/injected.js"
             ],
             "matches": [
+                "https://pocketoption.com/*",
                 "https://*.pocketoption.com/*"
             ]
         }

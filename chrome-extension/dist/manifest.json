@@ -6,10 +6,12 @@
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
-    "http://127.0.0.1:8000/*",
+    "https://pocket-option-signal-api-production.up.railway.app/*",
+    "https://pocketoption.com/*",
     "https://*.pocketoption.com/*"
   ],
   "background": {
@@ -19,22 +21,39 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-BwAvFDrO.js"
+        "assets/injected.js-DcbogQpk.js"
       ],
       "matches": [
+        "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
       ],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "js": [
+        "assets/content.js-bmIV8U8I.js"
+      ],
+      "matches": [
+        "https://pocketoption.com/*",
+        "https://*.pocketoption.com/*"
+      ],
+      "run_at": "document_start",
+      "css": [
+        "assets/content-x1XGuNl0.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
       "matches": [
-        "https://*.pocketoption.com/*"
+        "https://*.pocketoption.com/*",
+        "https://pocketoption.com/*"
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-BwAvFDrO.js"
+        "assets/injected.js-DcbogQpk.js",
+        "assets/content.js-bmIV8U8I.js"
       ],
       "use_dynamic_url": false
     }

@@ -1,686 +1,941 @@
-body {
+/* ==========================================
+   Pocket Option AI PRO v3.0
+   Professional Trading Dashboard
+========================================== */
 
-    margin: 0;
+*{
 
-    width: 360px;
+    margin:0;
 
-    color: white;
+    padding:0;
 
-    font-family: "Segoe UI", Arial, sans-serif;
+    box-sizing:border-box;
+
+}
+
+body{
+
+    width:900px;
+
+    min-height:760px;
+
+    overflow:hidden;
+
+    color:white;
+
+    font-family:"Segoe UI",Arial,sans-serif;
 
     background:
-
-        radial-gradient(circle at top right, #18304F 0%, transparent 45%),
-
-        radial-gradient(circle at bottom left, #132238 0%, transparent 35%),
-
+        radial-gradient(circle at top right,#1A3B5D 0%,transparent 45%),
+        radial-gradient(circle at bottom left,#132238 0%,transparent 35%),
         #0B1220;
 
 }
 
-.container {
+/* ==========================================
+   Container
+========================================== */
 
-    padding: 18px;
+.container{
 
-}
-
-.header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    padding-bottom: 14px;
-
-    border-bottom: 1px solid #1E293B;
-
-    margin-bottom: 16px;
+    padding:18px;
 
 }
 
-.header h2 {
+/* ==========================================
+   Header
+========================================== */
 
-    margin: 0;
+.header{
 
-    font-size: 22px;
+    display:flex;
 
-    font-weight: 700;
+    justify-content:space-between;
 
-    letter-spacing: .5px;
+    align-items:center;
 
-}
+    margin-bottom:18px;
 
-.version {
+    padding-bottom:14px;
 
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.status {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    padding: 8px 14px;
-
-    border-radius: 999px;
-
-    font-size: 12px;
-
-    font-weight: bold;
-
-    animation: pulse 2s infinite;
+    border-bottom:1px solid #23314F;
 
 }
 
-@keyframes pulse {
+.header h2{
 
-    0% {
+    font-size:26px;
 
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, .6);
+    font-weight:700;
 
-    }
-
-    70% {
-
-        box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
-
-    }
-
-    100% {
-
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-
-    }
+    letter-spacing:.5px;
 
 }
 
-.online {
+.version{
 
-    background: #14532D;
+    color:#94A3B8;
 
-    color: #4ADE80;
-
-    animation: pulseLive 1.8s infinite;
+    font-size:13px;
 
 }
 
-.offline {
+.status{
 
-    background: #4B1113;
+    padding:8px 18px;
 
-    color: #F87171;
+    border-radius:999px;
 
-}
+    font-size:13px;
 
-.signal-card {
-
-    background: #141C2F;
-
-    border-radius: 14px;
-
-    padding: 18px;
-
-    text-align: center;
-
-    margin-bottom: 16px;
-
-    box-shadow: 0 8px 25px rgba(0, 0, 0, .25);
+    font-weight:bold;
 
 }
 
-.action {
+.online{
 
-    font-size: 52px;
+    background:#14532D;
 
-    font-weight: 800;
-
-    letter-spacing: 4px;
-
-    text-transform: uppercase;
+    color:#4ADE80;
 
 }
 
-.call {
+.offline{
 
-    color: #22C55E;
+    background:#4B1113;
 
-    text-shadow:
-        0 0 12px rgba(34, 197, 94, .8);
-
-}
-
-.put {
-
-    color: #EF4444;
-
-    text-shadow:
-        0 0 12px rgba(239, 68, 68, .8);
+    color:#F87171;
 
 }
 
-.wait {
+/* ==========================================
+   Dashboard
+========================================== */
 
-    color: #FACC15;
+.dashboard{
 
-    text-shadow:
-        0 0 12px rgba(250, 204, 21, .8);
+    display:grid;
 
-}
+    grid-template-columns:1.4fr .9fr;
 
-.progress {
+    gap:18px;
 
-    margin-top: 12px;
-
-    height: 12px;
-
-    border-radius: 10px;
-
-    background: #1E293B;
-
-    overflow: hidden;
+    margin-bottom:18px;
 
 }
 
-#confidenceBar {
+.left-panel{
 
-    height: 100%;
+    display:flex;
 
-    width: 0%;
+    flex-direction:column;
 
-    background: #22C55E;
-
-    transition: width .4s;
+    gap:18px;
 
 }
 
-.info-grid {
+.right-panel{
 
-    display: grid;
+    display:flex;
 
-    grid-template-columns: 1fr 1fr;
+    flex-direction:column;
 
-    gap: 12px;
-
-}
-
-.card {
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 12px;
+    gap:18px;
 
 }
 
-.card span {
-
-    display: block;
-
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.card strong {
-
-    font-size: 15px;
-
-}
-
-.footer {
-
-    margin-top: 18px;
-
-    text-align: center;
-
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.gauge {
-
-    position: relative;
-
-    width: 150px;
-
-    height: 150px;
-
-    margin: 15px auto;
-
-}
-
-.gauge svg {
-
-    transform: rotate(-90deg);
-
-}
-
-.gauge-bg {
-
-    fill: none;
-
-    stroke: #1E293B;
-
-    stroke-width: 10;
-
-}
-
-.gauge-progress {
-
-    fill: none;
-
-    stroke: #22C55E;
-
-    stroke-width: 10;
-
-    stroke-linecap: round;
-
-    stroke-dasharray: 377;
-
-    stroke-dashoffset: 377;
-
-    transition: stroke-dashoffset .6s ease;
-
-}
-
-.gauge-text {
-
-    position: absolute;
-
-    top: 50%;
-
-    left: 50%;
-
-    transform: translate(-50%, -50%);
-
-    font-size: 36px;
-
-    font-weight: 700;
-
-    font-weight: bold;
-
-}
-
-.history {
-
-    margin-top: 18px;
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 14px;
-
-}
-
-.history h3 {
-
-    margin: 0 0 10px 0;
-
-    font-size: 14px;
-
-    color: #94A3B8;
-
-}
-
-.history-item {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    padding: 8px 0;
-
-    border-bottom: 1px solid #1E293B;
-
-    font-size: 13px;
-
-}
-
-.history-item:last-child {
-
-    border-bottom: none;
-
-}
-
-.call-text {
-
-    color: #22C55E;
-
-    font-weight: bold;
-
-}
-
-.put-text {
-
-    color: #EF4444;
-
-    font-weight: bold;
-
-}
-
-.wait-text {
-
-    color: #F59E0B;
-
-    font-weight: bold;
-
-}
-
-.analysis {
-
-    margin-top: 18px;
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 14px;
-
-}
-
-.analysis h3 {
-
-    margin: 0 0 10px 0;
-
-    font-size: 14px;
-
-    color: #94A3B8;
-
-}
-
-.reason {
-
-    padding: 6px 0;
-
-    border-bottom: 1px solid #1E293B;
-
-    font-size: 13px;
-
-}
-
-.reason:last-child {
-
-    border-bottom: none;
-
-}
-
-.good {
-
-    color: #22C55E;
-
-}
-
-.bad {
-
-    color: #EF4444;
-
-}
-
-.warning {
-
-    color: #F59E0B;
-
-}
-
-.stats {
-
-    margin-top: 18px;
-
-    background: #141C2F;
-
-    border-radius: 12px;
-
-    padding: 14px;
-
-}
-
-.stats h3 {
-
-    margin: 0 0 12px 0;
-
-    color: #94A3B8;
-
-    font-size: 14px;
-
-}
-
-.stats-grid {
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 10px;
-
-}
-
-.stat {
-
-    background: #1A2338;
-
-    padding: 12px;
-
-    border-radius: 10px;
-
-    text-align: center;
-
-}
-
-.stat span {
-
-    display: block;
-
-    color: #94A3B8;
-
-    font-size: 12px;
-
-}
-
-.stat strong {
-
-    font-size: 22px;
-
-    margin-top: 6px;
-
-    display: block;
-
-}
-
-.container {
-
-    max-width: 360px;
-
-    margin: auto;
-
-}
-
-.card {
+/* ==========================================
+   Cards
+========================================== */
+
+.card{
 
     background:
 
-        linear-gradient(180deg,
+        linear-gradient(
+            180deg,
+            rgba(28,39,61,.98),
+            rgba(15,23,42,.98)
+        );
 
-            rgba(29, 40, 66, .95),
+    border:1px solid #243453;
 
-            rgba(15, 23, 42, .95));
-    backdrop-filter: blur(8px);
+    border-radius:18px;
 
-    border-radius: 18px;
-
-    padding: 16px;
-
-    margin-bottom: 14px;
-
-    border: 1px solid #23314F;
+    padding:18px;
 
     box-shadow:
-        0 10px 30px rgba(0, 0, 0, .45);
 
-    transition: .25s;
-}
-
-.card:hover {
-
-    transform: translateY(-2px);
+        0 12px 30px rgba(0,0,0,.35);
 
 }
 
-/* =======================================
-   MINI CHART
-======================================= */
+.card-title{
 
-.chart {
+    color:#94A3B8;
 
-    padding: 16px;
+    font-size:14px;
 
-}
+    font-weight:700;
 
-.chart-header {
+    margin-bottom:16px;
 
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    margin-bottom: 14px;
+    letter-spacing:.3px;
 
 }
 
-.chart-title {
+/* ==========================================
+   Chart
+========================================== */
 
-    font-size: 12px;
+.chart-card{
 
-    color: #94A3B8;
-
-}
-
-.chart-asset {
-
-    font-size: 18px;
-
-    font-weight: 700;
-
-    margin-top: 3px;
+    height:320px;
 
 }
 
-.chart-price {
+.chart-header{
 
-    color: #22C55E;
+    display:flex;
 
-    font-size: 20px;
+    justify-content:space-between;
 
-    font-weight: bold;
+    align-items:center;
+
+    margin-bottom:18px;
 
 }
 
-#miniChart {
+.chart-title{
 
-    width: 100%;
+    color:#94A3B8;
 
-    height: 120px;
+    font-size:13px;
 
-    border-radius: 12px;
+}
+
+.chart-asset{
+
+    margin-top:4px;
+
+    font-size:22px;
+
+    font-weight:700;
+
+}
+
+.chart-price{
+
+    color:#22C55E;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+}
+
+#miniChart{
+
+    width:100%;
+
+    height:220px;
+
+    border-radius:14px;
 
     background:
-        linear-gradient(180deg,
-            #16213A 0%,
-            #101827 100%);
 
-    border: 1px solid #23314F;
+        linear-gradient(
+            180deg,
+            #16213A,
+            #0F172A
+        );
+
+    border:1px solid #223553;
+
+}
+/* ==========================================
+   SIGNAL TERMINAL
+========================================== */
+
+.signal-terminal{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:flex-start;
+
+    min-height:520px;
 
 }
 
-@keyframes pulseLive {
+/* ==========================================
+   BUY / SELL BANNER
+========================================== */
 
-    0% {
+.buy-banner{
 
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, .7);
+    width:100%;
+
+    text-align:center;
+
+    padding:12px;
+
+    border-radius:12px;
+
+    font-size:18px;
+
+    font-weight:700;
+
+    margin-bottom:18px;
+
+    transition:.35s;
+
+}
+
+.buy-banner.wait{
+
+    background:#374151;
+
+    color:#E5E7EB;
+
+}
+
+.buy-banner.analyzing{
+
+    background:#2563EB;
+
+    color:white;
+
+}
+
+.buy-banner.ready{
+
+    background:#F59E0B;
+
+    color:white;
+
+}
+
+.buy-banner.call{
+
+    background:#16A34A;
+
+    color:white;
+
+    box-shadow:
+
+        0 0 25px rgba(34,197,94,.45);
+
+}
+
+.buy-banner.put{
+
+    background:#DC2626;
+
+    color:white;
+
+    box-shadow:
+
+        0 0 25px rgba(239,68,68,.45);
+
+}
+
+.buy-banner.active{
+
+    background:#7C3AED;
+
+    color:white;
+
+}
+
+.buy-banner.finished{
+
+    background:#0F9D58;
+
+    color:white;
+
+}
+
+/* ==========================================
+   CALL / PUT
+========================================== */
+
+.action{
+
+    font-size:72px;
+
+    font-weight:900;
+
+    letter-spacing:4px;
+
+    margin-top:10px;
+
+    margin-bottom:20px;
+
+    text-transform:uppercase;
+
+    text-align:center;
+
+}
+
+.action.call{
+
+    color:#22C55E;
+
+    text-shadow:
+
+        0 0 18px rgba(34,197,94,.70);
+
+}
+
+.action.put{
+
+    color:#EF4444;
+
+    text-shadow:
+
+        0 0 18px rgba(239,68,68,.70);
+
+}
+
+.action.wait{
+
+    color:#FACC15;
+
+}
+
+/* ==========================================
+   CONFIDENCE GAUGE
+========================================== */
+
+.gauge{
+
+    position:relative;
+
+    width:180px;
+
+    height:180px;
+
+    margin:15px auto;
+
+}
+
+.gauge svg{
+
+    position:absolute;
+
+    inset:0;
+
+}
+
+.gauge-bg{
+
+    fill:none;
+
+    stroke:#1E293B;
+
+    stroke-width:12;
+
+}
+
+.gauge-progress{
+
+    fill:none;
+
+    stroke:#22C55E;
+
+    stroke-width:12;
+
+    stroke-linecap:round;
+
+    stroke-dasharray:452;
+
+    stroke-dashoffset:452;
+
+    transition:.45s;
+
+}
+
+.gauge-text{
+
+    position:absolute;
+
+    inset:0;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:46px;
+
+    font-weight:800;
+
+    color:white;
+
+    text-align:center;
+
+}
+
+/* ==========================================
+   COUNTDOWN
+========================================== */
+
+.countdown{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    margin-top:15px;
+
+}
+
+#countdownLabel{
+
+    color:#94A3B8;
+
+    font-size:15px;
+
+    margin-bottom:6px;
+
+}
+
+#countdown{
+
+    font-size:34px;
+
+    font-weight:800;
+
+}
+
+/* ==========================================
+   ENTRY MESSAGE
+========================================== */
+
+.entry-message{
+
+    margin-top:15px;
+
+    min-height:48px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:42px;
+
+    font-weight:900;
+
+    text-align:center;
+
+}
+
+/* ==========================================
+   ENTRY ANIMATIONS
+========================================== */
+
+.entry-message{
+
+    animation:pulseEntry 1s infinite;
+
+}
+
+@keyframes pulseEntry{
+
+    0%{
+
+        transform:scale(1);
 
     }
 
-    70% {
+    50%{
 
-        box-shadow: 0 0 0 12px rgba(34, 197, 94, 0);
+        transform:scale(1.08);
 
     }
 
-    100% {
+    100%{
 
-        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+        transform:scale(1);
 
     }
 
 }
 
-.card {
+/* ==========================================
+   SIGNAL GLOW
+========================================== */
 
-    animation: slideUp .5s ease;
+.signal-terminal{
 
-}
-
-@keyframes slideUp {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-
-            translateY(18px);
-
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-
-            translateY(0);
-
-    }
+    position:relative;
 
 }
 
-.action {
+.signal-terminal::after{
 
-    animation: signalPulse 2s infinite;
+    content:"";
+
+    position:absolute;
+
+    inset:0;
+
+    border-radius:18px;
+
+    pointer-events:none;
+
+    box-shadow:
+
+        inset 0 0 40px rgba(34,197,94,.05);
+
+}
+/* ==========================================
+   AI ANALYSIS
+========================================== */
+
+.analysis-card{
+
+    min-height:220px;
 
 }
 
-@keyframes signalPulse {
+#analysis{
 
-    0% {
+    display:flex;
 
-        transform: scale(1);
+    flex-direction:column;
+
+    gap:10px;
+
+    font-size:14px;
+
+    line-height:1.5;
+
+}
+
+#analysis .good{
+
+    color:#22C55E;
+
+    font-weight:600;
+
+}
+
+#analysis .warning{
+
+    color:#FACC15;
+
+    font-weight:600;
+
+}
+
+#analysis .bad{
+
+    color:#EF4444;
+
+    font-weight:600;
+
+}
+
+/* ==========================================
+   TODAY'S SESSION
+========================================== */
+
+.stats-card{
+
+    min-height:180px;
+
+}
+
+.stats-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(2,1fr);
+
+    gap:12px;
+
+}
+
+.stat{
+
+    background:#182235;
+
+    border:1px solid #23314F;
+
+    border-radius:12px;
+
+    padding:15px;
+
+    text-align:center;
+
+    transition:.25s;
+
+}
+
+.stat:hover{
+
+    transform:translateY(-3px);
+
+    background:#22304B;
+
+}
+
+.stat span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+    margin-bottom:8px;
+
+}
+
+.stat strong{
+
+    font-size:30px;
+
+    font-weight:800;
+
+}
+
+/* ==========================================
+   MARKET INFORMATION
+========================================== */
+
+.info-card{
+
+    margin-top:18px;
+
+}
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(8,1fr);
+
+    gap:12px;
+
+}
+
+.info-item{
+
+    background:#16213A;
+
+    border:1px solid #243553;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    text-align:center;
+
+}
+
+.info-item span{
+
+    display:block;
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+    margin-bottom:8px;
+
+}
+
+.info-item strong{
+
+    font-size:15px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   HISTORY
+========================================== */
+
+.history-card{
+
+    margin-top:18px;
+
+}
+
+#historyTable{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+#historyTable th{
+
+    background:#16213A;
+
+    color:#CBD5E1;
+
+    font-size:13px;
+
+    padding:12px;
+
+    border-bottom:1px solid #243553;
+
+    text-align:left;
+
+}
+
+#historyTable td{
+
+    padding:12px;
+
+    border-bottom:1px solid #1E293B;
+
+    font-size:13px;
+
+}
+
+#historyTable tbody tr{
+
+    transition:.25s;
+
+}
+
+#historyTable tbody tr:hover{
+
+    background:#182235;
+
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.footer{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-top:18px;
+
+    padding-top:14px;
+
+    border-top:1px solid #23314F;
+
+    color:#94A3B8;
+
+    font-size:13px;
+
+}
+
+.footer strong{
+
+    color:white;
+
+}
+
+/* ==========================================
+   GLOBAL ANIMATIONS
+========================================== */
+
+.card{
+
+    animation:fadeUp .45s ease;
+
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(12px);
 
     }
 
-    50% {
+    to{
 
-        transform: scale(1.04);
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+.action{
+
+    animation:signalPulse 2s infinite;
+
+}
+
+@keyframes signalPulse{
+
+    0%{
+
+        transform:scale(1);
 
     }
 
-    100% {
+    50%{
 
-        transform: scale(1);
+        transform:scale(1.03);
 
     }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================
+   CUSTOM SCROLLBAR
+========================================== */
+
+::-webkit-scrollbar{
+
+    width:8px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#111827;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#334155;
+
+    border-radius:20px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#475569;
 
 }

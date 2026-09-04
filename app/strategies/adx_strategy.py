@@ -1,5 +1,6 @@
-from app.strategies.strategy_result import StrategyResult
 from app.config.weights import Weights
+from app.strategies.strategy_result import StrategyResult
+
 
 class AdxStrategy:
 
@@ -7,29 +8,77 @@ class AdxStrategy:
 
         result = StrategyResult()
 
-        # Strong trend
-        if indicators.adx >= 25:
+        adx = indicators.adx
 
-            # ADX confirms the existing trend
-            if indicators.ema20 > indicators.ema50 > indicators.ema200:
+        # ========================================
+        # ADX Not Available
+        # ========================================
 
-                result.bullish_score = Weights.ADX
-                result.trend = "BULLISH"
-
-            elif indicators.ema20 < indicators.ema50 < indicators.ema200:
-
-                result.bearish_score = Weights.ADX
-                result.trend = "BEARISH"
+        if adx is None:
 
             result.reasons.append(
-                f"ADX Strong ({indicators.adx:.2f})"
+                "ADX Not Available"
             )
 
-        # Weak trend
+            return result
+
+        # ========================================
+        # Very Strong Trend
+        # ========================================
+
+        if adx >= 40:
+
+            result.bullish_score += Weights.ADX + 5
+            result.bearish_score += Weights.ADX + 5
+
+            result.reasons.append(
+                "Very Strong Trend (ADX)"
+            )
+
+        # ========================================
+        # Strong Trend
+        # ========================================
+
+        elif adx >= 30:
+
+            result.bullish_score += Weights.ADX + 2
+            result.bearish_score += Weights.ADX + 2
+
+            result.reasons.append(
+                "Strong Trend (ADX)"
+            )
+
+        # ========================================
+        # Moderate Trend
+        # ========================================
+
+        elif adx >= 25:
+
+            result.bullish_score += Weights.ADX
+            result.bearish_score += Weights.ADX
+
+            result.reasons.append(
+                "Moderate Trend (ADX)"
+            )
+
+        # ========================================
+        # Weak Trend
+        # ========================================
+
+        elif adx >= 20:
+
+            result.reasons.append(
+                "Weak Trend (ADX)"
+            )
+
+        # ========================================
+        # Sideways Market
+        # ========================================
+
         else:
 
             result.reasons.append(
-                f"ADX Weak ({indicators.adx:.2f})"
+                "Sideways Market (ADX)"
             )
 
         return result
