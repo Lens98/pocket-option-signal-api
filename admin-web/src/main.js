@@ -12305,9 +12305,7 @@ async function showCreateApiKeyForm() {
     }
 }
 async function loadApiKeys() {
-
-    const token =
-        localStorage.getItem("adminToken");
+    const token = localStorage.getItem("adminToken");
 
     if (!token) {
         logout();
@@ -12315,49 +12313,36 @@ async function loadApiKeys() {
     }
 
     try {
-
         const response = await fetch(
             `${API}/admin/api-keys`,
             {
                 method: "GET",
                 headers: {
-                    Authorization:
-                        `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
             }
         );
 
         if (!response.ok) {
-            throw new Error(
-                "Failed to load API keys."
-            );
+            throw new Error("Failed to load API keys.");
         }
 
-        const data =
-            await response.json();
+        const data = await response.json();
+        const keys = data.api_keys || [];
 
-        const keys =
-            data.api_keys || [];
-
-        const container =
-            document.getElementById(
-                "apiKeysTableContainer"
-            );
+        const container = document.getElementById(
+            "apiKeysTableContainer"
+        );
 
         if (!keys.length) {
-
             container.innerHTML = `
                 <div class="trade-loading">
                     No API keys found.
                 </div>
             `;
-
         } else {
-
             container.innerHTML = `
-
                 <table>
-
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -12365,40 +12350,56 @@ async function loadApiKeys() {
                             <th>Status</th>
                             <th>Created</th>
                             <th>Last Used</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
+                        ${keys.map(key => {
+                            const isRevoked =
+                                key.status === "revoked";
 
-                        ${keys.map(key => `
+                            return `
+                                <tr>
+                                    <td>${escapeHtml(key.name)}</td>
 
-                            <tr>
+                                    <td>${escapeHtml(
+                                        key.user_email || key.user_id
+                                    )}</td>
 
-                                <td>${escapeHtml(key.name)}</td>
+                                    <td>${escapeHtml(key.status)}</td>
 
-                                <td>${escapeHtml(
-                                    key.user_email || key.user_id
-                                )}</td>
+                                    <td>${formatDate(key.created_at)}</td>
 
-                                <td>${escapeHtml(key.status)}</td>
+                                    <td>${key.last_used_at
+                                        ? formatDate(key.last_used_at)
+                                        : "Never"
+                                    }</td>
 
-                                <td>${formatDate(key.created_at)}</td>
+                                    <td>
+                                        <div class="api-key-actions">
+                                            <button
+                                                class="api-key-revoke-btn"
+                                                ${isRevoked ? "disabled" : ""}
+                                                onclick="revokeApiKey('${key.id}')"
+                                            >
+                                                ${isRevoked ? "Revoked" : "Revoke"}
+                                            </button>
 
-                                <td>${key.last_used_at
-                                    ? formatDate(key.last_used_at)
-                                    : "Never"
-                                }</td>
-
-                            </tr>
-
-                        `).join("")}
-
+                                            <button
+                                                class="api-key-delete-btn"
+                                                onclick="deleteApiKey('${key.id}')"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join("")}
                     </tbody>
-
                 </table>
-
             `;
-
         }
 
         setText(
@@ -12407,7 +12408,6 @@ async function loadApiKeys() {
         );
 
     } catch (error) {
-
         console.error(
             "API Keys load failed:",
             error
@@ -12417,9 +12417,87 @@ async function loadApiKeys() {
             "apiKeysStatus",
             "Unable to load API keys."
         );
+    }
+}
+async function revokeApiKey(apiKeyId) {
+    const token = localStorage.getItem("adminToken");
 
+    if (!token) {
+        logout();
+        return;
     }
 
+    if (!confirm("Revoke this API key? It will no longer work.")) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API}/admin/api-keys/${apiKeyId}/revoke`,
+            {
+                method: "PATCH",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.detail || "Failed to revoke API key."
+            );
+        }
+
+        await loadApiKeys();
+
+    } catch (error) {
+        console.error("API key revoke failed:", error);
+        alert(error.message);
+    }
+}
+
+
+async function deleteApiKey(apiKeyId) {
+    const token = localStorage.getItem("adminToken");
+
+    if (!token) {
+        logout();
+        return;
+    }
+
+    if (!confirm(
+        "Permanently delete this API key? This cannot be undone."
+    )) {
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${API}/admin/api-keys/${apiKeyId}`,
+            {
+                method: "DELETE",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.detail || "Failed to delete API key."
+            );
+        }
+
+        await loadApiKeys();
+
+    } catch (error) {
+        console.error("API key delete failed:", error);
+        alert(error.message);
+    }
 }
 // ==========================================
 // COMING SOON
