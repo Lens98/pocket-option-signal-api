@@ -12017,7 +12017,6 @@ async function showApiKeysPage() {
 
 }
 async function showCreateApiKeyForm() {
-
     const token =
         localStorage.getItem("adminToken");
 
@@ -12027,20 +12026,17 @@ async function showCreateApiKeyForm() {
     }
 
     try {
-
         const response = await fetch(
             `${API}/admin/users`,
             {
                 method: "GET",
                 headers: {
-                    Authorization:
-                        `Bearer ${token}`
+                    Authorization: `Bearer ${token}`
                 }
             }
         );
 
-        const data =
-            await response.json();
+        const data = await response.json();
 
         if (!response.ok) {
             throw new Error(
@@ -12062,11 +12058,8 @@ async function showCreateApiKeyForm() {
         modal.className = "admin-modal";
 
         modal.innerHTML = `
-
             <div class="admin-modal-content">
-
                 <div class="page-header">
-
                     <div>
                         <h2>Create API Key</h2>
                         <p>Generate an API key for a subscriber.</p>
@@ -12075,18 +12068,16 @@ async function showCreateApiKeyForm() {
                     <button
                         id="closeApiKeyModal"
                         class="trades-refresh"
+                        type="button"
                     >
                         CLOSE
                     </button>
-
                 </div>
 
                 <div class="panel">
-
                     <form id="createApiKeyForm">
 
                         <div class="form-group">
-
                             <label for="apiKeyUser">
                                 Subscriber
                             </label>
@@ -12095,25 +12086,19 @@ async function showCreateApiKeyForm() {
                                 id="apiKeyUser"
                                 required
                             >
-
                                 <option value="">
                                     Select subscriber
                                 </option>
 
                                 ${users.map(user => `
-
                                     <option value="${escapeHtml(user.id)}">
                                         ${escapeHtml(user.email)}
                                     </option>
-
                                 `).join("")}
-
                             </select>
-
                         </div>
 
                         <div class="form-group">
-
                             <label for="apiKeyName">
                                 Key Name
                             </label>
@@ -12124,7 +12109,6 @@ async function showCreateApiKeyForm() {
                                 placeholder="Example: Subscriber App"
                                 required
                             >
-
                         </div>
 
                         <button
@@ -12133,18 +12117,14 @@ async function showCreateApiKeyForm() {
                         >
                             CREATE KEY
                         </button>
-
                     </form>
 
                     <div
                         id="createApiKeyMessage"
                         class="trade-loading"
                     ></div>
-
                 </div>
-
             </div>
-
         `;
 
         document.body.appendChild(modal);
@@ -12158,7 +12138,6 @@ async function showCreateApiKeyForm() {
         document
             .getElementById("createApiKeyForm")
             ?.addEventListener("submit", async (event) => {
-
                 event.preventDefault();
 
                 const userId =
@@ -12170,21 +12149,25 @@ async function showCreateApiKeyForm() {
                 const message =
                     document.getElementById("createApiKeyMessage");
 
-                try {
+                const button =
+                    event.target.querySelector(
+                        'button[type="submit"]'
+                    );
 
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = "CREATING...";
+                }
+
+                try {
                     const createResponse = await fetch(
                         `${API}/admin/api-keys`,
                         {
                             method: "POST",
-
                             headers: {
-                                Authorization:
-                                    `Bearer ${token}`,
-
-                                "Content-Type":
-                                    "application/json"
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type": "application/json"
                             },
-
                             body: JSON.stringify({
                                 user_id: userId,
                                 name: name
@@ -12202,17 +12185,97 @@ async function showCreateApiKeyForm() {
                         );
                     }
 
-                    message.textContent =
-                        "API key created successfully.";
+                    const rawApiKey =
+                        result.api_key ||
+                        result.key ||
+                        result.apiKey;
+
+                    if (!rawApiKey) {
+                        throw new Error(
+                            "The API key was created, but the server did not return the secret key."
+                        );
+                    }
 
                     await loadApiKeys();
 
-                    setTimeout(() => {
-                        modal.remove();
-                    }, 1500);
+                    const content =
+                        modal.querySelector(
+                            ".admin-modal-content"
+                        );
+
+                    content.innerHTML = `
+                        <div class="page-header">
+                            <div>
+                                <h2>API Key Created</h2>
+                                <p>Save this key now. It will not be shown again.</p>
+                            </div>
+                        </div>
+
+                        <div class="panel">
+                            <div class="form-group">
+                                <label>
+                                    Your API Key
+                                </label>
+
+                                <input
+                                    id="newApiKeyValue"
+                                    type="text"
+                                    value="${escapeHtml(rawApiKey)}"
+                                    readonly
+                                >
+                            </div>
+
+                            <div
+                                id="apiKeyCopyMessage"
+                                class="trade-loading"
+                            ></div>
+
+                            <button
+                                id="copyApiKeyButton"
+                                type="button"
+                                class="trades-refresh"
+                            >
+                                COPY API KEY
+                            </button>
+
+                            <button
+                                id="doneApiKeyButton"
+                                type="button"
+                                class="trades-refresh"
+                            >
+                                DONE
+                            </button>
+                        </div>
+                    `;
+
+                    document
+                        .getElementById("copyApiKeyButton")
+                        ?.addEventListener("click", async () => {
+                            const copyMessage =
+                                document.getElementById(
+                                    "apiKeyCopyMessage"
+                                );
+
+                            try {
+                                await navigator.clipboard.writeText(
+                                    rawApiKey
+                                );
+
+                                copyMessage.textContent =
+                                    "API key copied successfully.";
+                            } catch (error) {
+                                copyMessage.textContent =
+                                    "Copy failed. Please select and copy the key manually.";
+                            }
+                        });
+
+                    document
+                        .getElementById("doneApiKeyButton")
+                        ?.addEventListener("click", () => {
+                            modal.remove();
+                        });
 
                 } catch (error) {
-
                     console.error(
                         "Create API key failed:",
                         error
@@ -12222,12 +12285,14 @@ async function showCreateApiKeyForm() {
                         error.message ||
                         "Unable to create API key.";
 
+                    if (button) {
+                        button.disabled = false;
+                        button.textContent = "CREATE KEY";
+                    }
                 }
-
             });
 
     } catch (error) {
-
         console.error(
             "Unable to load subscribers:",
             error
@@ -12237,9 +12302,7 @@ async function showCreateApiKeyForm() {
             error.message ||
             "Unable to load subscribers."
         );
-
     }
-
 }
 async function loadApiKeys() {
 

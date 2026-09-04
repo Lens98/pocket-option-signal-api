@@ -1818,3 +1818,104 @@ def create_api_key(
         },
         "message": "API key created. Save this key now; it will not be shown again.",
     }
+
+
+# ==========================================
+# REVOKE API KEY
+# ==========================================
+
+
+@router.patch("/api-keys/{api_key_id}/revoke")
+def revoke_api_key(
+    api_key_id: str,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id, status
+        FROM api_keys
+        WHERE id = ?
+        """,
+        (api_key_id,),
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="API key not found.",
+        )
+
+    if existing["status"] == "revoked":
+        raise HTTPException(
+            status_code=400,
+            detail="API key is already revoked.",
+        )
+
+    database.execute(
+        """
+        UPDATE api_keys
+        SET status = ?
+        WHERE id = ?
+        """,
+        ("revoked", api_key_id),
+    )
+
+    write_admin_log(
+        admin_id=user["id"],
+        action="revoke_api_key",
+        target_type="api_key",
+        target_id=api_key_id,
+        details="Administrator revoked an API key.",
+    )
+
+    return {
+        "success": True,
+        "message": "API key revoked.",
+    }
+
+
+# ==========================================
+# DELETE API KEY
+# ==========================================
+
+
+@router.delete("/api-keys/{api_key_id}")
+def delete_api_key(
+    api_key_id: str,
+    user: dict = Depends(require_admin),
+):
+    existing = database.fetch_one(
+        """
+        SELECT id
+        FROM api_keys
+        WHERE id = ?
+        """,
+        (api_key_id,),
+    )
+
+    if not existing:
+        raise HTTPException(
+            status_code=404,
+            detail="API key not found.",
+        )
+
+    database.execute(
+        """
+        DELETE FROM api_keys
+        WHERE id = ?
+        """,
+        (api_key_id,),
+    )
+
+    write_admin_log(
+        admin_id=user["id"],
+        action="delete_api_key",
+        target_type="api_key",
+        target_id=api_key_id,
+        details="Administrator permanently deleted an API key.",
+    )
+
+    return {
+        "success": True,
+        "message": "API key deleted.",
+    }
