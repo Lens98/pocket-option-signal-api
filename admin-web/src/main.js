@@ -12419,7 +12419,7 @@ async function loadApiKeys() {
         );
     }
 }
-async function revokeApiKey(apiKeyId) {
+window.revokeApiKey = async function revokeApiKey(apiKeyId) {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
@@ -12459,7 +12459,7 @@ async function revokeApiKey(apiKeyId) {
 }
 
 
-async function deleteApiKey(apiKeyId) {
+window.deleteApiKey = async function deleteApiKey(apiKeyId) {
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
