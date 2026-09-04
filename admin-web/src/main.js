@@ -476,8 +476,8 @@ function showDashboard(user) {
 
                                 <strong>
                                     ${escapeHtml(
-                                        user.email
-                                    )}
+        user.email
+    )}
                                 </strong>
 
                                 <span>
@@ -803,8 +803,8 @@ function showDashboard(user) {
                                     <div class="bar-row">
 
                                         ${Array.from(
-                                            { length: 7 },
-                                            () => `
+        { length: 7 },
+        () => `
                                                 <div class="bar-group">
 
                                                     <div
@@ -817,7 +817,7 @@ function showDashboard(user) {
 
                                                 </div>
                                             `
-                                        ).join("")}
+    ).join("")}
 
                                     </div>
 
@@ -825,11 +825,11 @@ function showDashboard(user) {
                                     <div class="rate-line">
 
                                         ${Array.from(
-                                            { length: 7 },
-                                            () => `
+        { length: 7 },
+        () => `
                                                 <span></span>
                                             `
-                                        ).join("")}
+    ).join("")}
 
                                     </div>
 
@@ -1361,12 +1361,12 @@ function showDashboard(user) {
             logout
         );
 
+}
+// ======================================
+// SIDEBAR
+// ======================================
 
-    // ======================================
-    // SIDEBAR
-    // ======================================
-
-    document
+document
     .querySelectorAll(".nav-item")
     .forEach((item) => {
 
@@ -1377,30 +1377,25 @@ function showDashboard(user) {
                 const page =
                     item.dataset.page;
 
-
                 document
-                    .querySelectorAll(
-                        ".nav-item"
-                    )
-                    .forEach((nav) =>
+                    .querySelectorAll(".nav-item")
+                    .forEach((nav) => {
+
                         nav.classList.remove(
                             "active"
-                        )
-                    );
+                        );
 
+                    });
 
                 item.classList.add(
                     "active"
                 );
 
-
                 // ==========================
                 // DASHBOARD
                 // ==========================
 
-                if (
-                    page === "dashboard"
-                ) {
+                if (page === "dashboard") {
 
                     showDashboard(
                         JSON.parse(
@@ -1413,16 +1408,32 @@ function showDashboard(user) {
                     await loadStats();
 
                     return;
+
                 }
 
+                // ==========================
+                // USERS
+                // ==========================
+
+                if (page === "users") {
+
+                    await showUsersPage();
+
+                    return;
+
+                }
+
+                // ==========================
+                // OTHER PAGES
+                // ==========================
 
                 if (page === "trades") {
 
-                     await showTradesPage();
+                    await showTradesPage();
 
                 } else if (page === "performance") {
 
-                     await showPerformancePage();
+                    await showPerformancePage();
 
                 } else if (page === "assets") {
 
@@ -1430,46 +1441,52 @@ function showDashboard(user) {
 
                 } else if (page === "signals") {
 
-                   await showSignalsPage();
+                    await showSignalsPage();
 
-                 } else if (page === "subscriptions") {
+                } else if (page === "subscriptions") {
 
-                      await showSubscriptionsPage();
+                    await showSubscriptionsPage();
 
                 } else if (page === "coupons") {
 
                     await showCouponsPage();
+
                 } else if (page === "payments") {
-    await showPaymentsPage();
-} else if (page === "reports") {
-    await showReportsPage();
-} else if (page === "settings") {
-    await showSettingsPage();
-} else if (page === "admins") {
+
+                    await showPaymentsPage();
+
+                } else if (page === "reports") {
+
+                    await showReportsPage();
+
+                } else if (page === "settings") {
+
+                    await showSettingsPage();
+
+                } else if (page === "admins") {
+
                     await showAdminsPage();
-                  } else if (page === "logs") {
 
-    await showLogsPage();
+                } else if (page === "logs") {
 
-} else if (page === "api-keys") {
+                    await showLogsPage();
 
-    await showApiKeysPage();
+                } else if (page === "api-keys") {
 
-} else {
+                    await showApiKeysPage();
 
-    showComingSoon(
-        item.textContent.trim()
-    );
+                } else {
 
-}
+                    showComingSoon(
+                        item.textContent.trim()
+                    );
+
                 }
 
+            }
         );
 
     });
-
-}
-
 // ==========================================
 // LOAD REAL STATS
 // ==========================================
@@ -1699,9 +1716,9 @@ function updateOverviewChart(
 // USERS PAGE
 // ==========================================
 
-async function showUsersPage() {
+    async function showUsersPage() {
 
-    app.innerHTML = `
+        app.innerHTML = `
 
         <div class="admin-shell">
 
@@ -2226,45 +2243,45 @@ async function showUsersPage() {
     `;
 
 
-    // ======================================
-    // ADMIN EMAIL
-    // ======================================
+        // ======================================
+        // ADMIN EMAIL
+        // ======================================
 
-    const savedUser =
-        JSON.parse(
-            localStorage.getItem(
-                "adminUser"
-            )
-        );
+        const savedUser =
+            JSON.parse(
+                localStorage.getItem(
+                    "adminUser"
+                )
+            );
 
 
-    if (
-        savedUser &&
-        savedUser.email
-    ) {
-
-        setText(
-            "usersAdminEmail",
+        if (
+            savedUser &&
             savedUser.email
-        );
+        ) {
 
-    }
+            setText(
+                "usersAdminEmail",
+                savedUser.email
+            );
 
-
-    // ======================================
-    // LOGOUT
-    // ======================================
-
-    document
-        .getElementById(
-            "logoutButton"
-        )
-        .addEventListener(
-            "click",
-            logout
-        );
+        }
 
 
+        // ======================================
+        // LOGOUT
+        // ======================================
+
+        document
+            .getElementById(
+                "logoutButton"
+            )
+            .addEventListener(
+                "click",
+                logout
+            );
+
+    
     // ======================================
     // NAVIGATION
     // ======================================
