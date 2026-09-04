@@ -12186,9 +12186,9 @@ async function showCreateApiKeyForm() {
                     }
 
                     const rawApiKey =
-                        result.api_key ||
-                        result.key ||
-                        result.apiKey;
+    typeof result.api_key === "string"
+        ? result.api_key
+        : result.api_key?.key || result.key || result.apiKey;
 
                     if (!rawApiKey) {
                         throw new Error(
