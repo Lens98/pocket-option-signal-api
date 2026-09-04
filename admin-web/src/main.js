@@ -399,16 +399,6 @@ function showDashboard(user) {
                         <span>⌘</span>
                         API Keys
                     </button>
-
-
-                    <button
-                        class="nav-item"
-                        data-page="maintenance"
-                    >
-                        <span>◌</span>
-                        Maintenance
-                    </button>
-
                 </nav>
 
 
@@ -641,15 +631,18 @@ function showDashboard(user) {
                                 TOTAL PROFIT
                             </div>
 
-                            <div class="kpi-value unavailable">
-                                —
-                            </div>
+                           <div
+    id="dashboardTotalProfit"
+    class="kpi-value"
+>
+    —
+</div>
 
                             <div class="kpi-note">
 
-                                <span class="muted">
-                                    Analytics endpoint pending
-                                </span>
+                                <span class="positive">
+    Live database value
+</span>
 
                             </div>
 
@@ -666,15 +659,17 @@ function showDashboard(user) {
                                 TOTAL LOSS
                             </div>
 
-                            <div class="kpi-value unavailable">
-                                —
-                            </div>
+                            <div
+    id="dashboardTotalLoss"
+    class="kpi-value"
+>
+    —
+</div>
 
                             <div class="kpi-note">
-
-                                <span class="muted">
-                                    Analytics endpoint pending
-                                </span>
+<span class="negative">
+    Live database value
+</span>
 
                             </div>
 
@@ -691,16 +686,18 @@ function showDashboard(user) {
                                 NET PROFIT
                             </div>
 
-                            <div class="kpi-value unavailable">
-                                —
-                            </div>
+                           <div
+    id="dashboardNetProfit"
+    class="kpi-value"
+>
+    —
+</div>
 
                             <div class="kpi-note">
 
-                                <span class="muted">
-                                    Analytics endpoint pending
-                                </span>
-
+                               <span class="positive">
+    Live database value
+</span>
                             </div>
 
                         </div>
@@ -1490,6 +1487,7 @@ async function loadStats() {
             Number(
                 data.win_rate ?? 0
             );
+        const profit = Number(data.profit ?? 0);
 
 
         setText(
@@ -1508,6 +1506,7 @@ async function loadStats() {
             "winRate",
             `${winRate.toFixed(1)}%`
         );
+        setText("dashboardNetProfit", formatCurrency(profit));
 
 
         setText(

@@ -44,7 +44,7 @@ class TradeMonitor:
         self.thread.start()
 
         print("----------------------------------------")
-        print("✅ Trade Monitor Started")
+        print("Trade Monitor Started")
         print("----------------------------------------")
 
     # ----------------------------------------
