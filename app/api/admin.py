@@ -623,6 +623,13 @@ def admin_delete_user(
             raise Exception("User deletion failed.")
 
         connection.commit()
+        write_admin_log(
+            admin_id=user["id"],
+            action="delete_user",
+            target_type="user",
+            target_id=user_id,
+            details="Administrator deleted a user account.",
+        )
 
         return {
             "success": True,
@@ -730,7 +737,13 @@ def admin_create_subscription(
             now,
         ),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="create_subscription",
+        target_type="subscription",
+        target_id=subscription_id,
+        details=f"Created subscription for user {user_id}.",
+    )
     return {
         "success": True,
         "subscription": {
@@ -797,7 +810,13 @@ def admin_update_subscription(
         """,
         tuple(values),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="update_subscription",
+        target_type="subscription",
+        target_id=subscription_id,
+        details="Administrator updated a subscription.",
+    )
     return {
         "success": True,
         "message": "Subscription updated.",
@@ -828,7 +847,13 @@ def admin_delete_subscription(
         """,
         (subscription_id,),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="delete_subscription",
+        target_type="subscription",
+        target_id=subscription_id,
+        details="Administrator deleted a subscription.",
+    )
     return {
         "success": True,
         "message": "Subscription deleted.",
@@ -986,7 +1011,13 @@ def admin_create_coupon(
             status_code=500,
             detail="Failed to create coupon.",
         )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="create_coupon",
+        target_type="coupon",
+        target_id=coupon_id,
+        details="Administrator created a coupon.",
+    )
     return {
         "success": True,
         "message": "Coupon created.",
@@ -1139,7 +1170,13 @@ def admin_update_coupon(
             status_code=500,
             detail="Failed to update coupon.",
         )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="update_coupon",
+        target_type="coupon",
+        target_id=coupon_id,
+        details="Administrator updated a coupon.",
+    )
     return {
         "success": True,
         "message": "Coupon updated.",
@@ -1178,7 +1215,13 @@ def admin_delete_coupon(
         """,
         (coupon_id,),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="delete_coupon",
+        target_type="coupon",
+        target_id=coupon_id,
+        details="Administrator deleted a coupon.",
+    )
     return {
         "success": True,
         "message": "Coupon deleted.",
@@ -1396,7 +1439,13 @@ def admin_create_payment(
             now,
         ),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="create_payment",
+        target_type="payment",
+        target_id=payment_id,
+        details="Administrator created a payment.",
+    )
     return {
         "success": True,
         "message": "Payment created.",
@@ -1545,7 +1594,13 @@ def admin_update_payment(
         """,
         tuple(values),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="update_payment",
+        target_type="payment",
+        target_id=payment_id,
+        details="Administrator updated a payment.",
+    )
     return {
         "success": True,
         "message": "Payment updated.",
@@ -1584,7 +1639,13 @@ def admin_delete_payment(
         """,
         (payment_id,),
     )
-
+    write_admin_log(
+        admin_id=user["id"],
+        action="delete_payment",
+        target_type="payment",
+        target_id=payment_id,
+        details="Administrator deleted a payment.",
+    )
     return {
         "success": True,
         "message": "Payment deleted.",
@@ -1644,5 +1705,12 @@ def update_admin_settings(settings: dict, user: dict = Depends(require_admin)):
     database.execute(f"UPDATE admin_settings SET {set_clause} WHERE id = 1", values)
 
     updated = database.fetch_one("SELECT * FROM admin_settings WHERE id = 1")
+    write_admin_log(
+        admin_id=user["id"],
+        action="update_settings",
+        target_type="settings",
+        target_id="admin_settings",
+        details="Administrator updated admin settings.",
+    )
 
     return {"success": True, "settings": dict(updated)}
