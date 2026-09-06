@@ -199,9 +199,8 @@ async function login(event) {
         // ==================================
 
         showDashboard(user);
-
-        await loadStats();
-
+      await loadStats();
+      await loadAdminTrades();
     } catch (err) {
 
         console.error(
@@ -1380,16 +1379,17 @@ document.addEventListener("click", async (event) => {
 
     item.classList.add("active");
 
-    if (page === "dashboard") {
-        showDashboard(
-            JSON.parse(
-                localStorage.getItem("adminUser")
-            )
-        );
+   if (page === "dashboard") {
+    showDashboard(
+        JSON.parse(
+            localStorage.getItem("adminUser")
+        )
+    );
 
-        await loadStats();
-        return;
-    }
+    await loadStats();
+    await loadAdminTrades();
+    return;
+}
 
     if (page === "users") {
         await showUsersPage();
@@ -12557,8 +12557,8 @@ async function checkExistingSession() {
         const user = JSON.parse(savedUser);
 
         showDashboard(user);
-        await loadStats();
-
+await loadStats();
+await loadAdminTrades();
     } catch (error) {
         console.error("Admin session invalid:", error);
 
