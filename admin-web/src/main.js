@@ -1429,132 +1429,114 @@ document.addEventListener("click", async (event) => {
 // ==========================================
 
 async function loadStats() {
-
-    const token =
-        localStorage.getItem(
-            "adminToken"
-        );
+    const token = localStorage.getItem("adminToken");
 
     if (!token) {
         return;
     }
 
-
     try {
+        const headers = {
+            Authorization: `Bearer ${token}`
+        };
 
-        const response =
-            await fetch(
-                `${API}/admin/stats`,
-                {
-                    method: "GET",
+        const response = await fetch(
+            `${API}/admin/stats`,
+            {
+                method: "GET",
+                headers
+            }
+        );
 
-                    headers: {
-                        Authorization:
-                            `Bearer ${token}`
-                    }
-                }
-            );
+        const data = await response.json();
 
-
-        const data =
-            await response.json();
-
-
-        if (
-            !response.ok ||
-            data.success !== true
-        ) {
-
+        if (!response.ok || data.success !== true) {
             throw new Error(
-                data.detail ||
-                "Unable to load statistics."
+                data.detail || "Unable to load statistics."
             );
-
         }
 
+        const users = Number(data.users ?? 0);
+        const trades = Number(data.trades ?? 0);
+        const winRate = Number(data.win_rate ?? 0);
 
-        const users =
-            Number(
-                data.users ?? 0
+        setText("totalUsers", formatNumber(users));
+        setText("totalTrades", formatNumber(trades));
+        setText("winRate", `${winRate.toFixed(1)}%`);
+
+        setText("summaryUsers", formatNumber(users));
+        setText("summaryTrades", formatNumber(trades));
+        setText("summaryWinRate", `${winRate.toFixed(1)}%`);
+
+        setText("assetTotal", formatNumber(trades));
+        setText("assetTrades", formatNumber(trades));
+
+        updateOverviewChart(trades, winRate);
+
+        const performanceResponse = await fetch(
+            `${API}/admin/performance/summary`,
+            {
+                method: "GET",
+                headers
+            }
+        );
+
+        const performanceData =
+            await performanceResponse.json();
+
+        if (
+            !performanceResponse.ok ||
+            performanceData.success !== true
+        ) {
+            throw new Error(
+                performanceData.detail ||
+                "Unable to load performance statistics."
             );
+        }
 
-        const trades =
-            Number(
-                data.trades ?? 0
-            );
+        const statistics =
+            performanceData.statistics || {};
 
-        const winRate =
-            Number(
-                data.win_rate ?? 0
-            );
-        const profit = Number(data.profit ?? 0);
+        const totalProfit =
+            Number(statistics.total_profit ?? 0);
 
+        const totalLoss =
+            Number(statistics.total_loss ?? 0);
 
-        setText(
-            "totalUsers",
-            formatNumber(users)
-        );
-
+        const netProfit =
+            Number(statistics.net_profit ?? 0);
 
         setText(
-            "totalTrades",
-            formatNumber(trades)
+            "dashboardTotalProfit",
+            totalProfit.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD"
+            })
         );
-
 
         setText(
-            "winRate",
-            `${winRate.toFixed(1)}%`
+            "dashboardTotalLoss",
+            totalLoss.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD"
+            })
         );
-        setText("dashboardNetProfit", formatCurrency(profit));
-
 
         setText(
-            "summaryUsers",
-            formatNumber(users)
+            "dashboardNetProfit",
+            netProfit.toLocaleString("en-US", {
+                style: "currency",
+                currency: "USD"
+            })
         );
-
-
-        setText(
-            "summaryTrades",
-            formatNumber(trades)
-        );
-
-
-        setText(
-            "summaryWinRate",
-            `${winRate.toFixed(1)}%`
-        );
-
-
-        setText(
-            "assetTotal",
-            formatNumber(trades)
-        );
-
-
-        setText(
-            "assetTrades",
-            formatNumber(trades)
-        );
-
-
-        updateOverviewChart(
-            trades,
-            winRate
-        );
-
 
     } catch (error) {
-
         console.error(
             "Failed to load admin statistics:",
             error
         );
-
     }
 }
-
 
 // ==========================================
 // OVERVIEW CHART
