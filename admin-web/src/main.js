@@ -1528,7 +1528,31 @@ async function loadStats() {
 
         const statistics =
             performanceData.statistics || {};
+        console.log("Performance statistics:", statistics);
+                const growthResponse = await fetch(
+            `${API}/admin/users/growth`,
+            {
+                method: "GET",
+                headers
+            }
+        );
 
+        const growthData =
+            await growthResponse.json();
+
+        if (
+            !growthResponse.ok ||
+            growthData.success !== true
+        ) {
+            throw new Error(
+                growthData.detail ||
+                "Unable to load user growth."
+            );
+        }
+
+                updateUserGrowthChart(
+            growthData.growth || []
+        );
         const totalProfit =
             Number(statistics.total_profit ?? 0);
 
@@ -1663,6 +1687,71 @@ function updateOverviewChart(
             `${winRate.toFixed(1)}% overall win rate. ` +
             `Historical daily breakdown will use exact trade dates.`;
 
+    }
+}
+function updateUserGrowthChart(growth) {
+
+    const svg = document.querySelector(".growth-chart svg");
+    const area = svg?.querySelector(".growth-area");
+    const line = svg?.querySelector(".growth-line");
+    const circles = svg?.querySelectorAll("circle");
+
+    if (!svg || !area || !line) {
+        return;
+    }
+    const values = Array.isArray(growth)
+        ? growth.slice(-7)
+        : [];
+
+    const counts = values.map(item =>
+        Number(item.count || 0)
+    );
+
+    const max = Math.max(...counts, 1) + 1;
+    const width = 500;
+    const bottom = 190;
+    const top = 20;
+
+    const points = counts.length
+        ? counts.map((value, index) => {
+              const x = counts.length === 1
+                  ? 0
+                  : (index / (counts.length - 1)) * width;
+
+              const y =
+                  bottom - (value / max) * (bottom - top);
+
+              return { x, y };
+          })
+        : [{ x: 0, y: bottom }];
+
+    const linePoints = points
+        .map(point => `${point.x},${point.y}`)
+        .join(" ");
+
+    line.setAttribute("points", linePoints);
+
+    const areaPath = points
+        .map(point => `${point.x},${point.y}`)
+        .join(" L");
+
+    area.setAttribute(
+        "d",
+        `M0,${bottom} L${areaPath} L${width},${bottom} Z`
+    );
+
+    if (circles) {
+        circles.forEach((circle, index) => {
+            const point = points[index];
+
+            if (point) {
+                circle.setAttribute("cx", point.x);
+                circle.setAttribute("cy", point.y);
+                circle.style.display = "";
+            } else {
+                circle.style.display = "none";
+            }
+        });
     }
 }
 // ==========================================
@@ -4429,7 +4518,6 @@ async function showTradesPage() {
 // ==========================================
 
 async function loadAdminTrades() {
-    console.log("loadAdminTrades started");
 
     const token =
         localStorage.getItem("adminToken");
@@ -4476,7 +4564,6 @@ if (!container && !dashboardTable) {
 
         const data =
             await response.json();
-        console.log("Dashboard trades loaded:", data.trades?.length);
         adminTradesCache = data.trades || [];
 renderDashboardRecentTrades();
 
