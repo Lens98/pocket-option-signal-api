@@ -1054,7 +1054,7 @@ function showDashboard(user) {
                                     </thead>
 
 
-                                    <tbody>
+                                    <tbody id="dashboardRecentTrades">
 
                                         <tr>
 
@@ -1424,6 +1424,38 @@ document.addEventListener("click", async (event) => {
         showComingSoon(item.textContent.trim());
     }
 });
+
+function renderDashboardRecentTrades() {
+    const table = document.getElementById("dashboardRecentTrades");
+
+    if (!table) return;
+
+    const recent = adminTradesCache.slice(0, 5);
+
+    if (!recent.length) {
+        table.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="table-empty">
+                        No recent trades found.
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    table.innerHTML = recent.map(trade => `
+        <tr>
+            <td>${escapeHtml(shortenId(trade.id))}</td>
+            <td>${escapeHtml(trade.asset || "—")}</td>
+            <td>${escapeHtml(trade.action || "—")}</td>
+            <td>${escapeHtml(trade.result || trade.status || "—")}</td>
+            <td>${formatPercent(trade.confidence)}</td>
+            <td>${formatDateTime(trade.entry_time)}</td>
+        </tr>
+    `).join("");
+}
 // ==========================================
 // LOAD REAL STATS
 // ==========================================
@@ -2232,7 +2264,6 @@ function updateOverviewChart(
                             );
 
                             await loadStats();
-
                             return;
 
                         }
@@ -4441,6 +4472,7 @@ async function loadAdminTrades() {
 
         adminTradesCache =
             data.trades || [];
+        renderDashboardRecentTrades();
 
         adminTradesPage = 1;
 
