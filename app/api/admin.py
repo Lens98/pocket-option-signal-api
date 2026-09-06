@@ -153,6 +153,41 @@ def admin_users(
 
 
 # ==========================================
+# USER GROWTH
+# ==========================================
+
+
+@router.get("/users/growth")
+def admin_user_growth(
+    user: dict = Depends(require_admin),
+):
+    rows = database.fetch_all("""
+        SELECT
+            DATE(created_at) AS day,
+            COUNT(*) AS count
+        FROM users
+        WHERE DATE(created_at) >= DATE('now', '-6 days')
+        GROUP BY DATE(created_at)
+        ORDER BY day ASC
+        """)
+
+    growth = []
+
+    for row in rows:
+        growth.append(
+            {
+                "day": row["day"],
+                "count": row["count"],
+            }
+        )
+
+    return {
+        "success": True,
+        "growth": growth,
+    }
+
+
+# ==========================================
 # ALL TRADES
 # ==========================================
 
