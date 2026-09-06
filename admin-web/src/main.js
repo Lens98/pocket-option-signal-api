@@ -4429,27 +4429,34 @@ async function showTradesPage() {
 // ==========================================
 
 async function loadAdminTrades() {
+    console.log("loadAdminTrades started");
 
     const token =
         localStorage.getItem("adminToken");
 
-    const container =
-        document.getElementById(
-            "tradesTableContainer"
-        );
+   const container =
+    document.getElementById(
+        "tradesTableContainer"
+    );
 
-    if (!container) {
-        return;
-    }
+const dashboardTable =
+    document.getElementById(
+        "dashboardRecentTrades"
+    );
+
+if (!container && !dashboardTable) {
+    return;
+}
 
     try {
 
-        container.innerHTML = `
-            <div class="trade-loading">
-                Loading trades...
-            </div>
-        `;
-
+        if (container) {
+    container.innerHTML = `
+        <div class="trade-loading">
+            Loading trades...
+        </div>
+    `;
+}
         const response =
             await fetch(
                 `${API}/admin/trades`,
@@ -4469,10 +4476,9 @@ async function loadAdminTrades() {
 
         const data =
             await response.json();
-
-        adminTradesCache =
-            data.trades || [];
-        renderDashboardRecentTrades();
+        console.log("Dashboard trades loaded:", data.trades?.length);
+        adminTradesCache = data.trades || [];
+renderDashboardRecentTrades();
 
         adminTradesPage = 1;
 
