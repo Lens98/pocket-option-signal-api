@@ -19,13 +19,11 @@ class LearningRepository:
             base = Path(__file__).resolve().parent.parent
             db_path = base / "trades.db"
 
-        self.connection = sqlite3.connect(db_path, check_same_thread=False, timeout=30)
-
-        self.connection.row_factory = sqlite3.Row
-
-        self.lock = threading.Lock()
-
-        self.create_table()
+        self.connection = sqlite3.connect(
+            db_path,
+            check_same_thread=False,
+            timeout=30,
+        )
 
         self.connection.row_factory = sqlite3.Row
 
@@ -39,7 +37,6 @@ class LearningRepository:
     # ========================================
 
     def _cursor(self):
-
         return self.connection.cursor()
 
     # ========================================

@@ -18,7 +18,6 @@ from app.services.signal_lock import user_signal_lock_manager
 class TradeMonitor:
 
     def __init__(self):
-
         self.market_storage = market_storage
         self.trade_storage = trade_storage
         self.tracker = WinLossTracker()
@@ -33,14 +32,11 @@ class TradeMonitor:
     # ----------------------------------------
 
     def start(self):
-
         if self.running:
             return
 
         self.running = True
-
         self.thread = threading.Thread(target=self.run, daemon=True)
-
         self.thread.start()
 
         print("----------------------------------------")
@@ -52,7 +48,6 @@ class TradeMonitor:
     # ----------------------------------------
 
     def stop(self):
-
         self.running = False
 
         print("----------------------------------------")
@@ -64,15 +59,11 @@ class TradeMonitor:
     # ----------------------------------------
 
     def run(self):
-
         while self.running:
-
             try:
-
                 self.check_open_trades()
 
             except Exception as e:
-
                 print("----------------------------------------")
                 print("Trade Monitor Error")
                 print(e)
@@ -85,7 +76,6 @@ class TradeMonitor:
     # ----------------------------------------
 
     def check_open_trades(self):
-
         trades = self.trade_storage.open_trades()
 
         print("----------------------------------------")
@@ -94,7 +84,6 @@ class TradeMonitor:
         print("----------------------------------------")
 
         for trade in trades:
-
             print(
                 "Trade:",
                 trade.id,
@@ -109,7 +98,6 @@ class TradeMonitor:
         if not trades:
             return
 
-        # Always use timezone-aware UTC
         now = datetime.now(timezone.utc)
 
         for trade in trades:
@@ -121,13 +109,8 @@ class TradeMonitor:
             entry_time = trade.entry_time
 
             if entry_time.tzinfo is None:
-
-                # SQLite may return a naive datetime.
-                # Treat stored timestamps as UTC.
                 entry_time = entry_time.replace(tzinfo=timezone.utc)
-
             else:
-
                 entry_time = entry_time.astimezone(timezone.utc)
 
             # ----------------------------------------
@@ -144,7 +127,6 @@ class TradeMonitor:
             print("Now      :", now)
             print("----------------------------------------")
 
-            # Trade has not expired yet
             if now < expire_time:
                 continue
 
@@ -152,10 +134,12 @@ class TradeMonitor:
             # Get Market
             # ----------------------------------------
 
-            market = self.market_storage.get(trade.user_id, trade.asset)
+            market = self.market_storage.get(
+                trade.user_id,
+                trade.asset,
+            )
 
             if market is None:
-
                 print("----------------------------------------")
                 print("⚠️ EXPIRED TRADE: MARKET NOT FOUND")
                 print("Trade ID:", trade.id)
@@ -181,7 +165,6 @@ class TradeMonitor:
             # ----------------------------------------
 
             if len(market.candles) == 0:
-
                 print("----------------------------------------")
                 print("⚠️ EXPIRED TRADE: NO CANDLES")
                 print("Trade ID:", trade.id)
@@ -208,94 +191,88 @@ class TradeMonitor:
             expiration_candle = None
 
             for candle in market.candles:
-
                 try:
-
                     timestamp_value = candle.timestamp
 
                     try:
-
                         timestamp_number = float(timestamp_value)
 
                         if timestamp_number > 10_000_000_000:
-
                             candle_time = datetime.fromtimestamp(
                                 timestamp_number / 1000,
                                 tz=timezone.utc,
                             )
-
                         else:
-
                             candle_time = datetime.fromtimestamp(
                                 timestamp_number,
                                 tz=timezone.utc,
                             )
 
                     except (TypeError, ValueError, OverflowError):
-
                         candle_time = datetime.fromisoformat(
-                            str(timestamp_value).replace("Z", "+00:00")
+                            str(timestamp_value).replace(
+                                "Z",
+                                "+00:00",
+                            )
                         )
 
-                        if candle_time.tzinfo is None:
-
-                            candle_time = candle_time.replace(tzinfo=timezone.utc)
-
-                        else:
-
-                            candle_time = candle_time.astimezone(timezone.utc)
-
-                    # We want the candle whose timestamp
-                    # is at or immediately after expiration.
+                    if candle_time.tzinfo is None:
+                        candle_time = candle_time.replace(tzinfo=timezone.utc)
+                    else:
+                        candle_time = candle_time.astimezone(timezone.utc)
 
                     timeframe_value = str(trade.timeframe).lower().strip()
 
                     if timeframe_value.endswith("m"):
                         candle_seconds = int(timeframe_value[:-1]) * 60
-
                     elif timeframe_value.endswith("s"):
                         candle_seconds = int(timeframe_value[:-1])
-
                     elif timeframe_value.endswith("h"):
                         candle_seconds = int(timeframe_value[:-1]) * 3600
-
                     else:
                         candle_seconds = 60
+
                     candle_end_time = candle_time + timedelta(seconds=candle_seconds)
 
                     if candle_time < expire_time <= candle_end_time:
-
                         expiration_candle = candle
-
                         break
 
                 except Exception as error:
-
-                    print("⚠️ Invalid candle timestamp:", candle.timestamp, error)
+                    print(
+                        "⚠️ Invalid candle timestamp:",
+                        candle.timestamp,
+                        error,
+                    )
 
             # ----------------------------------------
             # Expiration Candle Not Available
             # ----------------------------------------
 
             if expiration_candle is None:
-
                 print("----------------------------------------")
                 print("EXPIRATION CANDLE NOT FOUND")
                 print("Trade ID:", trade.id)
                 print("Expiration:", expire_time)
-                print("Latest Candle:", market.candles[-1].timestamp)
+                print(
+                    "Latest Candle:",
+                    market.candles[-1].timestamp,
+                )
                 print("----------------------------------------")
 
-                # Exact expiration candle unavailable.
-                # Use latest available candle so an expired trade
-                # cannot remain ACTIVE forever.
                 expiration_candle = market.candles[-1]
 
                 print("----------------------------------------")
                 print("FALLBACK EXIT CANDLE USED")
                 print("Trade ID:", trade.id)
-                print("Fallback Candle:", expiration_candle.timestamp)
-                print("Exit Price:", expiration_candle.close)
+                print(
+                    "Fallback Candle:",
+                    expiration_candle.timestamp,
+                )
+                print(
+                    "Exit Price:",
+                    expiration_candle.close,
+                )
                 print("----------------------------------------")
 
             # ----------------------------------------
@@ -309,18 +286,24 @@ class TradeMonitor:
             print("----------------------------------------")
             print("Trade ID:", trade.id)
             print("Expiration:", expire_time)
-            print("Candle Time:", expiration_candle.timestamp)
+            print(
+                "Candle Time:",
+                expiration_candle.timestamp,
+            )
             print("Entry Price:", trade.entry_price)
             print("Exit Price:", exit_price)
             print("----------------------------------------")
+
             # ----------------------------------------
             # Close Trade
             # ----------------------------------------
 
-            closed_trade = self.tracker.close_trade(trade, exit_price)
+            closed_trade = self.tracker.close_trade(
+                trade,
+                exit_price,
+            )
 
             if not closed_trade:
-
                 print("----------------------------------------")
                 print("❌ CLOSE_TRADE FAILED")
                 print("Trade ID:", trade.id)
@@ -329,7 +312,6 @@ class TradeMonitor:
                 print("Exit:", exit_price)
                 print("----------------------------------------")
 
-                # Never leave an ACTIVE trade lock behind
                 user_signal_lock_manager.get(trade.user_id).unlock()
 
                 continue
@@ -345,6 +327,7 @@ class TradeMonitor:
             print("----------------------------------------")
 
             user_signal_lock_manager.get(closed_trade.user_id).unlock()
+
             # ----------------------------------------
             # Normalize Trade Times
             # ----------------------------------------
@@ -361,20 +344,46 @@ class TradeMonitor:
                 learning_exit_time = learning_exit_time.replace(tzinfo=timezone.utc)
             else:
                 learning_exit_time = learning_exit_time.astimezone(timezone.utc)
+
             # ----------------------------------------
             # Save Learning Record
             # ----------------------------------------
 
             learning = TradeLearning(
+                # Required learning fields
+                action=closed_trade.action,
+                confidence=closed_trade.confidence,
+                trend=getattr(
+                    closed_trade,
+                    "trend",
+                    "UNKNOWN",
+                ),
                 trade_id=closed_trade.id,
                 asset=closed_trade.asset,
                 timeframe=closed_trade.timeframe,
-                session=getattr(closed_trade, "session", "UNKNOWN"),
-                indicator_mode=getattr(closed_trade, "indicator_mode", "UNKNOWN"),
-                regime=getattr(closed_trade, "regime", "UNKNOWN"),
-                probability=getattr(closed_trade, "probability", 0.0),
+                session=getattr(
+                    closed_trade,
+                    "session",
+                    "UNKNOWN",
+                ),
+                indicator_mode=getattr(
+                    closed_trade,
+                    "indicator_mode",
+                    "UNKNOWN",
+                ),
+                regime=getattr(
+                    closed_trade,
+                    "regime",
+                    "UNKNOWN",
+                ),
+                probability=getattr(
+                    closed_trade,
+                    "probability",
+                    0.0,
+                ),
                 risk=closed_trade.risk,
                 grade=closed_trade.grade,
+                # Indicator values
                 ema20=None,
                 ema50=None,
                 ema200=None,
@@ -384,11 +393,13 @@ class TradeMonitor:
                 histogram=None,
                 adx=None,
                 atr=None,
+                # Indicator usage flags
                 ema_used=any("EMA" in reason for reason in closed_trade.reasons),
                 rsi_used=any("RSI" in reason for reason in closed_trade.reasons),
                 macd_used=any("MACD" in reason for reason in closed_trade.reasons),
                 adx_used=any("ADX" in reason for reason in closed_trade.reasons),
                 atr_used=any("ATR" in reason for reason in closed_trade.reasons),
+                # Trade result
                 entry_price=closed_trade.entry_price,
                 exit_price=closed_trade.exit_price,
                 payout=closed_trade.payout,
@@ -414,13 +425,20 @@ class TradeMonitor:
             print("Reasons:", learning.reasons)
             print("========================================")
 
+            # ----------------------------------------
+            # Save Global Learning Record
+            # ----------------------------------------
+
             self.learning.add(learning)
 
             # ----------------------------------------
-            # Learn Pattern
+            # Learn Pattern Globally
             # ----------------------------------------
 
-            self.pattern_learning.learn(closed_trade.pattern, closed_trade.result)
+            self.pattern_learning.learn(
+                closed_trade.pattern,
+                closed_trade.result,
+            )
 
             # ----------------------------------------
             # Save Metadata

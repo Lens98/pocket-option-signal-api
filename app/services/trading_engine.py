@@ -596,10 +596,20 @@ class TradingEngine:
         # Performance Learning
         # ----------------------------------------
 
+        # Use the validated next-candle prediction
+        # when available. This ensures historical
+        # learning is matched to the actual CALL/PUT
+        # prediction rather than the initial strategy action.
+
+        learning_action = signal.next_candle_bias
+
+        if learning_action not in ["CALL", "PUT"]:
+            learning_action = signal.action
+
         learning_result = self.performance_learning.apply_learning(
             signal.confidence,
             asset=signal.asset,
-            action=signal.action,
+            action=learning_action,
             session=signal.session,
             regime=signal.regime,
             indicator_mode=signal.indicator_mode,

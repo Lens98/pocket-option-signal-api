@@ -9,9 +9,7 @@ class PerformanceLearning:
 
     MINIMUM_TRADES = 20
     STRONG_SAMPLE_SIZE = 100
-
     NEUTRAL_WIN_RATE = 50.0
-
     MAX_BOOST = 10.0
     MAX_PENALTY = -10.0
 
@@ -20,7 +18,6 @@ class PerformanceLearning:
     # ========================================
 
     def __init__(self):
-
         self.analyzer = PerformanceAnalyzer()
 
     # ========================================
@@ -28,11 +25,7 @@ class PerformanceLearning:
     # ========================================
 
     def is_reliable(self, stats):
-
-        total_trades = stats.get(
-            "total_trades",
-            0,
-        )
+        total_trades = stats.get("total_trades", 0)
 
         return total_trades >= self.MINIMUM_TRADES
 
@@ -41,7 +34,6 @@ class PerformanceLearning:
     # ========================================
 
     def sample_strength(self, total_trades):
-
         if total_trades < self.MINIMUM_TRADES:
             return 0.0
 
@@ -60,7 +52,6 @@ class PerformanceLearning:
     def calculate_adjustment(self, stats):
 
         if not self.is_reliable(stats):
-
             return {
                 "adjustment": 0.0,
                 "reason": "INSUFFICIENT_DATA",
@@ -97,15 +88,12 @@ class PerformanceLearning:
         )
 
         if adjustment > 0:
-
             reason = "POSITIVE_HISTORICAL_PERFORMANCE"
 
         elif adjustment < 0:
-
             reason = "NEGATIVE_HISTORICAL_PERFORMANCE"
 
         else:
-
             reason = "NEUTRAL_HISTORICAL_PERFORMANCE"
 
         return {
@@ -118,7 +106,7 @@ class PerformanceLearning:
         }
 
     # ========================================
-    # FIND CONTEXT STATISTICS
+    # FIND GLOBAL CONTEXT STATISTICS
     # ========================================
 
     def get_context_stats(
@@ -130,25 +118,33 @@ class PerformanceLearning:
         indicator_mode=None,
     ):
 
+        # IMPORTANT:
+        # No user_id filter.
+        # All subscribers contribute to the same
+        # global learning pool.
+
         trades = self.analyzer.get_closed_trades()
 
         matching_trades = []
 
         for trade in trades:
 
-            if asset is not None and trade["asset"] != asset:
+            if asset is not None and trade.get("asset") != asset:
                 continue
 
-            if action is not None and trade["action"] != action:
+            if action is not None and trade.get("action") != action:
                 continue
 
-            if session is not None and trade["session"] != session:
+            if session is not None and trade.get("session") != session:
                 continue
 
-            if regime is not None and trade["regime"] != regime:
+            if regime is not None and trade.get("regime") != regime:
                 continue
 
-            if indicator_mode is not None and trade["indicator_mode"] != indicator_mode:
+            if (
+                indicator_mode is not None
+                and trade.get("indicator_mode") != indicator_mode
+            ):
                 continue
 
             matching_trades.append(trade)
