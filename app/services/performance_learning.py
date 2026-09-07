@@ -129,21 +129,21 @@ class PerformanceLearning:
 
         for trade in trades:
 
-            if asset is not None and trade.get("asset") != asset:
+            if asset is not None and trade["asset"] != asset:
                 continue
 
-            if action is not None and trade.get("action") != action:
+            if action is not None and trade["action"] != action:
                 continue
 
-            if session is not None and trade.get("session") != session:
+            if session is not None and trade["session"] != session:
                 continue
 
-            if regime is not None and trade.get("regime") != regime:
+            if regime is not None and trade["regime"] != regime:
                 continue
 
             if (
                 indicator_mode is not None
-                and trade.get("indicator_mode") != indicator_mode
+                and trade["indicator_mode"] != indicator_mode
             ):
                 continue
 
