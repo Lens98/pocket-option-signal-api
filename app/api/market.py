@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 import time
 from app.api.auth import get_authenticated_user
+from app.services.auth_dependency import require_active_subscription
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
 
@@ -49,7 +50,7 @@ def health():
 
 @router.post("/market/update")
 def update_market(
-    data: MarketUpdate, current_user: dict = Depends(get_authenticated_user)
+    data: MarketUpdate, current_user: dict = Depends(require_active_subscription)
 ):
     user_id = current_user["id"]
 
@@ -138,7 +139,7 @@ def update_market(
 
 
 @router.get("/signal")
-def latest_signal(current_user: dict = Depends(get_authenticated_user)):
+def latest_signal(current_user: dict = Depends(require_active_subscription)):
 
     user_id = current_user["id"]
 
@@ -165,7 +166,9 @@ def latest_signal(current_user: dict = Depends(get_authenticated_user)):
 
 
 @router.get("/market/history/{asset}")
-def market_history(asset: str, current_user: dict = Depends(get_authenticated_user)):
+def market_history(
+    asset: str, current_user: dict = Depends(require_active_subscription)
+):
 
     user_id = current_user["id"]
 
@@ -185,7 +188,7 @@ def market_history(asset: str, current_user: dict = Depends(get_authenticated_us
 
 
 @router.get("/trade/state")
-def trade_state_status(current_user: dict = Depends(get_authenticated_user)):
+def trade_state_status(current_user: dict = Depends(require_active_subscription)):
 
     user_id = current_user["id"]
 
@@ -198,7 +201,7 @@ def trade_state_status(current_user: dict = Depends(get_authenticated_user)):
 
 
 @router.get("/candles/{asset:path}")
-def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)):
+def get_candles(asset: str, current_user: dict = Depends(require_active_subscription)):
 
     user_id = current_user["id"]
 
@@ -227,7 +230,7 @@ def get_candles(asset: str, current_user: dict = Depends(get_authenticated_user)
 @router.post("/analyze-market")
 def analyze_market(
     data: Optional[AnalyzeMarketRequest] = None,
-    current_user: dict = Depends(get_authenticated_user),
+    current_user: dict = Depends(require_active_subscription),
 ):
 
     user_id = current_user["id"]
@@ -377,7 +380,7 @@ def analyze_market(
 
 
 @router.get("/trade/statistics-overall")
-def trade_statistics(current_user: dict = Depends(get_authenticated_user)):
+def trade_statistics(current_user: dict = Depends(require_active_subscription)):
     user_id = current_user["id"]
 
     stats = trade_storage.statistics(user_id)
@@ -398,7 +401,7 @@ def trade_statistics(current_user: dict = Depends(get_authenticated_user)):
 
 
 @router.get("/market/select/{asset}")
-def select_asset(asset: str, current_user: dict = Depends(get_authenticated_user)):
+def select_asset(asset: str, current_user: dict = Depends(require_active_subscription)):
 
     user_id = current_user["id"]
 
@@ -413,7 +416,7 @@ def select_asset(asset: str, current_user: dict = Depends(get_authenticated_user
 
 
 @router.get("/trade/today")
-def today_session(current_user: dict = Depends(get_authenticated_user)):
+def today_session(current_user: dict = Depends(require_active_subscription)):
 
     user_id = current_user["id"]
 
