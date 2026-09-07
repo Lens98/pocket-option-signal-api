@@ -11,9 +11,8 @@ class Trade(BaseModel):
     # ========================================
 
     id: str
-    user_id: str
+    user_id: Optional[str] = None
     asset: str
-
     timeframe: str
 
     # ========================================
@@ -21,23 +20,14 @@ class Trade(BaseModel):
     # ========================================
 
     action: str
-
     confidence: float
-
     probability: float = 0.0
-
     agreement_score: float = 0.0
-
     grade: str
-
     risk: str
-
     trend: str
-
     regime: str = "UNKNOWN"
-
     session: str = "UNKNOWN"
-
     indicator_mode: str = "UNKNOWN"
 
     # ========================================
@@ -45,17 +35,14 @@ class Trade(BaseModel):
     # ========================================
 
     entry_price: float
-
     entry_time: datetime
-
     expiration_seconds: int
 
     # ========================================
     # AI Reasons
     # ========================================
 
-    reasons: list[str]
-
+    reasons: list[str] = []
     pattern: str = ""
 
     # ========================================
@@ -63,13 +50,8 @@ class Trade(BaseModel):
     # ========================================
 
     status: str = "OPEN"
-
     result: Optional[str] = None
-
     exit_price: Optional[float] = None
-
     exit_time: Optional[datetime] = None
-
     profit: float = 0.0
-
     payout: float = 0.0
