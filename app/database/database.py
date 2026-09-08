@@ -4,29 +4,31 @@ import threading
 from pathlib import Path
 
 
-def __init__(self):
-    volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+class Database:
 
-    if volume_path:
-        self.db_path = Path(volume_path) / "trades.db"
-    else:
-        base = Path(__file__).resolve().parent
-        self.db_path = base / "trades.db"
+    def __init__(self):
+        volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
 
-    self.connection = sqlite3.connect(
-        self.db_path,
-        check_same_thread=False,
-        timeout=30,
-    )
+        if volume_path:
+            self.db_path = Path(volume_path) / "trades.db"
+        else:
+            base = Path(__file__).resolve().parent
+            self.db_path = base / "trades.db"
 
-    self.connection.row_factory = sqlite3.Row
+        self.connection = sqlite3.connect(
+            self.db_path,
+            check_same_thread=False,
+            timeout=30,
+        )
 
-    self.connection.execute("PRAGMA busy_timeout = 30000")
-    self.connection.execute("PRAGMA journal_mode = WAL")
+        self.connection.row_factory = sqlite3.Row
 
-    self.db_lock = threading.RLock()
+        self.connection.execute("PRAGMA busy_timeout = 30000")
+        self.connection.execute("PRAGMA journal_mode = WAL")
 
-    self.create_tables()
+        self.db_lock = threading.RLock()
+
+        self.create_tables()
 
     # ----------------------------------------
     # Create Tables
@@ -372,8 +374,7 @@ def __init__(self):
 
         self.connection.commit()
 
-        # ----------------------------------------
-
+    # ----------------------------------------
     # Execute
     # ----------------------------------------
 
