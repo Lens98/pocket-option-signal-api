@@ -392,7 +392,7 @@
 
 }
 /* ==========================================
-   PREMIUM PAYMENT SCREEN
+   PREMIUM PAYMENT SCREEN — COMPACT
    ========================================== */
 
 .auth-screen {
@@ -404,15 +404,15 @@
     justify-content: center;
     width: 100%;
     min-height: 100vh;
-    padding: 24px;
+    padding: 16px;
     box-sizing: border-box;
     overflow-y: auto;
 
     background:
         radial-gradient(
-            circle at 50% -10%,
-            rgba(59, 130, 246, 0.18),
-            transparent 42%
+            circle at 50% -20%,
+            rgba(59, 130, 246, 0.16),
+            transparent 45%
         ),
         radial-gradient(
             circle at 100% 100%,
@@ -425,48 +425,68 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Main payment card */
+/* Main compact modal */
 
 .payment-card {
     width: 100%;
-    max-width: 620px;
-    padding: 34px;
+    max-width: 560px;
+    max-height: calc(100vh - 32px);
+    padding: 24px 26px;
     box-sizing: border-box;
+    overflow-y: auto;
 
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 24px;
+    border: 1px solid rgba(79, 140, 255, 0.22);
+    border-radius: 20px;
 
     background:
         linear-gradient(
             145deg,
             rgba(24, 36, 61, 0.98),
-            rgba(10, 15, 28, 0.98)
+            rgba(8, 13, 24, 0.99)
         );
 
     box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.55),
-        0 0 0 1px rgba(59, 130, 246, 0.04);
+        0 25px 70px rgba(0, 0, 0, 0.55),
+        0 0 35px rgba(59, 130, 246, 0.04);
 
     text-align: center;
 }
 
-/* Heading */
+/* Header */
 
 .payment-card h2 {
     margin: 0;
-    font-size: 25px;
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.4px;
 }
 
 .payment-card h2::after {
-    content: "Choose the plan that works best for you";
+    content: "Unlock powerful AI signals and start trading smarter";
     display: block;
-    margin-top: 9px;
+    margin-top: 7px;
     color: #8994aa;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 400;
     letter-spacing: 0;
+}
+
+/* Status message */
+
+#paymentMessage {
+    min-height: 16px;
+    margin: 12px 0 0;
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
+}
+
+#paymentMessage.auth-success {
+    color: #43d69b;
+}
+
+#paymentMessage.auth-error {
+    color: #ff6b7a;
 }
 
 /* Subscription plans */
@@ -474,11 +494,11 @@
 #subscriptionPlans {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 28px;
+    gap: 10px;
+    margin-top: 20px;
 }
 
-/* Plan button */
+/* Plan cards */
 
 .subscription-plan {
     position: relative;
@@ -487,11 +507,12 @@
     align-items: center;
     justify-content: center;
 
-    min-height: 150px;
-    padding: 22px 12px;
+    min-height: 112px;
+    padding: 16px 8px;
+    box-sizing: border-box;
 
     border: 1px solid #273249;
-    border-radius: 16px;
+    border-radius: 14px;
 
     background:
         linear-gradient(
@@ -511,10 +532,9 @@
 }
 
 .subscription-plan:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     border-color: #4f8cff;
     background: #17243b;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
 }
 
 .subscription-plan.selected {
@@ -522,28 +542,51 @@
     background:
         linear-gradient(
             145deg,
-            rgba(59, 130, 246, 0.22),
-            rgba(109, 74, 255, 0.20)
+            rgba(59, 130, 246, 0.24),
+            rgba(109, 74, 255, 0.22)
         );
 
     box-shadow:
         0 0 0 1px rgba(109, 124, 255, 0.35),
-        0 12px 30px rgba(59, 130, 246, 0.15);
+        0 8px 24px rgba(59, 130, 246, 0.14);
+}
+
+/* Quarterly recommended badge */
+
+.subscription-plan:nth-child(2)::before {
+    content: "MOST POPULAR";
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    padding: 4px 10px;
+    border-radius: 20px;
+
+    background: linear-gradient(135deg, #3b82f6, #6d4aff);
+    color: #ffffff;
+
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .subscription-plan strong {
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     color: #dbe7ff;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
 }
 
 .subscription-plan span {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     color: #ffffff;
-    font-size: 24px;
+    font-size: 21px;
     font-weight: 800;
     letter-spacing: -0.5px;
 }
@@ -551,17 +594,17 @@
 .subscription-plan small {
     display: block;
     color: #8994aa;
-    font-size: 11px;
+    font-size: 10px;
 }
 
 /* Payment form */
 
 #paymentForm {
-    margin-top: 24px;
-    padding: 24px;
+    margin-top: 18px;
+    padding: 18px;
 
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
 
     background: rgba(5, 9, 18, 0.55);
     text-align: left;
@@ -569,9 +612,9 @@
 
 #paymentForm label {
     display: block;
-    margin: 15px 0 7px;
+    margin: 11px 0 5px;
     color: #c8d0df;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
 }
 
@@ -582,16 +625,16 @@
 #paymentForm input,
 #paymentForm select {
     width: 100%;
-    height: 44px;
-    padding: 0 13px;
+    height: 38px;
+    padding: 0 11px;
     box-sizing: border-box;
 
     border: 1px solid #273249;
-    border-radius: 9px;
+    border-radius: 8px;
 
     background: #101726;
     color: #ffffff;
-    font-size: 13px;
+    font-size: 12px;
     outline: none;
 
     transition:
@@ -609,19 +652,15 @@
     color: #5e697d;
 }
 
-#paymentForm select {
-    cursor: pointer;
-}
-
 /* Submit button */
 
 #paymentForm button[type="submit"] {
     width: 100%;
-    height: 48px;
-    margin-top: 24px;
+    height: 42px;
+    margin-top: 18px;
 
     border: none;
-    border-radius: 10px;
+    border-radius: 9px;
 
     background:
         linear-gradient(
@@ -631,22 +670,20 @@
         );
 
     color: #ffffff;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.4px;
     cursor: pointer;
 
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.20);
+    box-shadow: 0 7px 18px rgba(59, 130, 246, 0.18);
 
     transition:
         transform 0.2s,
-        opacity 0.2s,
-        box-shadow 0.2s;
+        opacity 0.2s;
 }
 
 #paymentForm button[type="submit"]:hover {
     transform: translateY(-1px);
-    box-shadow: 0 12px 25px rgba(59, 130, 246, 0.30);
 }
 
 #paymentForm button[type="submit"]:disabled {
@@ -659,16 +696,16 @@
 
 #checkPaymentStatus {
     width: 100%;
-    height: 44px;
-    margin-top: 18px;
+    height: 38px;
+    margin-top: 14px;
 
     border: 1px solid #33415f;
-    border-radius: 10px;
+    border-radius: 9px;
 
     background: rgba(17, 26, 42, 0.85);
     color: #8fb4ff;
 
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
 
@@ -689,37 +726,19 @@
     cursor: wait;
 }
 
-/* Messages */
-
-#paymentMessage {
-    min-height: 18px;
-    margin: 18px 0 0;
-    font-size: 12px;
-    line-height: 1.5;
-    text-align: center;
-}
-
-#paymentMessage.auth-success {
-    color: #43d69b;
-}
-
-#paymentMessage.auth-error {
-    color: #ff6b7a;
-}
-
-/* Close button */
+/* Close */
 
 #closePayment {
     display: block;
     width: auto;
-    margin: 20px auto 0;
-    padding: 8px 16px;
+    margin: 14px auto 0;
+    padding: 5px 12px;
 
     border: none;
     background: transparent;
     color: #8994aa;
 
-    font-size: 12px;
+    font-size: 11px;
     cursor: pointer;
 }
 
@@ -728,45 +747,384 @@
     text-decoration: underline;
 }
 
-/* Error messages */
-
-.payment-card .auth-error {
-    color: #ff6b7a;
-    font-size: 12px;
-    line-height: 1.5;
-}
-
 /* Mobile */
 
 @media (max-width: 600px) {
     .auth-screen {
-        padding: 14px;
+        padding: 10px;
     }
 
     .payment-card {
-        padding: 24px 18px;
-        border-radius: 20px;
+        max-height: calc(100vh - 20px);
+        padding: 20px 16px;
+        border-radius: 18px;
     }
 
     .payment-card h2 {
-        font-size: 22px;
+        font-size: 20px;
     }
 
     #subscriptionPlans {
-        grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 7px;
     }
 
     .subscription-plan {
-        min-height: 90px;
-        padding: 16px;
+        min-height: 100px;
+        padding: 14px 5px;
     }
 
     .subscription-plan span {
-        font-size: 22px;
+        font-size: 18px;
+    }
+
+    .subscription-plan strong {
+        font-size: 11px;
     }
 
     #paymentForm {
-        padding: 18px;
+        padding: 15px;
+    }
+}
+/* ==========================================
+   PREMIUM PAYMENT SCREEN
+   ========================================== */
+
+.auth-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 100%;
+    padding: 18px;
+
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #18243d 0%,
+            #090d18 48%,
+            #05070c 100%
+        );
+
+    color: #ffffff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Compact premium card */
+.payment-card {
+    width: min(680px, 94vw);
+    max-height: calc(100% - 36px);
+
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    padding: 26px 28px 20px;
+
+    border: 1px solid #263b68;
+    border-radius: 22px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(24, 37, 65, 0.98),
+            rgba(7, 14, 29, 0.99)
+        );
+
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.55),
+        0 0 35px rgba(59, 130, 246, 0.08);
+}
+
+/* Heading */
+.payment-card h2 {
+    margin: 0;
+    text-align: center;
+
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.payment-card h2::after {
+    content: "Subscription";
+    color: #4f8cff;
+}
+
+/* Hide the duplicated word if the heading is changed */
+.payment-card > h2 {
+    color: #ffffff;
+}
+
+/* Message */
+.payment-card .auth-message {
+    min-height: 18px;
+    margin: 8px 0 18px;
+
+    text-align: center;
+    font-size: 12px;
+}
+
+/* Subscription plans */
+#subscriptionPlans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.subscription-plan {
+    position: relative;
+
+    min-height: 112px;
+    padding: 18px 10px;
+
+    border: 1px solid #263b5d;
+    border-radius: 15px;
+
+    background: #0d182b;
+    color: #ffffff;
+
+    cursor: pointer;
+    text-align: center;
+
+    transition:
+        border-color 0.2s,
+        background 0.2s,
+        transform 0.2s,
+        box-shadow 0.2s;
+}
+
+.subscription-plan:hover {
+    transform: translateY(-2px);
+    border-color: #4f8cff;
+    background: #12213b;
+}
+
+.subscription-plan.selected {
+    border: 1px solid #6575ff;
+
+    background:
+        linear-gradient(
+            145deg,
+            #172b61,
+            #21184f
+        );
+
+    box-shadow:
+        0 0 0 1px #4f8cff,
+        0 0 25px rgba(79, 140, 255, 0.25);
+}
+
+.subscription-plan strong {
+    display: block;
+    margin-bottom: 10px;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.subscription-plan span {
+    display: block;
+    margin-bottom: 7px;
+
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.subscription-plan small {
+    display: block;
+
+    color: #8998b5;
+    font-size: 11px;
+}
+
+/* Payment form */
+#paymentForm {
+    margin-top: 18px;
+    padding: 18px;
+
+    border: 1px solid #263957;
+    border-radius: 16px;
+
+    background: rgba(5, 12, 25, 0.72);
+}
+
+/* Form labels */
+#paymentForm label {
+    display: block;
+    margin: 0 0 6px;
+
+    color: #b8c5dc;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Inputs and selects */
+#paymentForm input,
+#paymentForm select {
+    width: 100%;
+    height: 38px;
+
+    box-sizing: border-box;
+    margin-bottom: 12px;
+    padding: 0 11px;
+
+    border: 1px solid #263957;
+    border-radius: 8px;
+
+    outline: none;
+    background: #0d1729;
+    color: #ffffff;
+
+    font-size: 12px;
+}
+
+#paymentForm input:focus,
+#paymentForm select:focus {
+    border-color: #4f8cff;
+    box-shadow: 0 0 0 2px rgba(79, 140, 255, 0.12);
+}
+
+/* All payment buttons */
+#paymentForm button,
+#checkPaymentStatus {
+    width: 100%;
+    height: 40px;
+
+    border: none;
+    border-radius: 9px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #3b82f6,
+            #6d4aff
+        );
+
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+#paymentForm button:hover,
+#checkPaymentStatus:hover {
+    transform: translateY(-1px);
+    opacity: 0.92;
+}
+
+/* Check status button */
+#checkPaymentStatus {
+    margin-top: 14px;
+
+    border: 1px solid #385b91;
+    background: #101e35;
+    color: #8fbaff;
+}
+
+#checkPaymentStatus:hover {
+    background: #172b4b;
+}
+
+/* Close button */
+#closePayment {
+    display: block;
+
+    width: 100%;
+    margin-top: 12px;
+    padding: 8px;
+
+    border: none;
+    background: transparent;
+
+    color: #8998b5;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#closePayment:hover {
+    color: #ffffff;
+}
+
+/* Smaller popup screens */
+@media (max-height: 650px) {
+    .auth-screen {
+        align-items: flex-start;
+        padding: 12px;
+    }
+
+    .payment-card {
+        max-height: calc(100% - 24px);
+        padding: 20px 22px 14px;
+        border-radius: 18px;
+    }
+
+    .payment-card h2 {
+        font-size: 21px;
+    }
+
+    #subscriptionPlans {
+        gap: 8px;
+        margin-top: 12px;
+    }
+
+    .subscription-plan {
+        min-height: 88px;
+        padding: 12px 6px;
+    }
+
+    .subscription-plan strong {
+        margin-bottom: 6px;
+        font-size: 11px;
+    }
+
+    .subscription-plan span {
+        margin-bottom: 4px;
+        font-size: 20px;
+    }
+
+    .subscription-plan small {
+        font-size: 10px;
+    }
+
+    #paymentForm {
+        margin-top: 12px;
+        padding: 14px;
+    }
+
+    #paymentForm input,
+    #paymentForm select {
+        height: 34px;
+        margin-bottom: 8px;
+    }
+
+    #paymentForm button,
+    #checkPaymentStatus {
+        height: 36px;
+    }
+}
+
+/* Mobile width */
+@media (max-width: 520px) {
+    #subscriptionPlans {
+        grid-template-columns: 1fr;
+    }
+
+    .subscription-plan {
+        min-height: 72px;
+    }
+
+    .payment-card {
+        width: 100%;
+        padding: 22px 18px 16px;
     }
 }
