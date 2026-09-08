@@ -8,80 +8,67 @@ let paymentScreen = null;
 let selectedPlan = null;
 
 export function showPaymentScreen(user, onPaymentSubmitted) {
+    selectedPlan = null;
+
     if (paymentScreen) {
         paymentScreen.remove();
     }
 
     paymentScreen = document.createElement("div");
     paymentScreen.className = "auth-screen";
+    paymentScreen.id = "paymentScreen";
 
     paymentScreen.innerHTML = `
         <div class="auth-card payment-card">
-            <div class="auth-header">
-                <h1>Choose Your Plan</h1>
-                <p>Activate your subscription to access the trading platform.</p>
-            </div>
+            <h2>Choose Your Subscription</h2>
 
-            <div id="paymentMessage" class="auth-message"></div>
+            <p id="paymentMessage" class="auth-message"></p>
 
-            <div id="subscriptionPlans" class="subscription-plans">
-                <p>Loading plans...</p>
-            </div>
+            <div id="subscriptionPlans"></div>
 
             <form id="paymentForm" style="display: none;">
-                <div class="form-group">
-                    <label for="paymentMethod">Payment Method</label>
-                    <select id="paymentMethod" required>
-                        <option value="crypto">Cryptocurrency</option>
-                    </select>
-                </div>
+                <label for="paymentMethod">Payment Method</label>
+                <select id="paymentMethod" required>
+                    <option value="">Select payment method</option>
+                    <option value="crypto">Cryptocurrency</option>
+                </select>
 
-                <div class="form-group">
-                    <label for="cryptoCurrency">Cryptocurrency</label>
-                    <select id="cryptoCurrency" required>
-                        <option value="USDT">USDT</option>
-                        <option value="USDC">USDC</option>
-                        <option value="BTC">Bitcoin</option>
-                        <option value="ETH">Ethereum</option>
-                    </select>
-                </div>
+                <label for="transactionId">Transaction ID</label>
+                <input
+                    id="transactionId"
+                    type="text"
+                    placeholder="Enter transaction ID"
+                    required
+                />
 
-                <div class="form-group">
-                    <label for="network">Network</label>
-                    <input
-                        type="text"
-                        id="network"
-                        placeholder="Example: TRC20"
-                        required
-                    />
-                </div>
+                <label for="cryptoCurrency">Cryptocurrency</label>
+                <select id="cryptoCurrency" required>
+                    <option value="">Select cryptocurrency</option>
+                    <option value="USDT">USDT</option>
+                    <option value="BTC">Bitcoin</option>
+                    <option value="ETH">Ethereum</option>
+                </select>
 
-                <div class="form-group">
-                    <label for="transactionId">Transaction ID / Hash</label>
-                    <input
-                        type="text"
-                        id="transactionId"
-                        placeholder="Enter your transaction ID"
-                        required
-                    />
-                </div>
+                <label for="network">Network</label>
+                <input
+                    id="network"
+                    type="text"
+                    placeholder="Example: TRC20"
+                    required
+                />
 
-                <div class="form-group">
-                    <label for="walletAddress">Your Wallet Address</label>
-                    <input
-                        type="text"
-                        id="walletAddress"
-                        placeholder="Enter your wallet address"
-                        required
-                    />
-                </div>
+                <label for="walletAddress">Wallet Address</label>
+                <input
+                    id="walletAddress"
+                    type="text"
+                    placeholder="Enter your wallet address"
+                    required
+                />
 
-                <button type="submit" class="auth-button">
-                    Submit Payment
-                </button>
+                <button type="submit">Submit Payment</button>
             </form>
 
-            <button id="checkPaymentStatus" class="auth-secondary-button">
+            <button id="checkPaymentStatus" type="button">
                 Check Payment Status
             </button>
         </div>
@@ -103,25 +90,36 @@ async function loadPlans() {
 
         plansContainer.innerHTML = "";
 
+        if (!Array.isArray(data.plans) || data.plans.length === 0) {
+            plansContainer.innerHTML = `
+                <p class="auth-error">
+                    No subscription plans are available.
+                </p>
+            `;
+            return;
+        }
+
         data.plans.forEach((plan) => {
             const planButton = document.createElement("button");
+
             planButton.type = "button";
             planButton.className = "subscription-plan";
 
             planButton.innerHTML = `
                 <strong>${plan.name}</strong>
-                <span>$${plan.price.toFixed(2)}</span>
+                <span>$${Number(plan.price).toFixed(2)}</span>
                 <small>${plan.duration_days} days</small>
             `;
 
             planButton.addEventListener("click", () => {
-                document
+                paymentScreen
                     .querySelectorAll(".subscription-plan")
                     .forEach((button) => {
                         button.classList.remove("selected");
                     });
 
                 planButton.classList.add("selected");
+
                 selectedPlan = plan;
 
                 paymentScreen.querySelector(

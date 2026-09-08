@@ -20,34 +20,39 @@ function startDashboard(user) {
 }
 
 
-// ==========================================
-// CHECK SUBSCRIPTION
-// ==========================================
 async function checkSubscription(user) {
+    console.log("========== CHECKING SUBSCRIPTION ==========");
+
     try {
         const data = await getPaymentStatus();
 
-        if (data.subscription?.status === "active") {
+        console.log("PAYMENT STATUS RESPONSE:", JSON.stringify(data));
+        console.log("Subscription:", data?.subscription);
+        console.log("Status:", data?.subscription?.status);
+
+        if (data?.subscription?.status === "active") {
+            console.log("ACTIVE SUBSCRIPTION — STARTING DASHBOARD");
             startDashboard(user);
             return;
         }
 
-        console.log("User has no active subscription.");
+        console.log("INACTIVE SUBSCRIPTION — SHOWING PAYMENT SCREEN");
 
         showPaymentScreen(user, () => {
             checkSubscription(user);
         });
 
+        return;
     } catch (error) {
-        console.error("Subscription check failed:", error);
+        console.error("SUBSCRIPTION CHECK FAILED:", error);
 
         showPaymentScreen(user, () => {
             checkSubscription(user);
         });
+
+        return;
     }
 }
-
-
 // ==========================================
 // START APPLICATION
 // ==========================================

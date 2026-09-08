@@ -4,7 +4,60 @@
 // ========================================
 const API_URL =
     "https://pocket-option-signal-api-production.up.railway.app";
+let subscriptionActive = false;
+let subscriptionCheckInProgress = false;
+async function checkSubscription() {
+    if (subscriptionCheckInProgress) {
+        return subscriptionActive;
+    }
 
+    subscriptionCheckInProgress = true;
+
+    try {
+        const authHeaders = await getAuthHeaders();
+
+        if (!authHeaders) {
+            subscriptionActive = false;
+            return false;
+        }
+
+        const response = await fetch(
+            `${API_URL}/payments/status`,
+            {
+                headers: authHeaders
+            }
+        );
+
+        if (!response.ok) {
+            subscriptionActive = false;
+
+            console.log(
+                "🔒 Subscription unavailable:",
+                response.status
+            );
+
+            return false;
+        }
+
+        const data = await response.json();
+
+        subscriptionActive =
+            data?.subscription?.status === "active";
+
+        return subscriptionActive;
+    } catch (error) {
+        subscriptionActive = false;
+
+        console.error(
+            "❌ Subscription check failed:",
+            error.message
+        );
+
+        return false;
+    } finally {
+        subscriptionCheckInProgress = false;
+    }
+}
 async function getAuthHeaders() {
 
     const result =
@@ -104,123 +157,129 @@ function getSignalKey(signal) {
     ].join("|");
 }
 
-// ========================================
-// API Polling
-// ========================================
-
 async function refresh() {
-
     try {
+        // ========================================
+        // CHECK SUBSCRIPTION BEFORE API POLLING
+        // ========================================
 
-        // Get ONE authenticated header set
-        // for the entire refresh cycle.
+        const active = await checkSubscription();
 
-        const authHeaders =
-            await getAuthHeaders();
+        if (!active) {
+            state.connected = false;
+            state.tradeState = "WAITING";
+            state.signal = null;
+            state.history = [];
+            state.lastUpdate = new Date().toISOString();
+
+            await saveState();
+
+            console.log(
+                "🔒 No active subscription — API polling skipped."
+            );
+
+            return;
+        }
+
+        // ========================================
+        // GET AUTHENTICATED HEADERS
+        // ========================================
+
+        const authHeaders = await getAuthHeaders();
+
         if (!authHeaders) {
+            state.connected = false;
+            state.tradeState = "WAITING";
+            state.signal = null;
 
-    state.connected = false;
-    state.tradeState = "WAITING";
+            await saveState();
 
-    state.lastUpdate =
-        new Date().toISOString();
+            console.log(
+                "⏭️ Background refresh skipped: user not logged in"
+            );
 
-    await saveState();
+            return;
+        }
 
-    console.log(
-        "⏭️ Background refresh skipped: user not logged in"
-    );
+        // ========================================
+        // GET SIGNAL
+        // ========================================
 
-    return;
-
-}
-
-        console.log(
-            "🔐 Background auth token found:",
-            !!authHeaders.Authorization
-        );
-        // ----------------------------------------
-        // Get Signal
-        // ----------------------------------------
-
-        const signalResponse =
-            await fetch(`${API_URL}/signal`, {
+        const signalResponse = await fetch(
+            `${API_URL}/signal`,
+            {
                 headers: authHeaders
-            });
+            }
+        );
 
         if (!signalResponse.ok) {
-
             throw new Error(
                 `/signal returned ${signalResponse.status}`
             );
         }
 
-        const signal =
-            await signalResponse.json();
+        const signal = await signalResponse.json();
 
         state.signal = signal;
 
-        // ----------------------------------------
-        // Get Trade State
-        // ----------------------------------------
+        // ========================================
+        // GET TRADE STATE
+        // ========================================
 
-        const tradeResponse =
-            await fetch(`${API_URL}/trade/state`, {
+        const tradeResponse = await fetch(
+            `${API_URL}/trade/state`,
+            {
                 headers: authHeaders
-            });
+            }
+        );
 
         if (!tradeResponse.ok) {
-
             throw new Error(
                 `/trade/state returned ${tradeResponse.status}`
             );
         }
 
-        const trade =
-            await tradeResponse.json();
+        const trade = await tradeResponse.json();
 
         state.tradeState =
             trade.state || "WAITING";
 
-        // ----------------------------------------
-        // Get Trade History
-        // ----------------------------------------
-        const historyResponse =
-            await fetch(`${API_URL}/trade/all`, {
+        // ========================================
+        // GET TRADE HISTORY
+        // ========================================
+
+        const historyResponse = await fetch(
+            `${API_URL}/trade/all`,
+            {
                 headers: authHeaders
-            });
+            }
+        );
 
         if (!historyResponse.ok) {
-
             throw new Error(
                 `/trade/all returned ${historyResponse.status}`
             );
         }
 
-        state.history =
-            await historyResponse.json();
+        state.history = await historyResponse.json();
 
-        // ----------------------------------------
-        // Connection Status
-        // ----------------------------------------
+        // ========================================
+        // CONNECTION STATUS
+        // ========================================
 
         state.connected = true;
+        state.lastUpdate = new Date().toISOString();
 
-        state.lastUpdate =
-            new Date().toISOString();
+        // ========================================
+        // COUNT SIGNAL ONLY ONCE
+        // ========================================
 
-        // ----------------------------------------
-        // Count Signal ONLY ONCE
-        // ----------------------------------------
-
-        const signalKey =
-            getSignalKey(signal);
+        const signalKey = getSignalKey(signal);
 
         if (
             signalKey &&
             signalKey !== state.lastSignalKey
         ) {
-
             const signalAction = String(
                 signal?.next_candle_bias ||
                 signal?.action ||
@@ -232,24 +291,17 @@ async function refresh() {
                 !signal.status &&
                 state.stats[signalAction] !== undefined
             ) {
-
                 state.stats[signalAction]++;
             }
 
-            state.lastSignalKey =
-                signalKey;
+            state.lastSignalKey = signalKey;
         }
 
         await saveState();
 
-    }
-
-    catch (err) {
-
+    } catch (err) {
         state.connected = false;
-
-        state.lastUpdate =
-            new Date().toISOString();
+        state.lastUpdate = new Date().toISOString();
 
         await saveState();
 
@@ -284,6 +336,60 @@ initialize();
 
 chrome.runtime.onMessage.addListener(
     async (message, sender, sendResponse) => {
+
+         // ========================================
+        // CHECK SUBSCRIPTION
+        // ========================================
+
+        if (message.type === "CHECK_SUBSCRIPTION") {
+            try {
+                const authHeaders = await getAuthHeaders();
+
+                if (!authHeaders) {
+                    sendResponse({ active: false });
+                    return true;
+                }
+
+                const response = await fetch(
+                    `${API_URL}/payments/status`,
+                    {
+                        headers: authHeaders
+                    }
+                );
+
+                if (!response.ok) {
+                    console.log(
+                        "🔒 Subscription check returned:",
+                        response.status
+                    );
+
+                    sendResponse({ active: false });
+                    return true;
+                }
+
+                const data = await response.json();
+
+                const active =
+                    data?.subscription?.status === "active";
+
+                console.log(
+                    active
+                        ? "✅ Subscription is active."
+                        : "🔒 Subscription is inactive."
+                );
+
+                sendResponse({ active });
+            } catch (error) {
+                console.error(
+                    "❌ Subscription check failed:",
+                    error
+                );
+
+                sendResponse({ active: false });
+            }
+
+            return true;
+        }       
 
         // ========================================
         // GET STATE

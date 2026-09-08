@@ -32,7 +32,7 @@
     },
     {
       "js": [
-        "assets/content.js-bmIV8U8I.js"
+        "assets/content.js-OMXJcsza.js"
       ],
       "matches": [
         "https://pocketoption.com/*",
@@ -53,7 +53,7 @@
       "resources": [
         "src/injected.js",
         "assets/injected.js-DcbogQpk.js",
-        "assets/content.js-bmIV8U8I.js"
+        "assets/content.js-OMXJcsza.js"
       ],
       "use_dynamic_url": false
     }
