@@ -207,19 +207,40 @@ export async function logout() {
 // ==========================================
 // GET AVAILABLE SUBSCRIPTION PLANS
 // ==========================================
+
 export async function getSubscriptionPlans() {
+    const token = await getAuthToken();
+
+    if (!token) {
+        throw new Error("You must be logged in to view subscription plans.");
+    }
+
     const response = await fetch(
         `${API}/payments/plans`,
         {
-            method: "GET"
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
         }
     );
 
-    const data = await response.json();
+    const text = await response.text();
+
+    let data = {};
+
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        data = {
+            detail: text || "Server returned an invalid response."
+        };
+    }
 
     if (!response.ok) {
         throw new Error(
-            data.detail || "Unable to load subscription plans."
+            data.detail ||
+            `Unable to load subscription plans (${response.status}).`
         );
     }
 
@@ -264,6 +285,7 @@ export async function submitPayment(paymentData) {
 // ==========================================
 // GET PAYMENT AND SUBSCRIPTION STATUS
 // ==========================================
+
 export async function getPaymentStatus() {
     const token = await getAuthToken();
 
@@ -281,11 +303,24 @@ export async function getPaymentStatus() {
         }
     );
 
-    const data = await response.json();
+    // Read the response safely, even when Railway
+    // returns HTML or plain text instead of JSON.
+    const text = await response.text();
+
+    let data = {};
+
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        data = {
+            detail: text || "Server returned an invalid response."
+        };
+    }
 
     if (!response.ok) {
         throw new Error(
-            data.detail || "Unable to load payment status."
+            data.detail ||
+            `Payment status request failed (${response.status}).`
         );
     }
 

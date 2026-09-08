@@ -637,7 +637,33 @@ window.addEventListener(
 
 
 // ========================================
-// START OVERLAY MANAGER
+// START OVERLAY MANAGER — SUBSCRIPTION GATE
 // ========================================
 
-OverlayManager.start();
+async function startOverlayAfterSubscriptionCheck() {
+    try {
+        const result = await chrome.runtime.sendMessage({
+            type: "CHECK_SUBSCRIPTION"
+        });
+
+        if (result?.active !== true) {
+            console.log(
+                "🔒 Subscription inactive — overlay will not start."
+            );
+            return;
+        }
+
+        console.log(
+            "✅ Subscription active — starting overlay."
+        );
+
+        OverlayManager.start();
+    } catch (error) {
+        console.error(
+            "❌ Could not verify subscription — overlay blocked:",
+            error
+        );
+    }
+}
+
+startOverlayAfterSubscriptionCheck();
