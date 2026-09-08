@@ -9,6 +9,7 @@ from app.api.auth import router as auth_router
 from app.services.signal_service import generate_signal
 from app.services.trade_monitor import TradeMonitor
 from app.api.admin import router as admin_router
+from app.api.payments import router as payments_router
 from app.models.signal import Signal
 
 trade_monitor = TradeMonitor()
@@ -30,6 +31,7 @@ app.include_router(market_router)
 app.include_router(trade_router)
 app.include_router(auth_router)
 app.include_router(admin_router)
+app.include_router(payments_router)
 
 
 @app.on_event("startup")

@@ -1,6 +1,5 @@
-const API =
-    "https://pocket-option-signal-api-production.up.railway.app";
 
+const API = "https://pocket-option-signal-api-production.up.railway.app";
 const TOKEN_KEY = "pocketOptionAuthToken";
 const USER_KEY = "pocketOptionUser";
 
@@ -83,20 +82,14 @@ export async function login(
 // REGISTER
 // ==========================================
 
-export async function register(
-    email,
-    password
-) {
-
+export async function register(email, password) {
     const response = await fetch(
         `${API}/auth/register`,
         {
             method: "POST",
-
             headers: {
                 "Content-Type": "application/json"
             },
-
             body: JSON.stringify({
                 email,
                 password
@@ -107,15 +100,15 @@ export async function register(
     const data = await response.json();
 
     if (!response.ok) {
-
         throw new Error(
             data.detail || "Unable to create account."
         );
     }
 
-    return data;
+    // Automatically log in after registration.
+    // This saves the authentication token needed by payments.
+    return await login(email, password);
 }
-
 
 // ==========================================
 // VERIFY SESSION
@@ -210,4 +203,91 @@ export async function logout() {
         TOKEN_KEY,
         USER_KEY
     ]);
+}
+// ==========================================
+// GET AVAILABLE SUBSCRIPTION PLANS
+// ==========================================
+export async function getSubscriptionPlans() {
+    const response = await fetch(
+        `${API}/payments/plans`,
+        {
+            method: "GET"
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail || "Unable to load subscription plans."
+        );
+    }
+
+    return data;
+}
+
+
+// ==========================================
+// SUBMIT PAYMENT
+// ==========================================
+export async function submitPayment(paymentData) {
+    const token = await getAuthToken();
+
+    if (!token) {
+        throw new Error("You must be logged in to submit a payment.");
+    }
+
+    const response = await fetch(
+        `${API}/payments/submit`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(paymentData)
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail || "Unable to submit payment."
+        );
+    }
+
+    return data;
+}
+
+
+// ==========================================
+// GET PAYMENT AND SUBSCRIPTION STATUS
+// ==========================================
+export async function getPaymentStatus() {
+    const token = await getAuthToken();
+
+    if (!token) {
+        throw new Error("You must be logged in.");
+    }
+
+    const response = await fetch(
+        `${API}/payments/status`,
+        {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail || "Unable to load payment status."
+        );
+    }
+
+    return data;
 }

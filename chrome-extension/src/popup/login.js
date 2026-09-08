@@ -2,7 +2,7 @@ import {
     login,
     register
 } from "./js/auth.js";
-
+import { showPaymentScreen } from "./payment.js";
 
 // ==========================================
 // LOGIN SCREEN
@@ -418,50 +418,41 @@ export function showLoginScreen(
 
                 try {
 
-                    await register(
-                        email,
-                        password
-                    );
+    const registrationData = await register(
+        email,
+        password
+    );
 
+    message.textContent =
+        "Account created. Loading payment plans...";
 
-                    message.textContent =
-                        "Account created. You can now log in.";
+    message.classList.add(
+        "success"
+    );
 
-                    message.classList.add(
-                        "success"
-                    );
+    document
+        .getElementById(
+            "registerForm"
+        )
+        .reset();
 
+    setTimeout(
+        () => {
 
-                    document
-                        .getElementById(
-                            "registerForm"
-                        )
-                        .reset();
+            screen.remove();
 
+            showPaymentScreen(
+                registrationData.user,
+                () => {
+                    onLoginSuccess();
+                }
+            );
 
-                    setTimeout(
-                        () => {
+        },
+        500
+    );
 
-                            registerView.classList.add(
-                                "hidden"
-                            );
-
-                            loginView.classList.remove(
-                                "hidden"
-                            );
-
-                            document
-                                .getElementById(
-                                    "loginEmail"
-                                )
-                                .value = email;
-
-                        },
-                        1000
-                    );
-
-
-                } catch (error) {
+} catch (error) {
 
                     message.textContent =
                         error.message;
