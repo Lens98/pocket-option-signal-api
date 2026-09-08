@@ -8,6 +8,7 @@ let paymentScreen = null;
 let selectedPlan = null;
 
 export function showPaymentScreen(user, onPaymentSubmitted) {
+    console.log("PAYMENT FUNCTION STARTED");
     selectedPlan = null;
 
     if (paymentScreen) {
@@ -16,6 +17,10 @@ export function showPaymentScreen(user, onPaymentSubmitted) {
 
     paymentScreen = document.createElement("div");
     paymentScreen.className = "auth-screen";
+    paymentScreen.style.display = "flex";
+    paymentScreen.style.visibility = "visible";
+    paymentScreen.style.opacity = "1";
+    paymentScreen.style.zIndex = "9999";
     paymentScreen.id = "paymentScreen";
 
     paymentScreen.innerHTML = `
@@ -85,6 +90,11 @@ export function showPaymentScreen(user, onPaymentSubmitted) {
 
 
     document.body.appendChild(paymentScreen);
+    console.log("PAYMENT SCREEN CREATED");
+console.log("Payment element:", paymentScreen);
+console.log("Payment screen ID:", paymentScreen.id);
+console.log("Payment screen class:", paymentScreen.className);
+console.log("Payment screen visible:", paymentScreen.offsetWidth, paymentScreen.offsetHeight);
     paymentScreen
     .querySelector("#closePayment")
     .addEventListener("click", () => {

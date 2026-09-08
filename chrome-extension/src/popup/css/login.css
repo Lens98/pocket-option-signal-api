@@ -1,21 +1,13 @@
-#authScreen {
-
+#authScreen,
+.auth-screen {
     position: fixed;
-
     inset: 0;
-
     z-index: 999999;
-
     width: 100%;
-
     min-height: 100vh;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     background:
         radial-gradient(
             circle at top,
@@ -23,15 +15,12 @@
             #090d18 45%,
             #05070c 100%
         );
-
     color: #ffffff;
-
     font-family:
         Arial,
         Helvetica,
         sans-serif;
 }
-
 
 .auth-container {
 
@@ -43,7 +32,27 @@
 
     text-align: center;
 }
-
+#paymentScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    background:
+        radial-gradient(
+            circle at top,
+            #18243d 0%,
+            #090d18 45%,
+            #05070c 100%
+        );
+    color: #ffffff;
+}
 
 .auth-logo {
 

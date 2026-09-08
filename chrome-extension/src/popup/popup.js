@@ -15,6 +15,12 @@ function startDashboard(user) {
     console.log("Authentication successful. Starting dashboard.");
     console.log("Starting regular user platform:", user.email);
 
+    const dashboard = document.getElementById("dashboard");
+
+    if (dashboard) {
+        dashboard.style.display = "block";
+    }
+
     initializeAccount(user);
     initializeDashboard();
 }
