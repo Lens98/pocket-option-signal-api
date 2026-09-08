@@ -20,40 +20,44 @@
   },
   "content_scripts": [
     {
-      "js": [
-        "assets/injected.js-DcbogQpk.js"
-      ],
       "matches": [
         "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
+      ],
+      "js": [
+        "src/injected.js-loader.js"
       ],
       "run_at": "document_start",
       "world": "MAIN"
     },
     {
-      "js": [
-        "assets/content.js-OMXJcsza.js"
-      ],
       "matches": [
         "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
       ],
-      "run_at": "document_start",
-      "css": [
-        "assets/content-x1XGuNl0.css"
-      ]
+      "js": [
+        "src/content.js-loader.js"
+      ],
+      "run_at": "document_start"
     }
   ],
   "web_accessible_resources": [
     {
+      "resources": [
+        "src/injected.js"
+      ],
       "matches": [
-        "https://*.pocketoption.com/*",
-        "https://pocketoption.com/*"
+        "https://pocketoption.com/*",
+        "https://*.pocketoption.com/*"
+      ]
+    },
+    {
+      "matches": [
+        "<all_urls>"
       ],
       "resources": [
-        "src/injected.js",
-        "assets/injected.js-DcbogQpk.js",
-        "assets/content.js-OMXJcsza.js"
+        "**/*",
+        "*"
       ],
       "use_dynamic_url": false
     }
@@ -61,5 +65,11 @@
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_title": "Pocket Option AI"
+  },
+  "externally_connectable": {
+    "matches": [
+      "https://pocketoption.com/*",
+      "https://*.pocketoption.com/*"
+    ]
   }
 }
