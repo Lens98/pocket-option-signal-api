@@ -1,25 +1,32 @@
 import os
 import sqlite3
+import threading
 from pathlib import Path
 
 
-class Database:
+def __init__(self):
+    volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
 
-    def __init__(self):
+    if volume_path:
+        self.db_path = Path(volume_path) / "trades.db"
+    else:
+        base = Path(__file__).resolve().parent
+        self.db_path = base / "trades.db"
 
-        volume_path = os.getenv("RAILWAY_VOLUME_MOUNT_PATH")
+    self.connection = sqlite3.connect(
+        self.db_path,
+        check_same_thread=False,
+        timeout=30,
+    )
 
-        if volume_path:
-            self.db_path = Path(volume_path) / "trades.db"
-        else:
-            base = Path(__file__).resolve().parent
-            self.db_path = base / "trades.db"
+    self.connection.row_factory = sqlite3.Row
 
-        self.connection = sqlite3.connect(self.db_path, check_same_thread=False)
+    self.connection.execute("PRAGMA busy_timeout = 30000")
+    self.connection.execute("PRAGMA journal_mode = WAL")
 
-        self.connection.row_factory = sqlite3.Row
+    self.db_lock = threading.RLock()
 
-        self.create_tables()
+    self.create_tables()
 
     # ----------------------------------------
     # Create Tables
@@ -365,39 +372,37 @@ class Database:
 
         self.connection.commit()
 
-    # ----------------------------------------
+        # ----------------------------------------
+
     # Execute
     # ----------------------------------------
 
     def execute(self, query, params=()):
-
-        cursor = self.connection.cursor()
-
-        cursor.execute(query, params)
-
-        self.connection.commit()
-
-        return cursor
+        with self.db_lock:
+            cursor = self.connection.cursor()
+            cursor.execute(query, params)
+            self.connection.commit()
+            return cursor
 
     # ----------------------------------------
     # Fetch One
     # ----------------------------------------
 
     def fetch_one(self, query, params=()):
-
-        cursor = self.execute(query, params)
-
-        return cursor.fetchone()
+        with self.db_lock:
+            cursor = self.connection.cursor()
+            cursor.execute(query, params)
+            return cursor.fetchone()
 
     # ----------------------------------------
     # Fetch All
     # ----------------------------------------
 
     def fetch_all(self, query, params=()):
-
-        cursor = self.execute(query, params)
-
-        return cursor.fetchall()
+        with self.db_lock:
+            cursor = self.connection.cursor()
+            cursor.execute(query, params)
+            return cursor.fetchall()
 
 
 database = Database()
