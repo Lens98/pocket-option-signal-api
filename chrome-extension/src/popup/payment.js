@@ -71,14 +71,30 @@ export function showPaymentScreen(user, onPaymentSubmitted) {
             <button id="checkPaymentStatus" type="button">
                 Check Payment Status
             </button>
-        </div>
-    `;
+               <!-- ADD THIS BUTTON -->
+        <button
+            id="closePayment"
+            class="auth-link"
+            type="button"
+        >
+            Close
+        </button>
+
+    </div>
+`;
+
 
     document.body.appendChild(paymentScreen);
+    paymentScreen
+    .querySelector("#closePayment")
+    .addEventListener("click", () => {
+        paymentScreen.remove();
+        paymentScreen = null;
+    });
 
     loadPlans();
     setupPaymentForm();
-    setupStatusButton();
+    setupStatusButton(onPaymentSubmitted);
 }
 
 async function loadPlans() {
@@ -192,9 +208,12 @@ form.style.display = "none";
     });
 }
 
-function setupStatusButton() {
-    const button = paymentScreen.querySelector("#checkPaymentStatus");
-    const message = paymentScreen.querySelector("#paymentMessage");
+function setupStatusButton(onPaymentSubmitted) {
+    const button =
+        paymentScreen.querySelector("#checkPaymentStatus");
+
+    const message =
+        paymentScreen.querySelector("#paymentMessage");
 
     button.addEventListener("click", async () => {
         button.disabled = true;
@@ -204,21 +223,40 @@ function setupStatusButton() {
             const data = await getPaymentStatus();
 
             if (data.subscription?.status === "active") {
-                message.className = "auth-message auth-success";
+                message.className =
+                    "auth-message auth-success";
+
                 message.textContent =
-                    "Your subscription is active. You can access the platform.";
+                    "Your subscription is active. Opening dashboard...";
+
+                // Remove the payment page
+                paymentScreen.remove();
+                paymentScreen = null;
+
+                // Open the dashboard
+                if (typeof onPaymentSubmitted === "function") {
+                    onPaymentSubmitted();
+                }
+
             } else if (data.payment?.status === "pending") {
                 message.className = "auth-message";
+
                 message.textContent =
                     "Your payment is pending admin approval.";
+
             } else {
                 message.className = "auth-message";
+
                 message.textContent =
                     "No active subscription was found.";
             }
+
         } catch (error) {
-            message.className = "auth-message auth-error";
+            message.className =
+                "auth-message auth-error";
+
             message.textContent = error.message;
+
         } finally {
             button.disabled = false;
             button.textContent = "Check Payment Status";

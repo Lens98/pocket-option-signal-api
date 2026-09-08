@@ -2,7 +2,6 @@ import {
     login,
     register
 } from "./js/auth.js";
-import { showPaymentScreen } from "./payment.js";
 
 // ==========================================
 // LOGIN SCREEN
@@ -344,57 +343,39 @@ export function showLoginScreen(
 
 
     // ==========================================
-    // REGISTER
-    // ==========================================
+// REGISTER
+// ==========================================
 
     document
         .getElementById("registerForm")
         .addEventListener(
             "submit",
             async (event) => {
-
                 event.preventDefault();
-
 
                 const email =
                     document
-                        .getElementById(
-                            "registerEmail"
-                        )
+                        .getElementById("registerEmail")
                         .value
                         .trim();
 
-
                 const password =
                     document
-                        .getElementById(
-                            "registerPassword"
-                        )
+                        .getElementById("registerPassword")
                         .value;
-
 
                 const confirm =
                     document
-                        .getElementById(
-                            "registerConfirm"
-                        )
+                        .getElementById("registerConfirm")
                         .value;
 
-
                 const button =
-                    document.getElementById(
-                        "registerButton"
-                    );
-
+                    document.getElementById("registerButton");
 
                 const message =
-                    document.getElementById(
-                        "registerMessage"
-                    );
-
+                    document.getElementById("registerMessage");
 
                 if (password !== confirm) {
-
                     message.textContent =
                         "Passwords do not match.";
 
@@ -404,70 +385,42 @@ export function showLoginScreen(
                     return;
                 }
 
-
                 button.disabled = true;
-
                 button.textContent =
                     "CREATING ACCOUNT...";
 
                 message.textContent = "";
-
                 message.className =
                     "auth-message";
 
-
                 try {
-
-    const registrationData = await register(
-        email,
-        password
-    );
-
-    message.textContent =
-        "Account created. Loading payment plans...";
-
-    message.classList.add(
-        "success"
-    );
-
-    document
-        .getElementById(
-            "registerForm"
-        )
-        .reset();
-
-    setTimeout(
-        () => {
-
-            screen.remove();
-
-            showPaymentScreen(
-                registrationData.user,
-                () => {
-                    onLoginSuccess();
-                }
-            );
-
-        },
-        500
-    );
-
-} catch (error) {
+                    await register(email, password);
 
                     message.textContent =
-                        error.message;
+                        "Account created. Checking subscription...";
 
-                    message.classList.add(
-                        "error"
-                    );
+                    message.classList.add("success");
 
-                } finally {
+                    document
+                        .getElementById("registerForm")
+                        .reset();
 
-                    button.disabled = false;
+                    screen.remove();
 
-                    button.textContent =
-                        "CREATE ACCOUNT";
-                }
+                    // Let popup.js check the subscription.
+                    onLoginSuccess();
+
+                            } catch (error) {
+                message.textContent =
+                    error.message;
+
+                message.classList.add("error");
+
+            } finally {
+                button.disabled = false;
+                button.textContent =
+                    "CREATE ACCOUNT";
             }
-        );
+        }
+    );
 }

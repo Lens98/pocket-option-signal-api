@@ -16,3 +16,4 @@ venv/
 # OS files
 .DS_Store
 Thumbs.dbchrome-extension/node_modules/.vite/ 
+chrome-extension/node_modules/.vite/ 
