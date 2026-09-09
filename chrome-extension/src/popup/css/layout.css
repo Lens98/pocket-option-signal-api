@@ -66,9 +66,9 @@ body {
     grid-template-rows:
     280px
     190px
-    minmax(0, 1fr);
+    345px;
 
-    gap: 10px;
+    gap: 14px;
 }
 
 /* ==========================================
@@ -122,9 +122,9 @@ body {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 12px;
-    height: 345px;
-    min-height: 345px;
+    height: 100%;
     align-items: stretch;
+    min-height: 0;
 }
 
 /* ==========================================
