@@ -68,13 +68,13 @@ body {
 
     grid-template-rows:
 
-        minmax(0, 240px)
+        minmax(0, 280px)
 
-        minmax(0, 160px)
+        minmax(0, 190px)
 
         minmax(0, 1fr);
 
-    gap: 8px;
+    gap: 14px;
 
 }
 
