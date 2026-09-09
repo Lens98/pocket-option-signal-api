@@ -15,16 +15,35 @@ function startDashboard(user) {
     console.log("Authentication successful. Starting dashboard.");
     console.log("Starting regular user platform:", user.email);
 
-    const dashboard = document.getElementById("dashboard");
+    const dashboard = document.querySelector(".dashboard-layout");
 
-    if (dashboard) {
-        dashboard.style.display = "block";
+    if (!dashboard) {
+        console.error("❌ Dashboard element not found.");
+        return;
     }
+
+    dashboard.removeAttribute("hidden");
+    dashboard.classList.remove("hidden");
+    dashboard.style.removeProperty("display");
+    dashboard.style.setProperty("display", "grid", "important");
+
+    console.log(
+        "✅ Dashboard UI is now visible:",
+        getComputedStyle(dashboard).display
+    );
 
     initializeAccount(user);
     initializeDashboard();
-}
 
+    setTimeout(() => {
+        dashboard.style.setProperty("display", "grid", "important");
+
+        console.log(
+            "FINAL DASHBOARD DISPLAY:",
+            getComputedStyle(dashboard).display
+        );
+    }, 100);
+}
 
 async function checkSubscription(user) {
     console.log("========== CHECKING SUBSCRIPTION ==========");
