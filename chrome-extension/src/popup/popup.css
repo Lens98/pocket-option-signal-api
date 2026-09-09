@@ -939,3 +939,20 @@ body{
     background:#475569;
 
 }
+/* Prevent lower cards from stretching */
+.history-card,
+.stats-card {
+    align-self: start;
+    height: fit-content;
+    min-height: 0;
+}
+
+.history-card {
+    max-height: 280px;
+    overflow: hidden;
+}
+
+.stats-card {
+    max-height: 180px;
+    overflow: hidden;
+}

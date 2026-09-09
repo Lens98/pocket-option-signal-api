@@ -1379,3 +1379,19 @@
     gap: 12px;
     overflow: hidden;
 }
+/* Keep history and session cards from stretching */
+.history-card,
+.stats-card {
+    align-self: start;
+    height: fit-content;
+    min-height: 0;
+}
+.history-card {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.stats-card {
+    max-height: 180px;
+    overflow: hidden;
+}
