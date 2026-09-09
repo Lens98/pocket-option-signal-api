@@ -59,23 +59,16 @@ body {
    DASHBOARD
 ========================================== */
 .dashboard-layout {
-
     flex: 1;
-
     display: grid;
-
     min-height: 0;
 
     grid-template-rows:
-
-        minmax(0, 280px)
-
-        minmax(0, 190px)
-
+        280px
+        auto
         minmax(0, 1fr);
 
     gap: 14px;
-
 }
 
 /* ==========================================
