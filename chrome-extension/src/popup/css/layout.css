@@ -14,10 +14,9 @@
 
 html,
 body {
-
     width: 780px;
-    height: 1100px;
-
+    height: 100%;
+    min-height: 0;
     overflow: hidden;
 
     font-family: "Segoe UI", Arial, sans-serif;
@@ -61,23 +60,15 @@ body {
 /* ==========================================
    DASHBOARD
 ========================================== */
-.dashboard-layout{
-
-    flex:1;
-
-    display:grid;
-
-    height:100%;
-
-    min-height:0;
-
+.dashboard-layout {
+    flex: 1;
+    display: grid;
+    min-height: 0;
     grid-template-rows:
-        330px
-        230px
-        1fr;
-
-    gap:14px;
-
+        minmax(0, 280px)
+        minmax(0, 190px)
+        minmax(0, 1fr);
+    gap: 14px;
 }
 
 /* ==========================================
