@@ -67,7 +67,7 @@ body {
     grid-template-rows:
     280px
     190px
-    330px;
+    300px;
 
 
     gap: 14px;
@@ -194,9 +194,9 @@ body {
 
     border:1px solid #243453;
 
-    border-radius:18px;
+    border-radius:15px;
 
-    padding:20px;
+    padding:10px;
 
     overflow:hidden;
 
@@ -208,7 +208,7 @@ body {
 
 .card-title{
 
-    font-size:14px;
+    font-size:20px;
 
     font-weight:700;
 
