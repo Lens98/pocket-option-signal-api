@@ -64,11 +64,10 @@ body {
     min-height: 0;
 
 
-    grid-template-rows:
-    290px
+   grid-template-rows:
+    320px
     190px
     345px;
-
 
     gap: 14px;
 }
