@@ -133,7 +133,7 @@ body {
 .bottom-row {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 12px;
+    gap: 16px;
     height: 100%;
     align-items: stretch;
     min-height: 0;
@@ -208,7 +208,7 @@ body {
 
 .card-title{
 
-    font-size:20px;
+    font-size:10px;
 
     font-weight:700;
 
