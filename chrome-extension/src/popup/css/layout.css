@@ -64,11 +64,11 @@ body {
     min-height: 0;
 
     grid-template-rows:
-    260px
-    180px
-    335px;
+    290px
+    200px
+    350px;
 
-    gap: 12px;
+    gap: 20px;
 }
 
 /* ==========================================
@@ -86,9 +86,9 @@ body {
         1fr
         1.2fr;
 
-    gap:10px;
+    gap:14px;
 
-    height: 260px;
+    height: 280px;
 
     align-items:stretch;
 
