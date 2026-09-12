@@ -3,46 +3,50 @@ from datetime import datetime
 
 class SessionFilter:
 
+    # ----------------------------------------
+    # Check Trading Session
+    # ----------------------------------------
+
     def allowed(self):
 
-    now = datetime.utcnow()
+        now = datetime.utcnow()
 
-    hour = now.hour
+        hour = now.hour
 
-    weekday = now.weekday()
+        weekday = now.weekday()
 
-    # ----------------------------
-    # Weekend Filter
-    # ----------------------------
+        # ----------------------------
+        # Weekend Filter
+        # ----------------------------
 
-    if weekday >= 5:
+        if weekday >= 5:
+
+            return {
+
+                "allowed": False,
+
+                "reason": "Weekend"
+
+            }
+
+        # ----------------------------
+        # Trading Session
+        # ----------------------------
+
+        if 7 <= hour <= 20:
+
+            return {
+
+                "allowed": True,
+
+                "reason": "Trading Session"
+
+            }
 
         return {
 
             "allowed": False,
 
-            "reason": "Weekend"
+            "reason": "Outside Trading Session"
 
         }
-
-    # ----------------------------
-    # Trading Session
-    # ----------------------------
-
-    if 7 <= hour <= 20:
-
-        return {
-
-            "allowed": True,
-
-            "reason": "Trading Session"
-
-        }
-
-    return {
-
-        "allowed": False,
-
-        "reason": "Outside Trading Session"
-
-    }

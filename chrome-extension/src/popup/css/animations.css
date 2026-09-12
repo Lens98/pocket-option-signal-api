@@ -1,0 +1,225 @@
+/* ==========================================
+   GLOBAL TRANSITIONS
+========================================== */
+
+*{
+
+    transition:
+        background-color .25s ease,
+        color .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease,
+        transform .25s ease,
+        opacity .25s ease;
+
+}
+
+/* ==========================================
+   CARD HOVER
+========================================== */
+
+.card{
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        border-color .25s ease;
+
+}
+
+.card:hover{
+
+    transform:translateY(-3px);
+
+    box-shadow:
+        0 14px 34px rgba(0,0,0,.35);
+
+}
+
+/* ==========================================
+   BUTTON HOVER
+========================================== */
+
+button{
+
+    transition:
+        background .25s,
+        transform .2s;
+
+}
+
+button:hover{
+
+    transform:translateY(-1px);
+
+}
+
+button:active{
+
+    transform:scale(.97);
+
+}
+
+/* ==========================================
+   LIVE DOT
+========================================== */
+
+.live-dot{
+
+    animation:livePulse 1.6s infinite;
+
+}
+
+@keyframes livePulse{
+
+    0%{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+    50%{
+
+        transform:scale(1.45);
+
+        opacity:.45;
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+        opacity:1;
+
+    }
+
+}
+
+/* ==========================================
+   ENTRY MESSAGE
+========================================== */
+
+.entry-message{
+
+    animation:entryPulse 1s infinite;
+
+}
+
+@keyframes entryPulse{
+
+    0%{
+
+        transform:scale(1);
+
+    }
+
+    50%{
+
+        transform:scale(1.08);
+
+    }
+
+    100%{
+
+        transform:scale(1);
+
+    }
+
+}
+
+/* ==========================================
+   FADE IN
+========================================== */
+
+.fade-in{
+
+    animation:fadeIn .4s ease;
+
+}
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(10px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+/* ==========================================
+   SIGNAL GLOW
+========================================== */
+
+.action.call{
+
+    animation:greenGlow 1.8s infinite alternate;
+
+}
+
+.action.put{
+
+    animation:redGlow 1.8s infinite alternate;
+
+}
+
+@keyframes greenGlow{
+
+    from{
+
+        text-shadow:
+            0 0 8px rgba(34,197,94,.35);
+
+    }
+
+    to{
+
+        text-shadow:
+            0 0 18px rgba(34,197,94,.9);
+
+    }
+
+}
+
+@keyframes redGlow{
+
+    from{
+
+        text-shadow:
+            0 0 8px rgba(239,68,68,.35);
+
+    }
+
+    to{
+
+        text-shadow:
+            0 0 18px rgba(239,68,68,.9);
+
+    }
+
+}
+
+/* ==========================================
+   GAUGE
+========================================== */
+
+.gauge-progress{
+
+    transition:
+        stroke-dashoffset .5s ease,
+        stroke .4s ease;
+
+}

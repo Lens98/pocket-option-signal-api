@@ -1,70 +1,46 @@
-const API = "http://127.0.0.1:8000";
+export function sendMarket(asset, timeframe, candles) {
+    return new Promise((resolve) => {
+        const payload = {
+            asset,
+            timeframe: String(timeframe),
 
-export async function sendMarket(asset, timeframe, candles) {
+            candles: candles.map((candle) => ({
+                timestamp: String(candle.timestamp),
+                open: candle.open,
+                high: candle.high,
+                low: candle.low,
+                close: candle.close,
+                volume: candle.volume ?? 0,
+            })),
+        };
 
-    const payload = {
+        console.log("======================================");
+        console.log("📤 Sending Candle History");
+        console.log("Asset:", asset);
+        console.log("Timeframe:", timeframe);
+        console.log("Candles:", payload.candles.length);
+        console.log("======================================");
 
-        asset,
-
-        timeframe: String(timeframe),
-
-        candles: candles.map(candle => ({
-
-            timestamp: String(candle.openTime),
-
-            open: candle.open,
-
-            high: candle.high,
-
-            low: candle.low,
-
-            close: candle.close,
-
-            volume: candle.volume
-
-        }))
-
-    };
-
-    console.log("======================================");
-    console.log("📤 Sending Candle History to FastAPI");
-    console.log("Asset:", asset);
-    console.log("Candles:", payload.candles.length);
-    console.log(payload);
-    console.log("======================================");
-
-    try {
-
-        const response = await fetch(`${API}/market/update`, {
-
-            method: "POST",
-
-            headers: {
-
-                "Content-Type": "application/json"
-
+        chrome.runtime.sendMessage(
+            {
+                type: "SEND_MARKET",
+                payload,
             },
+            (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error(
+                        "❌ Background communication error:",
+                        chrome.runtime.lastError.message
+                    );
 
-            body: JSON.stringify(payload)
+                    resolve(null);
+                    return;
+                }
 
-        });
+                console.log("📥 Market API response:", response);
 
-        console.log("HTTP Status:", response.status);
-
-        const text = await response.text();
-
-        console.log("Response:");
-        console.log(text);
-
-        return text;
-
-    } catch (err) {
-
-        console.error("❌ FastAPI Error");
-        console.error(err);
-
-        return null;
-
-    }
-
+                resolve(response || null);
+            }
+        );
+    });
 }

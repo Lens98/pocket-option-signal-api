@@ -1,0 +1,195 @@
+/* ==========================================
+   AI SIGNAL CARD
+========================================== */
+
+.signal-card{
+
+    display:flex;
+    flex-direction:column;
+
+    width:100%;
+    height:100%;
+
+}
+
+/* ==========================================
+   ACTION
+========================================== */
+
+.signal-action{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-top:4px;
+
+    font-size:40px;
+
+    font-weight:800;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+    line-height:1;
+
+}
+
+.signal-action.call{
+
+    color:#22C55E;
+
+}
+
+.signal-action.put{
+
+    color:#EF4444;
+
+}
+
+.signal-action.wait{
+
+    color:#FACC15;
+
+}
+
+/* ==========================================
+   CONFIDENCE
+========================================== */
+
+.signal-confidence{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    margin:8px 0;
+
+}
+
+.confidence-value{
+
+    font-size:25px;
+
+    font-weight:800;
+
+    line-height:1;
+
+    color:#FFFFFF;
+
+}
+
+.confidence-label{
+
+    margin-top:5px;
+
+    font-size:8px;
+
+    color:#94A3B8;
+
+    text-transform:uppercase;
+
+    letter-spacing:1px;
+
+}
+
+/* ==========================================
+   SIGNAL INFO
+========================================== */
+
+.signal-info{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.signal-row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:8px 10px;
+
+    border-radius:10px;
+
+    background:#101827;
+
+    border:1px solid #243453;
+
+}
+
+.signal-row span{
+
+    color:#94A3B8;
+
+    font-size:12px;
+
+}
+
+.signal-row strong{
+
+    font-size:13px;
+
+    font-weight:700;
+
+}
+
+/* ==========================================
+   COLORS
+========================================== */
+
+#trend{
+
+    color:#22C55E;
+
+}
+
+#risk{
+
+    color:#FACC15;
+
+}
+
+#expiration{
+
+    color:#38BDF8;
+
+}
+
+/* ==========================================
+   STATUS
+========================================== */
+
+.signal-status{
+
+    margin-top:auto;
+
+    padding:12px;
+
+    border-radius:10px;
+
+    background:#18253D;
+
+    border:1px solid #243453;
+
+    text-align:center;
+
+    color:#CBD5E1;
+
+    font-size:12px;
+
+    line-height:1.4;
+
+}

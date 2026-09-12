@@ -1,19 +1,38 @@
+from app.strategies.strategy_result import StrategyResult
+
+
 class SupportStrategy:
 
     def analyze(self, levels):
 
-        score = 0
-        reasons = []
+        result = StrategyResult()
+
+        # ----------------------------------------
+        # Near Support
+        # ----------------------------------------
 
         if levels.near_support:
-            score += 15
-            reasons.append("Price near support")
+
+            result.trend = "BULLISH"
+
+            result.bullish_score += 15
+
+            result.reasons.append(
+                "Price Near Support"
+            )
+
+        # ----------------------------------------
+        # Near Resistance
+        # ----------------------------------------
 
         if levels.near_resistance:
-            score -= 15
-            reasons.append("Price near resistance")
 
-        return {
-            "score": score,
-            "reasons": reasons
-        }
+            result.trend = "BEARISH"
+
+            result.bearish_score += 15
+
+            result.reasons.append(
+                "Price Near Resistance"
+            )
+
+        return result
