@@ -19,6 +19,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost:3000",
         "http://localhost:5173",
         "https://overflowing-adventure-production-5fef.up.railway.app",
     ],
