@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { siteConfig } from "@/config/site";
 
-export default function SignupPage() {
+function SignupForm() {
+    const searchParams = useSearchParams();
+
+    const selectedPlan = searchParams.get("plan") || "";
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
@@ -21,6 +26,12 @@ export default function SignupPage() {
                         <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
                             Create your SignalForge AI subscriber account to get started.
                         </p>
+
+                        {selectedPlan && (
+                            <p className="mt-3 text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                                Selected plan: {selectedPlan}
+                            </p>
+                        )}
                     </div>
 
                     <form
@@ -48,8 +59,15 @@ export default function SignupPage() {
                                 const data = await response.json();
 
                                 if (!response.ok) {
-                                    throw new Error(data.detail || "Unable to create account.");
+                                    throw new Error(
+                                        data.detail || "Unable to create account."
+                                    );
                                 }
+
+                                localStorage.setItem(
+                                    "signalForgeSelectedPlan",
+                                    selectedPlan
+                                );
 
                                 window.location.href = "/login";
                             } catch (err) {
@@ -102,11 +120,13 @@ export default function SignupPage() {
                                 placeholder="Create a password"
                             />
                         </div>
+
                         {error && (
                             <p className="text-sm text-red-600 dark:text-red-400">
                                 {error}
                             </p>
                         )}
+
                         <button
                             type="submit"
                             disabled={loading}
@@ -132,5 +152,13 @@ export default function SignupPage() {
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense fallback={null}>
+            <SignupForm />
+        </Suspense>
     );
 }

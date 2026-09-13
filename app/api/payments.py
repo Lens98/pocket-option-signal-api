@@ -25,22 +25,28 @@ def get_plans():
     return {
         "plans": [
             {
-                "id": "monthly",
-                "name": "Monthly",
-                "price": 29.99,
+                "id": "free",
+                "name": "Free",
+                "price": 0,
+                "duration_days": 0,
+                "trade_limit": 3,
+                "trade_limit_type": "total",
+            },
+            {
+                "id": "pro",
+                "name": "Pro",
+                "price": 39.99,
                 "duration_days": 30,
+                "trade_limit": 20,
+                "trade_limit_type": "daily",
             },
             {
-                "id": "quarterly",
-                "name": "Quarterly",
+                "id": "elite",
+                "name": "Elite",
                 "price": 79.99,
-                "duration_days": 90,
-            },
-            {
-                "id": "yearly",
-                "name": "Yearly",
-                "price": 249.99,
-                "duration_days": 365,
+                "duration_days": 30,
+                "trade_limit": None,
+                "trade_limit_type": "unlimited",
             },
         ]
     }
