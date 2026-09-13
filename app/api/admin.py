@@ -855,6 +855,38 @@ def admin_update_subscription(
         """,
         tuple(values),
     )
+    # ==========================================
+    # ACTIVATE SUBSCRIPTION WHEN PAYMENT IS PAID
+    # ==========================================
+
+    if payload.get("status") == "paid":
+
+        payment = database.fetch_one(
+            """
+            SELECT user_id, subscription_id, amount
+            FROM payments
+            WHERE id = ?
+            """,
+            (payment_id,),
+        )
+
+        if payment:
+
+            subscription_id = payment["subscription_id"]
+
+            if subscription_id:
+                database.execute(
+                    """
+                    UPDATE subscriptions
+                    SET status = 'active',
+                        updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        datetime.now(timezone.utc).isoformat(),
+                        subscription_id,
+                    ),
+                )
     write_admin_log(
         admin_id=user["id"],
         action="update_subscription",

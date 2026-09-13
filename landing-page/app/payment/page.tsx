@@ -31,11 +31,16 @@ export default function PaymentPage() {
             return;
         }
 
+        // Free plan does not require payment.
+        if (plan === "free") {
+            window.location.href = "/dashboard";
+            return;
+        }
+
         if (!transactionId.trim()) {
             setPaymentError("Please enter your transaction ID.");
             return;
         }
-
         const token = localStorage.getItem("signalForgeAuthToken");
 
         if (!token) {
@@ -91,8 +96,8 @@ export default function PaymentPage() {
     };
 
     const planName =
-        plan === "starter"
-            ? "Starter"
+        plan === "free"
+            ? "Free"
             : plan === "pro"
                 ? "Pro"
                 : plan === "elite"
@@ -100,13 +105,14 @@ export default function PaymentPage() {
                     : "No Plan Selected";
 
     const planPrice =
-        plan === "starter"
-            ? 19
+        plan === "free"
+            ? 0
             : plan === "pro"
-                ? 39
+                ? 39.99
                 : plan === "elite"
-                    ? 69
+                    ? 79.99
                     : 0;
+
 
     const planFeatures = [
         "AI Trading Signals (CALL / PUT)",
@@ -353,66 +359,93 @@ export default function PaymentPage() {
                             Select how you want to pay for your SignalForge AI
                             subscription.
                         </p>
-
                         <div className="mt-6 space-y-3">
-                            {paymentMethods.map((method) => {
-                                const selected =
-                                    paymentMethod === method.id;
+                            {plan === "free" ? (
+                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                                    <h3 className="font-bold text-emerald-900">
+                                        Free Plan
+                                    </h3>
 
-                                return (
+                                    <p className="mt-2 text-sm text-emerald-700">
+                                        No payment is required.
+                                    </p>
+
+                                    <p className="mt-2 text-sm font-semibold text-emerald-800">
+                                        3 total trades included
+                                    </p>
+
                                     <button
-                                        key={method.id}
                                         type="button"
-                                        onClick={() =>
-                                            setPaymentMethod(method.id)
-                                        }
-                                        className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${selected
-                                            ? "border-indigo-500 bg-indigo-50 shadow-sm"
-                                            : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50"
-                                            }`}
+                                        onClick={() => {
+                                            window.location.href = "/dashboard";
+                                        }}
+                                        className="mt-5 w-full rounded-xl bg-emerald-600 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-emerald-700"
                                     >
-                                        <div
-                                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-bold ${method.id === "cashapp"
-                                                ? "bg-emerald-100 text-emerald-600"
-                                                : method.id === "crypto"
-                                                    ? "bg-orange-100 text-orange-600"
-                                                    : "bg-indigo-100 text-indigo-600"
+                                        Activate Free Plan
+                                    </button>
+                                </div>
+                            ) : (
+                                paymentMethods.map((method) => {
+                                    const selected =
+                                        paymentMethod === method.id;
+
+                                    return (
+                                        <button
+                                            key={method.id}
+                                            type="button"
+                                            onClick={() =>
+                                                setPaymentMethod(method.id)
+                                            }
+                                            className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition ${selected
+                                                ? "border-indigo-500 bg-indigo-50 shadow-sm"
+                                                : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-gray-50"
                                                 }`}
                                         >
-                                            {method.icon}
-                                        </div>
-
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <h3 className="font-bold">
-                                                    {method.name}
-                                                </h3>
-
-                                                {method.manual && (
-                                                    <span className="rounded-full bg-gray-100 px-2 py-1 text-[9px] font-bold uppercase text-gray-500">
-                                                        Manual
-                                                    </span>
-                                                )}
+                                            <div
+                                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-bold ${method.id === "cashapp"
+                                                    ? "bg-emerald-100 text-emerald-600"
+                                                    : method.id === "crypto"
+                                                        ? "bg-orange-100 text-orange-600"
+                                                        : "bg-indigo-100 text-indigo-600"
+                                                    }`}
+                                            >
+                                                {method.icon}
                                             </div>
 
-                                            <p className="mt-1 text-sm text-gray-500">
-                                                {method.description}
-                                            </p>
-                                        </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="font-bold">
+                                                        {method.name}
+                                                    </h3>
 
-                                        <div
-                                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${selected
-                                                ? "border-indigo-600"
-                                                : "border-gray-300"
-                                                }`}
-                                        >
-                                            {selected && (
-                                                <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />
-                                            )}
-                                        </div>
-                                    </button>
-                                );
-                            })}
+                                                    {method.manual && (
+                                                        <span className="rounded-full bg-gray-100 px-2 py-1 text-[9px] font-bold uppercase text-gray-500">
+                                                            Manual
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <p className="mt-1 text-sm text-gray-500">
+                                                    {method.description}
+                                                </p>
+                                            </div>
+
+                                            <div
+                                                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${selected
+                                                    ? "border-indigo-600"
+                                                    : "border-gray-300"
+                                                    }`}
+                                            >
+                                                {selected && (
+                                                    <div className="h-2.5 w-2.5 rounded-full bg-indigo-600" />
+                                                )}
+                                            </div>
+                                        </button>
+                                    );
+
+                                })
+                            )
+                            }
                         </div>
                     </section>
 

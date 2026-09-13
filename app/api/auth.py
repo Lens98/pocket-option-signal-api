@@ -1,4 +1,7 @@
 import os
+import uuid
+
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, Header, Depends
 
@@ -12,6 +15,7 @@ from app.services.auth_service import (
     delete_session,
     promote_user_to_admin,
 )
+from app.database.database import database
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -188,19 +192,45 @@ class LoginRequest(BaseModel):
 
 @router.post("/register")
 def register(request: RegisterRequest):
-
     if len(request.password) < 8:
-
         raise HTTPException(
             status_code=400, detail="Password must be at least 8 characters."
         )
 
     try:
-
         user = create_user(request.email, request.password)
 
-    except ValueError as error:
+        # ACTIVATE FREE PLAN
+        now = datetime.now(timezone.utc).isoformat()
+        subscription_id = str(uuid.uuid4())
 
+        database.execute(
+            """
+            INSERT INTO subscriptions (
+                id,
+                user_id,
+                plan,
+                status,
+                started_at,
+                expires_at,
+                created_at,
+                updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                subscription_id,
+                user["id"],
+                "free",
+                "active",
+                now,
+                None,
+                now,
+                now,
+            ),
+        )
+
+    except ValueError as error:
         raise HTTPException(status_code=409, detail=str(error))
 
     return {
@@ -210,6 +240,13 @@ def register(request: RegisterRequest):
             "id": user["id"],
             "email": user["email"],
             "role": user["role"],
+        },
+        "subscription": {
+            "id": subscription_id,
+            "plan": "free",
+            "status": "active",
+            "trade_limit": 3,
+            "trade_limit_type": "total",
         },
     }
 

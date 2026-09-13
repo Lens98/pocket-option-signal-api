@@ -88,11 +88,26 @@ def submit_payment(
     payment_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
 
+    # Find the user's current subscription
+    subscription = database.fetch_one(
+        """
+        SELECT id
+        FROM subscriptions
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (user["id"],),
+    )
+
+    subscription_id = subscription["id"] if subscription else None
+
     database.execute(
         """
         INSERT INTO payments (
             id,
             user_id,
+            subscription_id,
             amount,
             currency,
             payment_method,
@@ -110,6 +125,7 @@ def submit_payment(
         (
             payment_id,
             user["id"],
+            subscription_id,
             payment.amount,
             "USD",
             payment.payment_method,

@@ -1,5 +1,7 @@
 import os
 from datetime import datetime, timezone, timedelta
+
+from app.database.database import database
 from app.entry.entry_engine import EntryEngine
 from app.models.market import MarketData
 from app.models.signal import Signal
@@ -37,6 +39,72 @@ DEBUG_LOGS = os.getenv("DEBUG_LOGS", "false").lower() == "true"
 def debug_print(*args, **kwargs):
     if DEBUG_LOGS:
         print(*args, **kwargs)
+
+
+def check_trade_limit(user_id):
+    if not user_id:
+        return False, "User authentication required."
+
+    subscription = database.fetch_one(
+        """
+        SELECT plan, status, expires_at
+        FROM subscriptions
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    )
+
+    if not subscription:
+        return False, "No active subscription."
+
+    plan = str(subscription["plan"] or "").lower()
+    status = str(subscription["status"] or "").lower()
+
+    if status != "active":
+        return False, "Subscription is not active."
+
+    # Admin/unlimited plan
+    if plan == "elite":
+        return True, "Unlimited trades."
+
+    if plan == "free":
+        total_trades = database.fetch_one(
+            """
+            SELECT COUNT(*) AS count
+            FROM trades
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        )
+
+        count = int(total_trades["count"] or 0)
+
+        if count >= 3:
+            return False, "Free plan limit reached: 3 total trades."
+
+        return True, f"Free plan: {count}/3 trades used."
+
+    if plan == "pro":
+        today_trades = database.fetch_one(
+            """
+            SELECT COUNT(*) AS count
+            FROM trades
+            WHERE user_id = ?
+              AND date(entry_time) = date('now')
+            """,
+            (user_id,),
+        )
+
+        count = int(today_trades["count"] or 0)
+
+        if count >= 20:
+            return False, "Pro plan daily limit reached: 20 trades."
+
+        return True, f"Pro plan: {count}/20 trades used."
+
+    return False, "Unknown subscription plan."
 
 
 class TradingEngine:
@@ -1230,10 +1298,38 @@ class TradingEngine:
 
             else:
 
+                # ----------------------------------------
+                # SUBSCRIPTION TRADE LIMIT
+                # ----------------------------------------
+
+                allowed, limit_message = check_trade_limit(user_id)
+
                 print("========================================")
-                print("✅ NO OPEN TRADE")
-                print("Creating new binary trade...")
+                print("SUBSCRIPTION TRADE LIMIT")
                 print("========================================")
+                print("User ID :", user_id)
+                print("Result  :", allowed)
+                print("Message :", limit_message)
+                print("========================================")
+
+                if not allowed:
+                    print("🛑 TRADE CREATION BLOCKED")
+                    print("Reason :", limit_message)
+                    print("========================================")
+
+                    signal.action = "WAIT"
+                    signal.can_enter = False
+                    signal.market_state = EntryState.WAITING.value
+                    signal.trade_status = "LIMIT_REACHED"
+                    signal.reason = limit_message
+                    signal.instruction = limit_message
+
+                else:
+
+                    print("========================================")
+                    print("✅ TRADE LIMIT APPROVED")
+                    print("Creating new binary trade...")
+                    print("========================================")
 
                 # ----------------------------------------
                 # FINAL SIGNAL INFORMATION
