@@ -8,6 +8,7 @@ export default function DashboardPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [subscription, setSubscription] = useState<any>(null);
+
     useEffect(() => {
         const token = localStorage.getItem("signalForgeAuthToken");
 
@@ -57,190 +58,233 @@ export default function DashboardPage() {
                 setLoading(false);
             });
     }, []);
+
+    const plan =
+        subscription?.subscription?.plan || "No Plan";
+
+    const isActive =
+        subscription?.subscription?.status === "active";
+
     return (
-        <>
-
-
-
+        <div className="min-h-screen bg-[#050b18] text-white">
             {/* Top bar */}
-            < header className="flex h-20 items-center justify-between border-b border-gray-200 bg-white px-6 dark:border-white/10 dark:bg-gray-900 lg:px-10" >
+            <header className="flex h-20 items-center justify-between border-b border-white/10 bg-[#030712] px-6 lg:px-10">
                 <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-400">
                         SignalForge AI
                     </p>
-                    <h1 className="text-lg font-bold text-gray-950 dark:text-white">
+
+                    <h1 className="mt-1 text-lg font-bold text-white">
                         Member Dashboard
                     </h1>
                 </div>
 
                 <div className="flex items-center gap-4">
                     <div className="hidden text-right sm:block">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        <p className="text-sm font-semibold text-white">
                             Your Account
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+
+                        <p className="text-xs text-gray-500">
                             Member
                         </p>
                     </div>
 
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-400 text-sm font-black shadow-lg shadow-indigo-500/20">
                         SF
                     </div>
                 </div>
-            </header >
+            </header>
 
             {/* Content */}
-            < section className="flex-1 px-6 py-8 lg:px-10" >
-                <div className="mx-auto max-w-7xl">
+            <section className="relative flex-1 overflow-hidden px-6 py-8 lg:px-10">
+                {/* Background glow */}
+                <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-indigo-600/10 blur-[120px]" />
+
+                <div className="relative mx-auto max-w-7xl">
                     {/* Welcome */}
                     <div className="mb-8">
-                        <p className="text-sm font-semibold uppercase tracking-wider text-indigo-600">
-                            Welcome back
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-400">
+                            Welcome Back
                         </p>
 
-                        <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-950 dark:text-white">
-                            Your SignalForge AI account
+                        <h2 className="mt-3 text-3xl font-black tracking-tight text-white">
+                            Your SignalForge AI Account
                         </h2>
 
-                        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-400">
-                            Manage your subscription, access your
-                            extension, and keep everything in one
-                            place.
+                        <p className="mt-2 max-w-2xl text-gray-500">
+                            Manage your subscription, access your extension,
+                            and keep everything in one place.
                         </p>
                     </div>
 
                     {/* Account cards */}
                     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Subscription
-                            </p>
+                        {/* Subscription */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10 transition hover:border-indigo-400/20">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                    Subscription
+                                </p>
 
-                            <p className="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
-                                {subscription?.subscription?.plan || ""}
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
+                                    $
+                                </div>
+                            </div>
+
+                            <p className="mt-5 text-2xl font-black capitalize text-white">
+                                {loading ? "..." : plan}
                             </p>
 
                             <Link
                                 href="/#pricing"
-                                className="mt-4 inline-flex rounded-full bg-indigo-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500"
+                                className="mt-4 inline-flex rounded-lg bg-indigo-500/10 px-4 py-2 text-xs font-bold text-indigo-300 transition hover:bg-indigo-500/20 hover:text-white"
                             >
                                 Choose a Plan
                             </Link>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Account Status
-                            </p>
+                        {/* Account Status */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10 transition hover:border-green-400/20">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                    Account Status
+                                </p>
 
-                            <p className="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-green-400/10 text-green-400">
+                                    ✓
+                                </div>
+                            </div>
+
+                            <p className="mt-5 text-2xl font-black text-white">
                                 Active
                             </p>
 
-                            <span className="mt-4 inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                            <span className="mt-4 inline-flex items-center gap-2 rounded-full border border-green-400/10 bg-green-400/10 px-3 py-1 text-xs font-bold text-green-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
                                 Account Ready
                             </span>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Extension
-                            </p>
+                        {/* Extension */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10 transition hover:border-cyan-400/20">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                    Extension
+                                </p>
 
-                            <p className="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-400">
+                                    ◈
+                                </div>
+                            </div>
+
+                            <p className="mt-5 text-2xl font-black text-white">
                                 Ready
                             </p>
 
-                            <span className="mt-4 inline-flex rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400">
+                            <span className="mt-4 inline-flex rounded-full border border-cyan-400/10 bg-cyan-400/10 px-3 py-1 text-xs font-bold text-cyan-400">
                                 Chrome Extension
                             </span>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                AI Signals
-                            </p>
+                        {/* AI Signals */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10 transition hover:border-purple-400/20">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                    AI Signals
+                                </p>
 
-                            <p className="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
+                                    ✦
+                                </div>
+                            </div>
+
+                            <p className="mt-5 text-2xl font-black text-white">
                                 CALL / PUT
                             </p>
 
-                            <span className="mt-4 inline-flex rounded-full bg-purple-100 px-3 py-1 text-xs font-semibold text-purple-700 dark:bg-purple-500/10 dark:text-purple-400">
+                            <span className="mt-4 inline-flex rounded-full border border-purple-400/10 bg-purple-400/10 px-3 py-1 text-xs font-bold text-purple-400">
                                 AI Powered
                             </span>
                         </div>
                     </div>
 
                     {/* Extension banner */}
-                    <div className="mt-6 overflow-hidden rounded-3xl bg-gray-950 p-8 text-white shadow-xl lg:p-10">
-                        <div className="grid items-center gap-10 lg:grid-cols-2">
-                            <div>
-                                <p className="text-sm font-semibold uppercase tracking-wider text-indigo-400">
-                                    Get Started
-                                </p>
+                    <div className="relative mt-6 overflow-hidden rounded-3xl border border-indigo-400/10 bg-gradient-to-br from-[#0b1426] to-[#070d1a] p-8 shadow-2xl shadow-indigo-950/20 lg:p-10">
+                        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
 
-                                <h3 className="mt-3 text-3xl font-bold tracking-tight">
-                                    Use the SignalForge AI Chrome
-                                    Extension
+                        <div className="relative grid items-center gap-10 lg:grid-cols-2">
+                            <div>
+                                <div className="inline-flex rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-300">
+                                    Get Started
+                                </div>
+
+                                <h3 className="mt-5 text-3xl font-black tracking-tight">
+                                    Use the SignalForge AI Chrome Extension
                                 </h3>
 
-                                <p className="mt-4 max-w-xl text-gray-300">
-                                    Get AI-powered market analysis and
-                                    clear trading signals directly in
-                                    your browser.
+                                <p className="mt-4 max-w-xl leading-7 text-gray-400">
+                                    Get AI-powered market analysis and clear
+                                    trading signals directly in your browser.
                                 </p>
+
                                 <Link
                                     href="/download-extension"
-
-                                    className="mt-7 inline-flex rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold transition hover:bg-indigo-500"
+                                    className="mt-7 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:scale-[1.02]"
                                 >
                                     Download Extension
+                                    <span>→</span>
                                 </Link>
                             </div>
 
-                            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                            {/* AI Signal preview */}
+                            <div className="rounded-2xl border border-white/10 bg-[#030712]/80 p-5 shadow-xl">
                                 <div className="mb-5 flex items-center justify-between">
-                                    <span className="text-sm font-semibold">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
                                         AI SIGNAL
                                     </span>
 
-                                    <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold text-green-400">
+                                    <span className="flex items-center gap-2 rounded-full border border-green-400/10 bg-green-400/10 px-3 py-1 text-xs font-bold text-green-400">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
                                         ONLINE
                                     </span>
                                 </div>
 
-                                <div className="rounded-xl bg-black/30 p-6">
-                                    <p className="text-xs text-gray-400">
+                                <div className="rounded-xl border border-white/5 bg-[#080f1d] p-6">
+                                    <p className="text-xs text-gray-500">
                                         Current Signal
                                     </p>
 
-                                    <p className="mt-2 text-5xl font-bold text-green-400">
+                                    <p className="mt-2 text-5xl font-black text-green-400">
                                         CALL
                                     </p>
 
                                     <div className="mt-5 grid grid-cols-3 gap-3 text-center text-xs">
-                                        <div className="rounded-lg bg-white/5 p-3">
-                                            <p className="text-gray-400">
+                                        <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+                                            <p className="text-gray-500">
                                                 Confidence
                                             </p>
-                                            <p className="mt-1 font-bold">
+
+                                            <p className="mt-1 font-bold text-white">
                                                 AI
                                             </p>
                                         </div>
 
-                                        <div className="rounded-lg bg-white/5 p-3">
-                                            <p className="text-gray-400">
+                                        <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+                                            <p className="text-gray-500">
                                                 Timeframe
                                             </p>
-                                            <p className="mt-1 font-bold">
+
+                                            <p className="mt-1 font-bold text-white">
                                                 5M
                                             </p>
                                         </div>
 
-                                        <div className="rounded-lg bg-white/5 p-3">
-                                            <p className="text-gray-400">
+                                        <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3">
+                                            <p className="text-gray-500">
                                                 Status
                                             </p>
+
                                             <p className="mt-1 font-bold text-green-400">
                                                 Live
                                             </p>
@@ -253,15 +297,22 @@ export default function DashboardPage() {
 
                     {/* Bottom cards */}
                     <div className="mt-6 grid gap-6 lg:grid-cols-3">
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <h3 className="text-lg font-bold text-gray-950 dark:text-white">
-                                Quick Links
-                            </h3>
+                        {/* Quick Links */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
+                                    ↗
+                                </div>
+
+                                <h3 className="text-lg font-bold">
+                                    Quick Links
+                                </h3>
+                            </div>
 
                             <div className="mt-5 space-y-3">
                                 <Link
                                     href="#"
-                                    className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm font-medium transition hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10"
+                                    className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3 text-sm font-medium text-gray-400 transition hover:border-indigo-400/20 hover:bg-white/[0.06] hover:text-white"
                                 >
                                     Download Extension
                                     <span>→</span>
@@ -269,7 +320,7 @@ export default function DashboardPage() {
 
                                 <Link
                                     href="#"
-                                    className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm font-medium transition hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10"
+                                    className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3 text-sm font-medium text-gray-400 transition hover:border-indigo-400/20 hover:bg-white/[0.06] hover:text-white"
                                 >
                                     Manage Subscription
                                     <span>→</span>
@@ -277,7 +328,7 @@ export default function DashboardPage() {
 
                                 <Link
                                     href="#"
-                                    className="flex items-center justify-between rounded-xl bg-gray-50 px-4 py-3 text-sm font-medium transition hover:bg-gray-100 dark:bg-white/5 dark:hover:bg-white/10"
+                                    className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3 text-sm font-medium text-gray-400 transition hover:border-indigo-400/20 hover:bg-white/[0.06] hover:text-white"
                                 >
                                     Account Settings
                                     <span>→</span>
@@ -285,27 +336,36 @@ export default function DashboardPage() {
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <h3 className="text-lg font-bold text-gray-950 dark:text-white">
-                                Your Account
-                            </h3>
+                        {/* Account */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-400">
+                                    ◎
+                                </div>
+
+                                <h3 className="text-lg font-bold">
+                                    Your Account
+                                </h3>
+                            </div>
 
                             <div className="mt-5 space-y-4">
-                                <div className="flex justify-between border-b border-gray-100 pb-3 dark:border-white/10">
+                                <div className="flex justify-between border-b border-white/10 pb-3">
                                     <span className="text-sm text-gray-500">
                                         Email
                                     </span>
-                                    <span className="text-sm font-medium">
+
+                                    <span className="max-w-[180px] truncate text-sm font-medium text-gray-300">
                                         {user?.email || "Loading..."}
                                     </span>
                                 </div>
 
-                                <div className="flex justify-between border-b border-gray-100 pb-3 dark:border-white/10">
+                                <div className="flex justify-between border-b border-white/10 pb-3">
                                     <span className="text-sm text-gray-500">
                                         Plan
                                     </span>
-                                    <span className="text-sm font-medium">
-                                        {subscription?.subscription?.plan || "No Plan"}
+
+                                    <span className="text-sm font-medium capitalize text-gray-300">
+                                        {plan}
                                     </span>
                                 </div>
 
@@ -313,53 +373,78 @@ export default function DashboardPage() {
                                     <span className="text-sm text-gray-500">
                                         Status
                                     </span>
-                                    <span className="text-sm font-semibold text-green-600">
-                                        Active
+
+                                    <span
+                                        className={`text-sm font-bold ${isActive
+                                            ? "text-green-400"
+                                            : "text-gray-500"
+                                            }`}
+                                    >
+                                        {isActive ? "Active" : "Inactive"}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
-                            <h3 className="text-lg font-bold text-gray-950 dark:text-white">
-                                Need Help?
-                            </h3>
+                        {/* Help */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10">
+                            <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
+                                    ?
+                                </div>
 
-                            <p className="mt-4 text-sm leading-6 text-gray-600 dark:text-gray-400">
+                                <h3 className="text-lg font-bold">
+                                    Need Help?
+                                </h3>
+                            </div>
+
+                            <p className="mt-4 text-sm leading-6 text-gray-500">
                                 Have questions about your account,
                                 subscription, or SignalForge AI?
                             </p>
 
-                            <button className="mt-6 w-full rounded-full border border-gray-300 px-5 py-3 text-sm font-semibold transition hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5">
+                            <Link
+                                href="/help"
+                                className="mt-6 flex w-full items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] px-5 py-3 text-sm font-bold text-gray-400 transition hover:bg-white/[0.07] hover:text-white"
+                            >
                                 Contact Support
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>
-            </section >
+            </section>
 
             {/* Footer */}
-            < footer className="border-t border-gray-200 px-6 py-6 dark:border-white/10 lg:px-10" >
-                <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 text-sm text-gray-500 sm:flex-row">
+            <footer className="border-t border-white/10 bg-[#030712] px-6 py-6 lg:px-10">
+                <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 text-xs text-gray-600 sm:flex-row">
                     <span>
                         © 2026 {siteConfig.name}. All rights reserved.
                     </span>
 
                     <div className="flex gap-5">
-                        <Link href="#" className="hover:text-gray-900 dark:hover:text-white">
+                        <Link
+                            href="#"
+                            className="transition hover:text-gray-300"
+                        >
                             Privacy
                         </Link>
 
-                        <Link href="#" className="hover:text-gray-900 dark:hover:text-white">
+                        <Link
+                            href="#"
+                            className="transition hover:text-gray-300"
+                        >
                             Terms
                         </Link>
 
-                        <Link href="#" className="hover:text-gray-900 dark:hover:text-white">
+                        <Link
+                            href="/help"
+                            className="transition hover:text-gray-300"
+                        >
                             Support
                         </Link>
                     </div>
                 </div>
-            </footer >
-        </>
+            </footer>
+        </div>
     );
 }

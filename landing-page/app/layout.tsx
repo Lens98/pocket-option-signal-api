@@ -3,32 +3,32 @@ import { siteConfig } from "@/config/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
-  title: {
-    default: siteConfig.title,
-    template: `%s — ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  keywords: [
-    "SaaS landing page template",
-    "startup landing page template",
-    "Next.js template",
-    "Tailwind CSS template",
-    "free landing page template",
-  ],
-  authors: [{ name: "Pixel & Oak", url: "https://pixelandoak.com" }],
-  openGraph: {
-    type: "website",
-    url: siteConfig.url,
-    title: siteConfig.title,
+    metadataBase: new URL(siteConfig.url),
+    title: {
+        default: siteConfig.title,
+        template: `%s — ${siteConfig.name}`,
+    },
     description: siteConfig.description,
-    siteName: siteConfig.name,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: siteConfig.title,
-    description: siteConfig.description,
-  },
+    keywords: [
+        "SaaS landing page template",
+        "startup landing page template",
+        "Next.js template",
+        "Tailwind CSS template",
+        "free landing page template",
+    ],
+    authors: [{ name: "Pixel & Oak", url: "https://pixelandoak.com" }],
+    openGraph: {
+        type: "website",
+        url: siteConfig.url,
+        title: siteConfig.title,
+        description: siteConfig.description,
+        siteName: siteConfig.name,
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: siteConfig.title,
+        description: siteConfig.description,
+    },
 };
 
 /**
@@ -45,18 +45,18 @@ try {
 `;
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
-      <body className="bg-white font-sans text-gray-950 antialiased dark:bg-gray-950 dark:text-white">
-        {children}
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+            </head>
+            <body className="bg-white font-sans text-gray-950 antialiased dark:bg-gray-950 dark:text-white">
+                {children}
+            </body>
+        </html>
+    );
 }

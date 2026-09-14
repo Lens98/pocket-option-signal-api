@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { siteConfig } from "@/config/site";
 
 export default function AccountSettingsPage() {
     const [user, setUser] = useState<any>(null);
@@ -32,7 +31,7 @@ export default function AccountSettingsPage() {
                 return response.json();
             })
             .then((data) => {
-                setUser(data);
+                setUser(data.user);
             })
             .catch(() => {
                 localStorage.removeItem("signalForgeAuthToken");
@@ -46,9 +45,9 @@ export default function AccountSettingsPage() {
 
     if (loading) {
         return (
-            <main className="min-h-screen bg-white p-8 dark:bg-gray-950">
+            <main className="min-h-screen bg-[#050b18] p-8 text-white">
                 <div className="mx-auto max-w-5xl">
-                    <p className="text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-slate-500">
                         Loading account...
                     </p>
                 </div>
@@ -57,74 +56,143 @@ export default function AccountSettingsPage() {
     }
 
     return (
-        <main className="min-h-screen bg-white dark:bg-gray-950">
-            <div className="mx-auto max-w-5xl px-6 py-12">
-                <div className="mb-10">
-                    <Link
-                        href="/dashboard"
-                        className="text-xl font-bold text-gray-950 dark:text-white"
-                    >
-                        {siteConfig.name}
-                    </Link>
+        <main className="min-h-screen bg-[#050b18] text-white">
+            <div className="relative overflow-hidden">
+                {/* Background glow */}
+                <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute right-0 top-0 h-96 w-96 rounded-full bg-purple-600/10 blur-3xl"
+                />
 
-                    <p className="mt-10 text-sm font-semibold text-gray-500 dark:text-gray-400">
-                        ACCOUNT
-                    </p>
-
-                    <h1 className="mt-2 text-3xl font-bold text-gray-950 dark:text-white">
-                        Account Settings
-                    </h1>
-
-                    <p className="mt-2 text-gray-600 dark:text-gray-400">
-                        View and manage your SignalForge AI account.
-                    </p>
-                </div>
-
-                <div className="rounded-3xl border border-gray-200 bg-gray-50 p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                    <h2 className="text-xl font-bold text-gray-950 dark:text-white">
-                        Account Information
-                    </h2>
-
-                    <div className="mt-6 space-y-5">
-                        <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Email
-                            </p>
-
-                            <p className="mt-1 font-medium text-gray-950 dark:text-white">
-                                {user?.email || "—"}
-                            </p>
+                <div className="relative mx-auto max-w-5xl px-6 py-10 lg:px-10">
+                    {/* Header */}
+                    <div className="mb-10">
+                        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />
+                            Account
                         </div>
 
-                        <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Account Status
-                            </p>
+                        <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                            Account Settings
+                        </h1>
 
-                            <p className="mt-1 font-medium text-gray-950 dark:text-white">
-                                Active
-                            </p>
+                        <p className="mt-2 text-sm text-slate-400">
+                            View and manage your SignalForge AI account.
+                        </p>
+                    </div>
+
+                    {/* Account card */}
+                    <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+                        {/* Card header */}
+                        <div className="border-b border-white/10 px-7 py-6">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-bold shadow-lg shadow-indigo-500/20">
+                                    {user?.email?.charAt(0)?.toUpperCase() ||
+                                        "S"}
+                                </div>
+
+                                <div>
+                                    <h2 className="font-semibold text-white">
+                                        Account Information
+                                    </h2>
+
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Your SignalForge AI account details
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Account ID
-                            </p>
+                        {/* Information */}
+                        <div className="divide-y divide-white/10">
+                            <div className="flex flex-col gap-2 px-7 py-6 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                        Email
+                                    </p>
 
-                            <p className="mt-1 font-medium text-gray-950 dark:text-white">
-                                {user?.id || "—"}
-                            </p>
+                                    <p className="mt-2 text-sm font-medium text-white">
+                                        {user?.email || "—"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2 px-7 py-6 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                        Account Status
+                                    </p>
+
+                                    <div className="mt-2 flex items-center gap-2">
+                                        <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+
+                                        <p className="text-sm font-medium text-emerald-400">
+                                            Active
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="px-7 py-6">
+                                <p className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                    Account ID
+                                </p>
+
+                                <p className="mt-2 break-all font-mono text-sm text-slate-300">
+                                    {user?.id || "—"}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="mt-8">
-                    <Link
-                        href="/dashboard"
-                        className="text-sm font-medium text-gray-600 hover:text-gray-950 dark:text-gray-400 dark:hover:text-white"
-                    >
-                        ← Back to Dashboard
-                    </Link>
+                    {/* Security notice */}
+                    <div className="mt-6 rounded-2xl border border-indigo-400/10 bg-indigo-500/[0.04] p-6">
+                        <div className="flex gap-4">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-indigo-400/20 bg-indigo-500/10">
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.7"
+                                    className="h-5 w-5 text-indigo-400"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z"
+                                    />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="m9.5 12 1.7 1.7 3.5-3.5"
+                                    />
+                                </svg>
+                            </div>
+
+                            <div>
+                                <p className="text-sm font-semibold text-white">
+                                    Account Security
+                                </p>
+
+                                <p className="mt-1 text-sm leading-6 text-slate-500">
+                                    Keep your account credentials private and
+                                    never share your SignalForge AI login
+                                    information.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Back */}
+                    <div className="mt-8">
+                        <Link
+                            href="/dashboard"
+                            className="text-sm font-medium text-slate-500 transition hover:text-white"
+                        >
+                            ← Back to Dashboard
+                        </Link>
+                    </div>
                 </div>
             </div>
         </main>

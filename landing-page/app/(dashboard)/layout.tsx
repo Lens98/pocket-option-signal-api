@@ -21,86 +21,102 @@ export default function DashboardLayout({
     ];
 
     return (
-        <main className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <main className="min-h-screen bg-[#050b18] text-white">
             <div className="flex min-h-screen">
-
                 {/* Sidebar */}
-                <aside className="hidden w-64 flex-col border-r border-gray-200 bg-gray-950 text-white lg:flex">
+                <aside className="hidden w-72 flex-col border-r border-white/10 bg-[#030712] lg:flex">
+                    {/* Brand */}
+                    <div className="flex h-20 items-center border-b border-white/10 px-6">
+                        <Link
+                            href="/dashboard"
+                            className="flex items-center gap-3"
+                        >
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-lg font-black shadow-lg shadow-indigo-500/20">
+                                S
+                            </span>
 
-                    <div className="flex h-20 items-center px-6">
-                        <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-xl font-bold">
-                            S
-                        </div>
-
-                        <span className="text-lg font-bold">
-                            {siteConfig.name}
-                        </span>
+                            <span className="text-lg font-bold tracking-tight">
+                                SignalForge{" "}
+                                <span className="text-indigo-400">AI</span>
+                            </span>
+                        </Link>
                     </div>
 
+                    {/* Navigation */}
                     <nav className="flex-1 px-4 py-6">
-                        {navItems.map((item) => {
-                            const active = pathname === item.href;
+                        <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-widest text-slate-600">
+                            Workspace
+                        </p>
 
-                            return (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className={`mb-2 flex items-center rounded-xl px-4 py-3 text-sm font-medium transition ${active
-                                        ? "bg-indigo-600 text-white"
-                                        : "text-gray-300 hover:bg-white/10 hover:text-white"
-                                        }`}
-                                >
-                                    {item.name}
-                                </Link>
-                            );
-                        })}
+                        <div className="space-y-1.5">
+                            {navItems.map((item) => {
+                                const active = pathname === item.href;
+
+                                return (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className={`group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition ${active
+                                            ? "border border-indigo-400/20 bg-indigo-500/10 text-indigo-300"
+                                            : "text-slate-400 hover:bg-white/[0.04] hover:text-white"
+                                            }`}
+                                    >
+                                        <span
+                                            className={`h-1.5 w-1.5 rounded-full transition ${active
+                                                ? "bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]"
+                                                : "bg-slate-700 group-hover:bg-slate-500"
+                                                }`}
+                                        />
+
+                                        {item.name}
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </nav>
-                    <div className="px-4 pb-4">
+
+                    {/* Product status */}
+                    <div className="mx-4 mb-5 rounded-2xl border border-indigo-400/10 bg-gradient-to-br from-indigo-500/[0.08] to-purple-500/[0.05] p-5">
+                        <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+                            <span className="text-xs font-semibold text-emerald-400">
+                                System Online
+                            </span>
+                        </div>
+
+                        <p className="mt-3 text-sm font-semibold text-white">
+                            Trade Smarter With AI
+                        </p>
+
+                        <p className="mt-2 text-xs leading-5 text-slate-500">
+                            Real-time market analysis and AI-powered trading
+                            signals.
+                        </p>
+                    </div>
+
+                    {/* Logout */}
+                    <div className="border-t border-white/10 p-4">
                         <button
                             type="button"
                             onClick={() => {
-                                localStorage.removeItem("signalForgeAuthToken");
+                                localStorage.removeItem(
+                                    "signalForgeAuthToken"
+                                );
                                 localStorage.removeItem("signalForgeUser");
                                 window.location.href = "/login";
                             }}
-                            className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-gray-300 transition hover:bg-red-500/10 hover:text-red-400"
+                            className="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 transition hover:bg-red-500/10 hover:text-red-400"
                         >
-                            Logout
+                            Log out
                         </button>
                     </div>
-
-                    <div className="m-4 rounded-2xl bg-white/5 p-5">
-
-                        <p className="text-sm font-semibold">
-
-                            Trade Smarter With AI
-
-                        </p>
-
-                        <p className="mt-2 text-xs leading-5 text-gray-400">
-
-                            Real-time market analysis and AI-powered trading
-
-                            signals.
-
-                        </p>
-
-                    </div>
-
                 </aside>
 
                 {/* Page Content */}
-
                 <div className="flex min-w-0 flex-1 flex-col">
-
                     {children}
-
                 </div>
-
             </div>
-
         </main>
-
     );
-
-} 
+}
