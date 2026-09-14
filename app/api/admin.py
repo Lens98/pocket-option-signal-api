@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pydantic import BaseModel
 
 
@@ -855,49 +855,6 @@ def admin_update_subscription(
         """,
         tuple(values),
     )
-    # ==========================================
-    # ACTIVATE SUBSCRIPTION WHEN PAYMENT IS PAID
-    # ==========================================
-
-    if payload.get("status") == "paid":
-
-        payment = database.fetch_one(
-            """
-            SELECT user_id, subscription_id, amount
-            FROM payments
-            WHERE id = ?
-            """,
-            (payment_id,),
-        )
-
-        if payment:
-
-            subscription_id = payment["subscription_id"]
-
-            if subscription_id:
-                database.execute(
-                    """
-                    UPDATE subscriptions
-                    SET status = 'active',
-                        updated_at = ?
-                    WHERE id = ?
-                    """,
-                    (
-                        datetime.now(timezone.utc).isoformat(),
-                        subscription_id,
-                    ),
-                )
-    write_admin_log(
-        admin_id=user["id"],
-        action="update_subscription",
-        target_type="subscription",
-        target_id=subscription_id,
-        details="Administrator updated a subscription.",
-    )
-    return {
-        "success": True,
-        "message": "Subscription updated.",
-    }
 
 
 @router.delete("/subscriptions/{subscription_id}")
@@ -1671,6 +1628,7 @@ def admin_update_payment(
         """,
         tuple(values),
     )
+
     # ==========================================
     # ACTIVATE PAID SUBSCRIPTION
     # ==========================================
@@ -1700,22 +1658,28 @@ def admin_update_payment(
                 plan = None
 
             if subscription_id and plan:
+                now = datetime.now(timezone.utc)
+                expires_at = now + timedelta(days=30)
+
                 database.execute(
                     """
                     UPDATE subscriptions
                     SET plan = ?,
                         status = 'active',
                         started_at = ?,
+                        expires_at = ?,
                         updated_at = ?
                     WHERE id = ?
                     """,
                     (
                         plan,
-                        datetime.now(timezone.utc).isoformat(),
-                        datetime.now(timezone.utc).isoformat(),
+                        now.isoformat(),
+                        expires_at.isoformat(),
+                        now.isoformat(),
                         subscription_id,
                     ),
                 )
+
     write_admin_log(
         admin_id=user["id"],
         action="update_payment",
@@ -1723,6 +1687,7 @@ def admin_update_payment(
         target_id=payment_id,
         details="Administrator updated a payment.",
     )
+
     return {
         "success": True,
         "message": "Payment updated.",
