@@ -69,7 +69,11 @@ function SignupForm() {
                                     selectedPlan
                                 );
 
-                                window.location.href = "/login";
+                                if (selectedPlan) {
+                                    window.location.href = `/payment?plan=${selectedPlan}`;
+                                } else {
+                                    window.location.href = "/login";
+                                }
                             } catch (err) {
                                 setError(
                                     err instanceof Error

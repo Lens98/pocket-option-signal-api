@@ -32,7 +32,7 @@ export default function DashboardPage() {
                 return response.json();
             })
             .then((data) => {
-                setUser(data);
+                setUser(data.user);
 
                 fetch(
                     "https://pocket-option-signal-api-production.up.railway.app/payments/status",
@@ -183,7 +183,7 @@ export default function DashboardPage() {
                                     </p>
 
                                     <p className="mt-3 text-2xl font-bold text-gray-950 dark:text-white">
-                                        {subscription?.subscription?.plan || "No Plan"}
+                                        {subscription?.subscription?.plan || ""}
                                     </p>
 
                                     <Link
@@ -368,7 +368,7 @@ export default function DashboardPage() {
                                                 Plan
                                             </span>
                                             <span className="text-sm font-medium">
-                                                No Plan
+                                                {subscription?.subscription?.plan || "No Plan"}
                                             </span>
                                         </div>
 

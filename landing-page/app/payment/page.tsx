@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { siteConfig } from "@/config/site";
 
 type PaymentMethod = "stripe" | "paypal" | "zelle" | "cashapp" | "crypto";
 
-export default function PaymentPage() {
+function PaymentContent() {
+    const searchParams = useSearchParams();
     const [plan, setPlan] = useState("");
     const [paymentMethod, setPaymentMethod] =
         useState<PaymentMethod>("stripe");
@@ -16,11 +18,17 @@ export default function PaymentPage() {
     const [paymentSuccess, setPaymentSuccess] = useState("");
 
     useEffect(() => {
-        const selectedPlan =
-            localStorage.getItem("signalForgeSelectedPlan");
+        const urlPlan = searchParams.get("plan");
+        const savedPlan = localStorage.getItem("signalForgeSelectedPlan");
 
-        setPlan(selectedPlan || "");
-    }, []);
+        const selectedPlan = urlPlan || savedPlan || "";
+
+        setPlan(selectedPlan);
+
+        if (selectedPlan) {
+            localStorage.setItem("signalForgeSelectedPlan", selectedPlan);
+        }
+    }, [searchParams]);
 
     const submitManualPayment = async () => {
         setPaymentError("");
@@ -940,5 +948,12 @@ export default function PaymentPage() {
                 </div>
             </footer>
         </main>
+    );
+}
+export default function PaymentPage() {
+    return (
+        <Suspense fallback={null}>
+            <PaymentContent />
+        </Suspense>
     );
 }
