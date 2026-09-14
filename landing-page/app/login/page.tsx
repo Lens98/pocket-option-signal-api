@@ -57,6 +57,29 @@ export default function LoginPage() {
 
                                 const selectedPlan = localStorage.getItem("signalForgeSelectedPlan");
 
+                                try {
+                                    const subscriptionResponse = await fetch(
+                                        "https://pocket-option-signal-api-production.up.railway.app/payments/status",
+                                        {
+                                            headers: {
+                                                Authorization: `Bearer ${data.token}`,
+                                            },
+                                        }
+                                    );
+
+                                    if (subscriptionResponse.ok) {
+                                        const subscriptionData = await subscriptionResponse.json();
+
+                                        if (subscriptionData.status === "active") {
+                                            localStorage.removeItem("signalForgeSelectedPlan");
+                                            window.location.href = "/dashboard";
+                                            return;
+                                        }
+                                    }
+                                } catch {
+                                    // If subscription check fails, continue with normal login flow.
+                                }
+
                                 if (selectedPlan) {
                                     window.location.href = `/payment?plan=${selectedPlan}`;
                                 } else {

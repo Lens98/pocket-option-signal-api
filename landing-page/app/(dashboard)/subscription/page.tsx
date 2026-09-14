@@ -57,61 +57,6 @@ export default function SubscriptionPage() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="flex min-h-screen">
-                {/* Sidebar */}
-                <aside className="hidden w-64 border-r border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900 md:block">
-                    <div className="mb-10">
-                        <Link
-                            href="/dashboard"
-                            className="text-xl font-bold text-gray-950 dark:text-white"
-                        >
-                            {siteConfig.name}
-                        </Link>
-                    </div>
-
-                    <nav className="space-y-2">
-                        <Link
-                            href="/dashboard"
-                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                            Dashboard
-                        </Link>
-
-                        <Link
-                            href="/subscription"
-                            className="block rounded-xl bg-gray-950 px-4 py-3 text-sm font-medium text-white dark:bg-white dark:text-gray-950"
-                        >
-                            Subscription
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                            Download Extension
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                            Account Settings
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                            Billing & Payments
-                        </Link>
-
-                        <Link
-                            href="#"
-                            className="block rounded-xl px-4 py-3 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                        >
-                            Help & Support
-                        </Link>
-                    </nav>
-                </aside>
 
                 {/* Main */}
                 <main className="flex-1 p-6 md:p-10">
