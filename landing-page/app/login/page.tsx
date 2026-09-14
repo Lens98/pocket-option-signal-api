@@ -70,7 +70,7 @@ export default function LoginPage() {
                                     if (subscriptionResponse.ok) {
                                         const subscriptionData = await subscriptionResponse.json();
 
-                                        if (subscriptionData.status === "active") {
+                                        if (subscriptionData.subscription?.status === "active") {
                                             localStorage.removeItem("signalForgeSelectedPlan");
                                             window.location.href = "/dashboard";
                                             return;
