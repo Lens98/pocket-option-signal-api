@@ -1671,6 +1671,51 @@ def admin_update_payment(
         """,
         tuple(values),
     )
+    # ==========================================
+    # ACTIVATE PAID SUBSCRIPTION
+    # ==========================================
+
+    if payload.get("status") == "paid":
+
+        payment = database.fetch_one(
+            """
+            SELECT user_id, subscription_id, description
+            FROM payments
+            WHERE id = ?
+            """,
+            (payment_id,),
+        )
+
+        if payment:
+            subscription_id = payment["subscription_id"]
+
+            # Determine plan from the payment description
+            description = str(payment["description"] or "").lower()
+
+            if "pro" in description:
+                plan = "pro"
+            elif "elite" in description:
+                plan = "elite"
+            else:
+                plan = None
+
+            if subscription_id and plan:
+                database.execute(
+                    """
+                    UPDATE subscriptions
+                    SET plan = ?,
+                        status = 'active',
+                        started_at = ?,
+                        updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        plan,
+                        datetime.now(timezone.utc).isoformat(),
+                        datetime.now(timezone.utc).isoformat(),
+                        subscription_id,
+                    ),
+                )
     write_admin_log(
         admin_id=user["id"],
         action="update_payment",
