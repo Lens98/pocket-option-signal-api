@@ -48,6 +48,14 @@ def get_plans():
                 "trade_limit": None,
                 "trade_limit_type": "unlimited",
             },
+            {
+                "id": "lifetime",
+                "name": "Lifetime",
+                "price": 4000.00,
+                "duration_days": None,
+                "trade_limit": None,
+                "trade_limit_type": "unlimited",
+            },
         ]
     }
 

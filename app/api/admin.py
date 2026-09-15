@@ -1654,12 +1654,14 @@ def admin_update_payment(
                 plan = "pro"
             elif "elite" in description:
                 plan = "elite"
+            elif "lifetime" in description:
+                plan = "lifetime"
             else:
                 plan = None
 
             if subscription_id and plan:
                 now = datetime.now(timezone.utc)
-                expires_at = now + timedelta(days=30)
+                expires_at = None if plan == "lifetime" else now + timedelta(days=30)
 
                 database.execute(
                     """

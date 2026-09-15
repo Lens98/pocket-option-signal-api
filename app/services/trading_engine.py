@@ -66,7 +66,7 @@ def check_trade_limit(user_id):
         return False, "Subscription is not active."
 
     # Admin/unlimited plan
-    if plan == "elite":
+    if plan in ("elite", "lifetime"):
         return True, "Unlimited trades."
 
     if plan == "free":
@@ -1323,6 +1323,7 @@ class TradingEngine:
                     signal.trade_status = "LIMIT_REACHED"
                     signal.reason = limit_message
                     signal.instruction = limit_message
+                    return signal
 
                 else:
 

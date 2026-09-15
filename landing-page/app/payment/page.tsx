@@ -110,7 +110,9 @@ function PaymentContent() {
                 ? "Pro"
                 : plan === "elite"
                     ? "Elite"
-                    : "No Plan Selected";
+                    : plan === "lifetime"
+                        ? "Lifetime"
+                        : "No Plan Selected";
 
     const planPrice =
         plan === "free"
@@ -119,7 +121,9 @@ function PaymentContent() {
                 ? 39.99
                 : plan === "elite"
                     ? 79.99
-                    : 0;
+                    : plan === "lifetime"
+                        ? 4000.00
+                        : 0;
 
 
     const planFeatures = [

@@ -4,7 +4,6 @@ import {
     getPaymentStatus
 } from "./js/auth.js";
 import { showLoginScreen } from "./login.js";
-import { showPaymentScreen } from "./payment.js";
 import { initializeAccount } from "./js/account.js";
 
 
@@ -53,29 +52,26 @@ async function checkSubscription(user) {
 
         console.log("PAYMENT STATUS RESPONSE:", JSON.stringify(data));
         console.log("Subscription:", data?.subscription);
+        console.log("Plan:", data?.subscription?.plan);
         console.log("Status:", data?.subscription?.status);
 
-        if (data?.subscription?.status === "active") {
-            console.log("ACTIVE SUBSCRIPTION — STARTING DASHBOARD");
+        if (
+            data?.subscription?.status === "active" &&
+            data?.subscription?.plan === "lifetime"
+        ) {
+            console.log("LIFETIME SUBSCRIPTION — STARTING DASHBOARD");
             startDashboard(user);
             return;
         }
 
-        console.log("INACTIVE SUBSCRIPTION — SHOWING PAYMENT SCREEN");
+        console.log("NO ACTIVE LIFETIME SUBSCRIPTION");
 
-        showPaymentScreen(user, () => {
-            checkSubscription(user);
-        });
+        alert("An active Lifetime subscription is required to use SignalForge AI.");
 
-        return;
     } catch (error) {
         console.error("SUBSCRIPTION CHECK FAILED:", error);
 
-        showPaymentScreen(user, () => {
-            checkSubscription(user);
-        });
-
-        return;
+        alert("Unable to verify your subscription. Please try again.");
     }
 }
 // ==========================================
