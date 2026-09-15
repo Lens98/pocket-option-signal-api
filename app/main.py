@@ -21,6 +21,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:5173",
+        "https://prolific-vision-production-6fe1.up.railway.app",
         "https://overflowing-adventure-production-5fef.up.railway.app",
     ],
     allow_credentials=True,
