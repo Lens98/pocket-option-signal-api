@@ -48,11 +48,12 @@
 /* ==========================================
    LEFT
 ========================================== */
-
 .header-left{
     display:flex;
     flex-direction:row;
     align-items:center;
+    flex:1;
+    min-width:0;
 }
 
 /* ==========================================
@@ -80,7 +81,7 @@
 .version{
     margin-top:2px;
     color:#94A3B8;
-    font-size:6px;
+    font-size:8px;
     font-weight:600;
     letter-spacing:.08em;
 }
@@ -90,11 +91,10 @@
 ========================================== */
 
 .header-right{
-
     display:flex;
-
     align-items:center;
-
+    margin-left:auto;
+    flex-shrink:0;
 }
 
 /* ==========================================
