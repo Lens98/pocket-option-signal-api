@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Pocket Option AI Signals",
+    "name": "SignalForge AI",
     "version": "1.0.0",
     "description": "Reads live Pocket Option market data and displays AI trading signals.",
     "permissions": [
@@ -54,6 +54,6 @@
     ],
     "action": {
         "default_popup": "src/popup/popup.html",
-        "default_title": "Pocket Option AI"
+        "default_title": "SignalForge AI"
     }
 }
