@@ -1,6 +1,4 @@
 import { siteConfig } from "@/config/site";
-import { Logo } from "@/components/Logo";
-
 const socials = [
   {
     label: "X (Twitter)",
@@ -66,8 +64,22 @@ export function Footer() {
         <div className="grid gap-12 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="text-white">
-              <Logo />
+            <div className="flex items-center gap-3 text-white">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-indigo-600">
+                <span className="text-2xl font-extrabold leading-none text-white">
+                  S
+                </span>
+              </div>
+
+              <div>
+                <div className="text-lg font-bold">
+                  {name}
+                </div>
+
+                <div className="text-[9px] font-semibold tracking-[0.18em] text-gray-400">
+                  TRADE SMARTER. POWERED BY AI.
+                </div>
+              </div>
             </div>
 
             <p className="mt-5 max-w-sm text-sm leading-7 text-slate-400">
