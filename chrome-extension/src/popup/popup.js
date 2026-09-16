@@ -57,7 +57,7 @@ async function checkSubscription(user) {
 
         if (
             data?.subscription?.status === "active" &&
-            data?.subscription?.plan === "lifetime"
+            data?.subscription?.plan?.toLowerCase() === "lifetime"
         ) {
             console.log("LIFETIME SUBSCRIPTION — STARTING DASHBOARD");
             startDashboard(user);
