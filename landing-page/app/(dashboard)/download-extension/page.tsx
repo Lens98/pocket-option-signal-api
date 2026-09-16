@@ -282,7 +282,7 @@ export default function DownloadExtensionPage() {
                                             </p>
 
                                             <a
-                                                href="/extension.zip"
+                                                href="/SignalForge-AI-Subscriber-Extension-v1.0.0.zip"
                                                 download
                                                 className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:scale-[1.02] hover:shadow-indigo-500/30"
                                             >
