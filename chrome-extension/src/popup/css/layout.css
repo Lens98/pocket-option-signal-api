@@ -1,0 +1,229 @@
+/* ==========================================
+   RESET
+========================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* ==========================================
+   ROOT
+========================================== */
+
+html,
+body {
+
+    width: 780px;
+    height: 1100px;
+
+    overflow: hidden;
+
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    background:
+        radial-gradient(circle at top right, #1A3B5D 0%, transparent 45%),
+        radial-gradient(circle at bottom left, #132238 0%, transparent 35%),
+        #0B1220;
+
+    color: #FFFFFF;
+}
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.container{
+
+    width:100%;
+    height:100%;
+
+    padding:12px;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:12px;
+
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
+.header{
+
+    flex:0 0 70px;
+
+}
+
+/* ==========================================
+   DASHBOARD
+========================================== */
+.dashboard-layout{
+
+    flex:1;
+
+    display:grid;
+
+    height:100%;
+
+    min-height:0;
+
+    grid-template-rows:
+        330px
+        230px
+        1fr;
+
+    gap:14px;
+
+}
+
+/* ==========================================
+   TOP ROW
+========================================== */
+
+.top-row{
+
+    display:grid;
+
+    grid-template-columns:
+
+        2fr
+        1.2fr
+        1fr
+        1.2fr;
+
+    gap:12px;
+
+    height:100%;
+
+    align-items:stretch;
+
+    min-height:0;
+
+}
+
+/* ==========================================
+   ANALYSIS ROW
+========================================== */
+
+.analysis-row{
+
+    display:grid;
+
+    grid-template-columns:1fr;
+
+    height:100%;
+
+    align-items:stretch;
+
+    min-height:0;
+
+}
+
+/* ==========================================
+   BOTTOM ROW
+========================================== */
+
+.bottom-row{
+
+    display:grid;
+
+    grid-template-columns:
+
+        2fr
+        1fr;
+
+    gap:12px;
+
+    height:100%;
+
+    align-items:stretch;
+
+    min-height:0;
+
+}
+
+/* ==========================================
+   FOOTER
+========================================== */
+
+.footer-panel{
+
+    flex:0 0 56px;
+
+}
+
+/* ==========================================
+   ALL CARDS
+========================================== */
+
+.live-market-panel,
+.signal-panel,
+.countdown-panel,
+.instruction-panel,
+.analysis-panel,
+.history-panel,
+.session-panel{
+
+    display:flex;
+
+    width:100%;
+    height:100%;
+
+    min-width:0;
+    min-height:0;
+
+}
+
+/* ==========================================
+   CARD
+========================================== */
+
+.card{
+
+    flex:1;
+   width:100%;
+
+    height:100%;
+
+    display:flex;
+    flex-direction:column;
+
+    background:
+
+        linear-gradient(
+            180deg,
+            rgba(25,37,61,.98),
+            rgba(14,22,38,.98)
+        );
+
+    border:1px solid #243453;
+
+    border-radius:18px;
+
+    padding:16px;
+
+    overflow:hidden;
+
+}
+
+/* ==========================================
+   TITLE
+========================================== */
+
+.card-title{
+
+    font-size:14px;
+
+    font-weight:700;
+
+    color:#A8C7FA;
+
+    margin-bottom:14px;
+
+    flex-shrink:0;
+
+}

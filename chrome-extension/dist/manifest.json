@@ -1,15 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "Pocket Option AI Signals",
+  "name": "SignalForge AI",
   "version": "1.0.0",
   "description": "Reads live Pocket Option market data and displays AI trading signals.",
   "permissions": [
     "storage",
     "activeTab",
-    "scripting"
+    "scripting",
+    "tabs"
   ],
   "host_permissions": [
-    "http://127.0.0.1:8000/*",
+    "https://pocket-option-signal-api-production.up.railway.app/*",
+    "https://pocketoption.com/*",
     "https://*.pocketoption.com/*"
   ],
   "background": {
@@ -19,28 +21,45 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.js-BwAvFDrO.js"
+        "assets/injected.js-DcbogQpk.js"
       ],
       "matches": [
+        "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
       ],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "js": [
+        "assets/content.js-OMXJcsza.js"
+      ],
+      "matches": [
+        "https://pocketoption.com/*",
+        "https://*.pocketoption.com/*"
+      ],
+      "run_at": "document_start",
+      "css": [
+        "assets/content-x1XGuNl0.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
       "matches": [
-        "https://*.pocketoption.com/*"
+        "https://*.pocketoption.com/*",
+        "https://pocketoption.com/*"
       ],
       "resources": [
         "src/injected.js",
-        "assets/content.js-BwAvFDrO.js"
+        "assets/injected.js-DcbogQpk.js",
+        "assets/content.js-OMXJcsza.js"
       ],
       "use_dynamic_url": false
     }
   ],
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "Pocket Option AI"
+    "default_title": "SignalForge AI"
   }
 }

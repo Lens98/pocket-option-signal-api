@@ -5,112 +5,69 @@ class RiskManager:
 
     def evaluate(self, signal):
 
-    allowed = True
+        allowed = True
+        reasons = []
 
-    reasons = []
+        # ----------------------------------
+        # Risk Score
+        # ----------------------------------
 
-    risk_score = 100
+        risk_score = signal.confidence
 
-    # ---------------------------------
-    # Confidence
-    # ---------------------------------
+        # ----------------------------------
+        # Risk Level
+        # ----------------------------------
 
-    if signal.confidence >= 90:
+        if risk_score >= 90:
 
-        risk_score -= 40
+            risk = "LOW"
 
-    elif signal.confidence >= 80:
+        elif risk_score >= settings.MIN_CONFIDENCE:
 
-        risk_score -= 30
+            risk = "MEDIUM"
 
-    elif signal.confidence >= 70:
+        else:
 
-        risk_score -= 20
+            risk = "HIGH"
 
-    elif signal.confidence >= settings.MIN_CONFIDENCE:
+            allowed = False
 
-        risk_score -= 10
+            reasons.append(
+                f"Confidence too low ({signal.confidence})"
+            )
 
-    else:
+        # ----------------------------------
+        # Trade Grade
+        # ----------------------------------
 
-        reasons.append(
-            f"Low confidence ({signal.confidence}%)"
-        )
+        grade = "D"
 
-    # ---------------------------------
-    # Trend
-    # ---------------------------------
+        if signal.confidence >= 95 and risk == "LOW":
 
-    if signal.trend == "BULLISH":
+            grade = "A+"
 
-        risk_score -= 10
+        elif signal.confidence >= 90 and risk == "LOW":
 
-    elif signal.trend == "BEARISH":
+            grade = "A"
 
-        risk_score -= 10
+        elif signal.confidence >= 80:
 
-    else:
+            grade = "B"
 
-        risk_score += 10
+        elif signal.confidence >= settings.MIN_CONFIDENCE:
 
-        reasons.append(
-            "Sideways trend"
-        )
+            grade = "C"
 
-    # ---------------------------------
-    # Risk Level
-    # ---------------------------------
+        return {
 
-    if risk_score <= 30:
+            "allowed": allowed,
 
-        risk = "LOW"
+            "risk": risk,
 
-    elif risk_score <= 60:
+            "risk_score": risk_score,
 
-        risk = "MEDIUM"
+            "grade": grade,
 
-    else:
+            "reasons": reasons
 
-        risk = "HIGH"
-
-        allowed = False
-
-        reasons.append(
-            "Risk score too high"
-        )
-
-  # ---------------------------------
-# Trade Grade
-# ---------------------------------
-
-grade = "D"
-
-if signal.confidence >= 95 and risk == "LOW":
-
-    grade = "A+"
-
-elif signal.confidence >= 90 and risk == "LOW":
-
-    grade = "A"
-
-elif signal.confidence >= 80:
-
-    grade = "B"
-
-elif signal.confidence >= settings.MIN_CONFIDENCE:
-
-    grade = "C"
-
-return {
-
-    "allowed": allowed,
-
-    "risk": risk,
-
-    "risk_score": risk_score,
-
-    "grade": grade,
-
-    "reasons": reasons
-
-}
+        }
