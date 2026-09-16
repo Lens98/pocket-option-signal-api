@@ -55,21 +55,24 @@
 }
 
 .auth-logo {
-    width: 64px;
-    height: 64px;
+    width: 40px;
+    height: 40px;
     margin: 0 auto 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 12px;
-    background: #090909;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
     color: #ffffff;
 }
 
-.auth-logo svg {
-    width: 32px;
-    height: 32px;
+.auth-logo span {
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1;
+    font-family: Arial, sans-serif;
 }
+
 
 
 .auth-title {
