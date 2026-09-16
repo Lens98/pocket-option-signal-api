@@ -50,13 +50,9 @@
 ========================================== */
 
 .header-left{
-
     display:flex;
-
-    flex-direction:column;
-
-    justify-content:center;
-
+    flex-direction:row;
+    align-items:center;
 }
 
 /* ==========================================
@@ -82,15 +78,11 @@
 ========================================== */
 
 .version{
-
-    margin-top:6px;
-
+    margin-top:2px;
     color:#94A3B8;
-
-    font-size:12px;
-
-    font-weight:500;
-
+    font-size:6px;
+    font-weight:600;
+    letter-spacing:.08em;
 }
 
 /* ==========================================
