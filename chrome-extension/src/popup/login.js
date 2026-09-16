@@ -28,17 +28,21 @@ export function showLoginScreen(
 
         <div class="auth-container">
 
-            <div class="auth-logo">
-    <span>S</span>
+        <div class="auth-brand">
+    <div class="auth-logo">
+        <span>S</span>
+    </div>
+
+    <div class="auth-brand-text">
+        <h1 class="auth-title">
+            SignalForge AI
+        </h1>
+
+        <p class="auth-subtitle">
+            TRADE SMARTER. POWERED BY AI.
+        </p>
+    </div>
 </div>
-
-<h1 class="auth-title">
-    SignalForge AI
-</h1>
-
-<p class="auth-subtitle">
-    TRADE SMARTER. POWERED BY AI.
-</p>
 
 
 

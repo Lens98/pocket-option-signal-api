@@ -54,10 +54,19 @@
     color: #ffffff;
 }
 
+.auth-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 .auth-logo {
     width: 40px;
     height: 40px;
-    margin: 0 auto 16px;
+    margin: 0;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,27 +82,19 @@
     font-family: Arial, sans-serif;
 }
 
-
+.auth-brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
 
 .auth-title {
-
     margin: 0;
-
-    font-size: 24px;
-
-    font-weight: 700;
 }
-
 
 .auth-subtitle {
-
-    margin: 7px 0 28px;
-
-    color: #8994aa;
-
-    font-size: 13px;
+    margin: 2px 0 0;
 }
-
 
 .auth-view h2 {
 
