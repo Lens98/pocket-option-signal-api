@@ -1,0 +1,1 @@
+    table.innerHTML = recent.map(trade =

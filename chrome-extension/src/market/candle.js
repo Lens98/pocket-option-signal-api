@@ -1,16 +1,17 @@
 export class Candle {
 
-    constructor(openTime, timeframe) {
+    constructor(timestamp, timeframe) {
 
-        this.openTime = openTime;
-        this.timeframe = timeframe;
+        this.timestamp = String(timestamp);
+
+        this.timeframe = String(timeframe);
 
         this.asset = "";
 
-        this.open = null;
-        this.high = null;
-        this.low = null;
-        this.close = null;
+        this.open = 0;
+        this.high = 0;
+        this.low = 0;
+        this.close = 0;
 
         this.volume = 0;
 
