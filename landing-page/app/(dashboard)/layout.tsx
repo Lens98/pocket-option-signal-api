@@ -14,6 +14,7 @@ export default function DashboardLayout({
     const navItems = [
         { name: "Dashboard", href: "/dashboard" },
         { name: "Subscription", href: "/subscription" },
+        { name: "Getting Started", href: "/getting-started" },
         { name: "Download Extension", href: "/download-extension" },
         { name: "Account Settings", href: "/account-settings" },
         { name: "Billing & Payments", href: "/billing" },
