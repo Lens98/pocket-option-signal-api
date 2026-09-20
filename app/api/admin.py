@@ -1396,15 +1396,13 @@ def admin_create_payment(
         "stripe",
         "paypal",
         "crypto",
-        "cash_app",
-        "zelle",
     }
 
     if payment_method not in allowed_methods:
         raise HTTPException(
             status_code=400,
             detail=(
-                "Payment method must be stripe, paypal, " "crypto, cash_app, or zelle."
+                "Payment method must be stripe, paypal, or crypto."
             ),
         )
 
@@ -1605,12 +1603,10 @@ def admin_update_payment(
                 "stripe",
                 "paypal",
                 "crypto",
-                "cash_app",
-                "zelle",
             }:
                 raise HTTPException(
                     status_code=400,
-                    detail="Invalid payment method.",
+                    detail="Invalid payment method. Use stripe, paypal, or crypto.",
                 )
 
         elif field == "status":
