@@ -1,9 +1,23 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { siteConfig } from "@/config/site";
+declare global {
+    interface Window {
+        paypal?: {
+            Buttons: (options: {
+                createOrder: () => Promise<string>;
+                onApprove: (data: { orderID: string }) => Promise<void>;
+                onCancel?: () => void;
+                onError?: (error: unknown) => void;
+            }) => {
+                render: (container: HTMLElement) => Promise<void>;
+            };
+        };
+    }
+}
 
 type PaymentMethod = "stripe" | "paypal" | "crypto";
 
@@ -16,6 +30,8 @@ function PaymentContent() {
     const [submitting, setSubmitting] = useState(false);
     const [paymentError, setPaymentError] = useState("");
     const [paymentSuccess, setPaymentSuccess] = useState("");
+    const paypalContainerRef = useRef<HTMLDivElement>(null);
+    const [paypalLoading, setPaypalLoading] = useState(false);
 
     useEffect(() => {
         const urlPlan = searchParams.get("plan");
@@ -29,6 +45,255 @@ function PaymentContent() {
             localStorage.setItem("signalForgeSelectedPlan", selectedPlan);
         }
     }, [searchParams]);
+    useEffect(() => {
+        if (paymentMethod !== "paypal" || !plan || plan === "free") {
+            return;
+        }
+
+        const clientId =
+            process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
+        if (!clientId) {
+            setPaymentError(
+                "PayPal is not configured on this website."
+            );
+            return;
+        }
+
+        let cancelled = false;
+
+        const renderPayPalButtons = async () => {
+            setPaypalLoading(true);
+            setPaymentError("");
+
+            try {
+                if (!window.paypal) {
+                    await new Promise<void>((resolve, reject) => {
+                        const existingScript =
+                            document.querySelector(
+                                'script[data-paypal-sdk="true"]'
+                            );
+
+                        if (existingScript) {
+                            existingScript.addEventListener(
+                                "load",
+                                () => resolve(),
+                                { once: true }
+                            );
+
+                            existingScript.addEventListener(
+                                "error",
+                                () =>
+                                    reject(
+                                        new Error(
+                                            "Unable to load PayPal."
+                                        )
+                                    ),
+                                { once: true }
+                            );
+
+                            return;
+                        }
+
+                        const script =
+                            document.createElement("script");
+
+                        script.src =
+                            `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(
+                                clientId
+                            )}&currency=USD&intent=capture&components=buttons`;
+
+                        script.async = true;
+                        script.setAttribute(
+                            "data-paypal-sdk",
+                            "true"
+                        );
+
+                        script.onload = () => resolve();
+
+                        script.onerror = () =>
+                            reject(
+                                new Error(
+                                    "Unable to load PayPal."
+                                )
+                            );
+
+                        document.head.appendChild(script);
+                    });
+                }
+
+                if (
+                    cancelled ||
+                    !window.paypal ||
+                    !paypalContainerRef.current
+                ) {
+                    return;
+                }
+
+                paypalContainerRef.current.innerHTML = "";
+
+                await window.paypal
+                    .Buttons({
+                        createOrder: async () => {
+                            const token =
+                                localStorage.getItem(
+                                    "signalForgeAuthToken"
+                                );
+
+                            if (!token) {
+                                window.location.href =
+                                    "/login";
+
+                                throw new Error(
+                                    "Please log in first."
+                                );
+                            }
+
+                            const apiUrl =
+                                process.env.NEXT_PUBLIC_API_URL ||
+                                "https://pocket-option-signal-api-production.up.railway.app";
+
+                            const response =
+                                await fetch(
+                                    `${apiUrl}/payments/paypal/create-order`,
+                                    {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type":
+                                                "application/json",
+                                            Authorization:
+                                                `Bearer ${token}`,
+                                        },
+                                        body: JSON.stringify({
+                                            plan,
+                                        }),
+                                    }
+                                );
+
+                            const data =
+                                await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(
+                                    data.detail ||
+                                    "Unable to create PayPal order."
+                                );
+                            }
+
+                            return data.order_id;
+                        },
+
+                        onApprove: async ({ orderID }) => {
+                            setSubmitting(true);
+                            setPaymentError("");
+                            setPaymentSuccess("");
+
+                            try {
+                                const token =
+                                    localStorage.getItem(
+                                        "signalForgeAuthToken"
+                                    );
+
+                                if (!token) {
+                                    window.location.href =
+                                        "/login";
+
+                                    return;
+                                }
+
+                                const apiUrl =
+                                    process.env
+                                        .NEXT_PUBLIC_API_URL ||
+                                    "https://pocket-option-signal-api-production.up.railway.app";
+
+                                const response =
+                                    await fetch(
+                                        `${apiUrl}/payments/paypal/capture-order`,
+                                        {
+                                            method: "POST",
+                                            headers: {
+                                                "Content-Type":
+                                                    "application/json",
+                                                Authorization:
+                                                    `Bearer ${token}`,
+                                            },
+                                            body: JSON.stringify({
+                                                order_id:
+                                                    orderID,
+                                            }),
+                                        }
+                                    );
+
+                                const data =
+                                    await response.json();
+
+                                if (!response.ok) {
+                                    throw new Error(
+                                        data.detail ||
+                                        "PayPal payment could not be completed."
+                                    );
+                                }
+
+                                setPaymentSuccess(
+                                    "Payment successful! Your subscription is now active."
+                                );
+
+                                setTimeout(() => {
+                                    window.location.href =
+                                        "/dashboard";
+                                }, 1500);
+                            } catch (error) {
+                                setPaymentError(
+                                    error instanceof Error
+                                        ? error.message
+                                        : "PayPal payment failed."
+                                );
+                            } finally {
+                                setSubmitting(false);
+                            }
+                        },
+
+                        onCancel: () => {
+                            setPaymentError(
+                                "PayPal payment was cancelled."
+                            );
+                        },
+
+                        onError: (error) => {
+                            console.error(
+                                "PayPal error:",
+                                error
+                            );
+
+                            setPaymentError(
+                                "PayPal could not complete the payment. Please try again."
+                            );
+                        },
+                    })
+                    .render(paypalContainerRef.current);
+            } catch (error) {
+                setPaymentError(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to load PayPal."
+                );
+            } finally {
+                if (!cancelled) {
+                    setPaypalLoading(false);
+                }
+            }
+        };
+
+        renderPayPalButtons();
+
+        return () => {
+            cancelled = true;
+
+            if (paypalContainerRef.current) {
+                paypalContainerRef.current.innerHTML = "";
+            }
+        };
+    }, [paymentMethod, plan]);
 
     const submitManualPayment = async () => {
         setPaymentError("");
@@ -400,11 +665,9 @@ function PaymentContent() {
                                                 }`}
                                         >
                                             <div
-                                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-bold ${method.id === "cashapp"
-                                                    ? "bg-emerald-100 text-emerald-600"
-                                                    : method.id === "crypto"
-                                                        ? "bg-orange-100 text-orange-600"
-                                                        : "bg-indigo-100 text-indigo-600"
+                                                className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl text-xl font-bold ${method.id === "crypto"
+                                                    ? "bg-orange-100 text-orange-600"
+                                                    : "bg-indigo-100 text-indigo-600"
                                                     }`}
                                             >
                                                 {method.icon}
@@ -511,14 +774,17 @@ function PaymentContent() {
                                         <h2 className="text-xl font-bold">
                                             Pay with PayPal
                                         </h2>
+
                                         <span className="text-xs font-semibold text-indigo-600">
-                                            Secure PayPal Payment
+                                            Secure PayPal Checkout
                                         </span>
                                     </div>
                                 </div>
 
                                 <p className="mt-5 text-sm leading-6 text-gray-600">
-                                    Pay securely using your PayPal account.
+                                    Pay securely through PayPal. Your subscription
+                                    will be activated automatically after successful
+                                    payment verification.
                                 </p>
 
                                 <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 text-center">
@@ -527,24 +793,41 @@ function PaymentContent() {
                                     </p>
 
                                     <p className="mt-2 text-4xl font-bold text-indigo-600">
-                                        ${planPrice}
+                                        ${planPrice.toFixed(2)}
                                     </p>
 
                                     <p className="mt-1 text-sm text-gray-500">
-                                        {planName} Plan · Monthly
+                                        {planName} Plan
                                     </p>
                                 </div>
 
-                                <button
-                                    type="button"
-                                    disabled
-                                    className="mt-5 w-full rounded-xl bg-indigo-600 px-5 py-3.5 text-sm font-bold text-white opacity-50"
-                                >
-                                    Continue to PayPal
-                                </button>
+                                <div className="mt-6 rounded-2xl border border-blue-100 bg-white p-4">
+                                    {paypalLoading && (
+                                        <p className="mb-4 text-center text-sm text-gray-500">
+                                            Loading secure PayPal checkout...
+                                        </p>
+                                    )}
+
+                                    <div
+                                        ref={paypalContainerRef}
+                                        className="min-h-[45px]"
+                                    />
+                                </div>
+
+                                {paymentError && (
+                                    <p className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-600">
+                                        {paymentError}
+                                    </p>
+                                )}
+
+                                {paymentSuccess && (
+                                    <p className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-600">
+                                        {paymentSuccess}
+                                    </p>
+                                )}
 
                                 <p className="mt-3 text-center text-xs text-gray-500">
-                                    PayPal integration will be connected later.
+                                    Payments are securely processed by PayPal.
                                 </p>
                             </>
                         )}
@@ -696,7 +979,7 @@ function PaymentContent() {
                         </p>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* FOOTER */}
             <footer className="mt-12 border-t border-gray-200 bg-[#0b1224] px-6 py-8 text-white">
