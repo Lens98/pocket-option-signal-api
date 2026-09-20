@@ -6682,12 +6682,16 @@ async function showNewSubscriptionModal() {
                     id="newSubscriptionPlan"
                 >
 
-                    <option value="monthly">
-                        MONTHLY
+                    <option value="free">
+                        FREE
                     </option>
 
-                    <option value="yearly">
-                        YEARLY
+                    <option value="pro">
+                        PRO — $39.99 / 30 DAYS
+                    </option>
+
+                    <option value="elite">
+                        ELITE — $79.99 / 30 DAYS
                     </option>
 
                     <option value="lifetime">
@@ -7159,12 +7163,16 @@ async function showSubscriptionsPage() {
                             All Plans
                         </option>
 
-                        <option value="monthly">
-                            MONTHLY
+                        <option value="free">
+                            FREE
                         </option>
 
-                        <option value="yearly">
-                            YEARLY
+                        <option value="pro">
+                            PRO
+                        </option>
+
+                        <option value="elite">
+                            ELITE
                         </option>
 
                         <option value="lifetime">
@@ -7649,29 +7657,29 @@ function showSubscriptionDetailsModal(subscription) {
                 <select id="editSubscriptionPlan">
 
                     <option
-                        value="NONE"
-                        ${String(subscription.plan).toUpperCase() === "NONE" ? "selected" : ""}
+                        value="free"
+                        ${String(subscription.plan).toLowerCase() === "free" ? "selected" : ""}
                     >
-                        NONE
+                        FREE
                     </option>
 
                     <option
-                        value="MONTHLY"
-                        ${String(subscription.plan).toUpperCase() === "MONTHLY" ? "selected" : ""}
+                        value="pro"
+                        ${String(subscription.plan).toLowerCase() === "pro" ? "selected" : ""}
                     >
-                        MONTHLY
+                        PRO — $39.99 / 30 DAYS
                     </option>
 
                     <option
-                        value="YEARLY"
-                        ${String(subscription.plan).toUpperCase() === "YEARLY" ? "selected" : ""}
+                        value="elite"
+                        ${String(subscription.plan).toLowerCase() === "elite" ? "selected" : ""}
                     >
-                        YEARLY
+                        ELITE — $79.99 / 30 DAYS
                     </option>
 
                     <option
-                        value="LIFETIME"
-                        ${String(subscription.plan).toUpperCase() === "LIFETIME" ? "selected" : ""}
+                        value="lifetime"
+                        ${String(subscription.plan).toLowerCase() === "lifetime" ? "selected" : ""}
                     >
                         LIFETIME
                     </option>

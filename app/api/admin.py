@@ -830,13 +830,40 @@ def admin_update_subscription(
     updates = []
     values = []
 
-    for field in allowed_fields:
+    # Normalize plan values so the extension and API use one canonical form.
+    requested_plan = payload.get("plan")
+    plan = str(requested_plan).strip().lower() if requested_plan is not None else None
 
-        if field in payload:
+    if plan is not None:
+        if plan not in {"free", "pro", "elite", "lifetime"}:
+            raise HTTPException(status_code=400, detail="Invalid subscription plan.")
+        updates.append("plan = ?")
+        values.append(plan)
 
-            updates.append(f"{field} = ?")
+    if "status" in payload:
+        status = str(payload.get("status") or "").strip().lower()
+        if status not in {"active", "inactive", "cancelled", "expired", "pending"}:
+            raise HTTPException(status_code=400, detail="Invalid subscription status.")
+        updates.append("status = ?")
+        values.append(status)
 
-            values.append(payload[field])
+    if "started_at" in payload:
+        updates.append("started_at = ?")
+        values.append(payload["started_at"])
+
+    # Paid monthly plans always need a real expiration date. If the admin edits
+    # a Lifetime subscription to Pro/Elite and leaves the expiration blank,
+    # automatically start a fresh 30-day billing period now.
+    if plan in {"pro", "elite"} and not payload.get("expires_at"):
+        now_dt = datetime.now(timezone.utc)
+        updates.append("expires_at = ?")
+        values.append((now_dt + timedelta(days=30)).isoformat())
+    elif plan in {"free", "lifetime"}:
+        updates.append("expires_at = ?")
+        values.append(None)
+    elif "expires_at" in payload:
+        updates.append("expires_at = ?")
+        values.append(payload["expires_at"])
 
     if not updates:
         raise HTTPException(status_code=400, detail="No valid fields to update.")

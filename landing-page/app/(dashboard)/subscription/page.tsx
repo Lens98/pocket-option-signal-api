@@ -59,6 +59,19 @@ export default function SubscriptionPage() {
     }
 
     const isActive = subscription?.status === "active";
+    const plan = String(subscription?.plan || "").toLowerCase();
+
+    const formatDate = (value: string | null | undefined) => {
+        if (!value) return "—";
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
+            ? "—"
+            : date.toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+            });
+    };
 
     return (
         <main className="min-h-screen bg-[#050b18] text-white">
@@ -211,8 +224,7 @@ export default function SubscriptionPage() {
                                                 </p>
 
                                                 <p className="mt-2 text-lg font-bold">
-                                                    {subscription.started_at ||
-                                                        "—"}
+                                                    {formatDate(subscription.started_at)}
                                                 </p>
                                             </div>
 
@@ -222,8 +234,13 @@ export default function SubscriptionPage() {
                                                 </p>
 
                                                 <p className="mt-2 text-lg font-bold">
-                                                    {subscription.expires_at ||
-                                                        "—"}
+                                                    {
+                                                        plan === "lifetime"
+                                                            ? "No expiration"
+                                                            : plan === "free"
+                                                                ? "3 total trades"
+                                                                : formatDate(subscription.expires_at)
+                                                    }
                                                 </p>
                                             </div>
                                         </div>

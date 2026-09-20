@@ -65,6 +65,26 @@ def check_trade_limit(user_id):
     if status != "active":
         return False, "Subscription is not active."
 
+    # Free has no calendar expiration; it is limited to 3 total trades.
+    # Lifetime has no expiration.
+    # Pro/Elite are monthly and must have a future expiration date.
+    if plan in ("pro", "elite"):
+        expires_at = subscription["expires_at"]
+        if not expires_at:
+            return False, "Subscription expiration date is missing."
+
+        try:
+            expires_dt = datetime.fromisoformat(
+                str(expires_at).replace("Z", "+00:00")
+            )
+            if expires_dt.tzinfo is None:
+                expires_dt = expires_dt.replace(tzinfo=timezone.utc)
+        except (TypeError, ValueError):
+            return False, "Subscription expiration date is invalid."
+
+        if expires_dt <= datetime.now(timezone.utc):
+            return False, "Subscription has expired. Please renew your plan."
+
     # Admin/unlimited plan
     if plan in ("elite", "lifetime"):
         return True, "Unlimited trades."
