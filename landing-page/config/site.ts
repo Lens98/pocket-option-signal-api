@@ -283,9 +283,9 @@ export const siteConfig = {
       {
         heading: "Legal",
         links: [
-          { label: "Privacy", href: "#" },
-          { label: "Terms", href: "#" },
-          { label: "Risk Disclosure", href: "#" },
+          { label: "Privacy", href: "/privacy" },
+{ label: "Terms", href: "/terms" },
+{ label: "Risk Disclosure", href: "/risk-disclosure" },
         ],
       },
     ] satisfies FooterColumn[],
