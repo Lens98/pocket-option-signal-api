@@ -16,7 +16,7 @@ export default function AccountSettingsPage() {
         }
 
         fetch(
-            "https://pocket-option-signal-api-production.up.railway.app/auth/me",
+            "https://api.signalforgepro.app/auth/me",
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

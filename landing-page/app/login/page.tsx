@@ -74,7 +74,7 @@ export default function LoginPage() {
 
                                 try {
                                     const response = await fetch(
-                                        "https://pocket-option-signal-api-production.up.railway.app/auth/login",
+                                        "https://api.signalforgepro.app/auth/login",
                                         {
                                             method: "POST",
                                             headers: {
@@ -114,7 +114,7 @@ export default function LoginPage() {
                                     try {
                                         const subscriptionResponse =
                                             await fetch(
-                                                "https://pocket-option-signal-api-production.up.railway.app/payments/status",
+                                                "https://api.signalforgepro.app/payments/status",
                                                 {
                                                     headers: {
                                                         Authorization: `Bearer ${data.token}`,

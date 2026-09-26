@@ -100,7 +100,7 @@ function SignupForm() {
 
                                 try {
                                     const response = await fetch(
-                                        "https://pocket-option-signal-api-production.up.railway.app/auth/register",
+                                        "https://api.signalforgepro.app/auth/register",
                                         {
                                             method: "POST",
                                             headers: {

@@ -16,7 +16,7 @@ export default function SubscriptionPage() {
         }
 
         fetch(
-            "https://pocket-option-signal-api-production.up.railway.app/payments/status",
+            "https://api.signalforgepro.app/payments/status",
             {
                 headers: {
                     Authorization: `Bearer ${token}`,

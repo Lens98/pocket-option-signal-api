@@ -151,7 +151,7 @@ function PaymentContent() {
 
                             const apiUrl =
                                 process.env.NEXT_PUBLIC_API_URL ||
-                                "https://pocket-option-signal-api-production.up.railway.app";
+                                "https://api.signalforgepro.app";
 
                             const response =
                                 await fetch(
@@ -204,7 +204,7 @@ function PaymentContent() {
                                 const apiUrl =
                                     process.env
                                         .NEXT_PUBLIC_API_URL ||
-                                    "https://pocket-option-signal-api-production.up.railway.app";
+                                    "https://api.signalforgepro.app";
 
                                 const response =
                                     await fetch(
@@ -325,7 +325,7 @@ function PaymentContent() {
 
         try {
             const response = await fetch(
-                "https://pocket-option-signal-api-production.up.railway.app/payments/submit",
+                "https://api.signalforgepro.app/payments/submit",
                 {
                     method: "POST",
                     headers: {

@@ -18,7 +18,7 @@ export default function DashboardPage() {
         }
 
         fetch(
-            "https://pocket-option-signal-api-production.up.railway.app/auth/me",
+            "https://api.signalforgepro.app/auth/me",
             {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -36,7 +36,7 @@ export default function DashboardPage() {
                 setUser(data.user);
 
                 fetch(
-                    "https://pocket-option-signal-api-production.up.railway.app/payments/status",
+                    "https://api.signalforgepro.app/payments/status",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
