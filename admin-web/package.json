@@ -1,0 +1,19 @@
+{
+  "name": "admin-web",
+  "version": "1.0.0",
+  "description": "Pocket Option Signal API Admin Dashboard",
+  "main": "vite.config.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"cd .. && python -m uvicorn app.main:app --reload\"",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "vite": "^8.2.2"
+  }
+}
