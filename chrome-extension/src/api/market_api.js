@@ -1,10 +1,17 @@
-export function sendMarket(asset, timeframe, candles) {
+export function sendMarket(asset, timeframe, candles, options = {}) {
     return new Promise((resolve) => {
+        const mode = options.mode || "full";
+
+        const payloadCandles =
+            mode === "incremental"
+                ? candles.slice(-1)
+                : candles;
+
         const payload = {
             asset,
             timeframe: String(timeframe),
 
-            candles: candles.map((candle) => ({
+            candles: payloadCandles.map((candle) => ({
                 timestamp: String(candle.timestamp),
                 open: candle.open,
                 high: candle.high,
@@ -14,22 +21,33 @@ export function sendMarket(asset, timeframe, candles) {
             })),
         };
 
-        console.log("======================================");
-        console.log("📤 Sending Candle History");
-        console.log("Asset:", asset);
-        console.log("Timeframe:", timeframe);
-        console.log("Candles:", payload.candles.length);
-        console.log("======================================");
+        const history = candles.map((candle) => ({
+            timestamp: String(candle.timestamp),
+            open: candle.open,
+            high: candle.high,
+            low: candle.low,
+            close: candle.close,
+            volume: candle.volume ?? 0,
+        }));
+
+        console.log("Sending market data:", {
+            asset,
+            mode,
+            candlesSent: payload.candles.length,
+            localHistory: history.length,
+        });
 
         chrome.runtime.sendMessage(
             {
                 type: "SEND_MARKET",
                 payload,
+                history,
+                mode,
             },
             (response) => {
                 if (chrome.runtime.lastError) {
                     console.error(
-                        "❌ Background communication error:",
+                        "Background communication error:",
                         chrome.runtime.lastError.message
                     );
 
@@ -37,8 +55,7 @@ export function sendMarket(asset, timeframe, candles) {
                     return;
                 }
 
-                console.log("📥 Market API response:", response);
-
+                console.log("Market API response:", response);
                 resolve(response || null);
             }
         );

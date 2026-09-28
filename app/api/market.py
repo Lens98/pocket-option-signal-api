@@ -6,6 +6,7 @@ from app.api.auth import get_authenticated_user
 from app.services.auth_dependency import require_active_subscription
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
+from fastapi.responses import JSONResponse
 
 from app.storage.shared import (
     market_storage,
@@ -30,6 +31,25 @@ class AnalyzeMarketRequest(BaseModel):
     analysis_requested_at: int | None = None
 
     analysis_requested_at_iso: str | None = None
+
+
+@router.post("/market/update/incremental")
+def update_market_incremental(
+    data: MarketUpdate,
+    current_user: dict = Depends(require_active_subscription),
+):
+    user_id = current_user["id"]
+
+    # The market history is stored in memory. If it is empty,
+    # require a full sync before generating another signal.
+    if market_storage.size(user_id, data.asset) == 0:
+        return JSONResponse(
+            status_code=409,
+            content={"status": "needs_full_sync"},
+        )
+
+    # Reuse the existing update and signal-generation path.
+    return update_market(data, current_user)
 
 
 # ========================================

@@ -7,7 +7,7 @@ import OverlayManager from "./overlay/OverlayManager";
 import "./overlay/window.css";
 
 console.log("✅ Content script loaded");
-
+const marketSyncedAssets = new Set();
 const manager = new MarketManager();
 const history = new CandleHistory(300);
 
@@ -601,12 +601,20 @@ window.addEventListener(
 
         try {
 
-            const response =
-                await sendMarket(
-                    activeAsset,
-                    candle.timeframe,
-                    candles
-                );
+            const mode = marketSyncedAssets.has(activeAsset)
+    ? "incremental"
+    : "full";
+
+const response = await sendMarket(
+    activeAsset,
+    candle.timeframe,
+    candles,
+    { mode }
+);
+
+if (response?.ok) {
+    marketSyncedAssets.add(activeAsset);
+}
 
 
             console.log(

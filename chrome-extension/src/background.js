@@ -405,148 +405,120 @@ chrome.runtime.onMessage.addListener(
         // ========================================
         // SEND MARKET DATA TO RAILWAY
         // ========================================
-                if (message.type === "SEND_MARKET") {
+        if (message.type === "SEND_MARKET") {
+    console.log("Sending market data to API...");
 
-            console.log(
-                "📡 Sending market data to Railway..."
-            );
+    try {
+        const payload = message.payload;
+        const history = message.history;
+
+        if (payload?.asset) {
+            state.marketAsset = payload.asset;
+        }
+
+        // Preserve the full local history in extension state.
+        if (Array.isArray(history)) {
+            state.marketCandles = history;
+        } else if (Array.isArray(payload?.candles)) {
+            state.marketCandles = payload.candles;
+        }
+
+        await saveState();
+
+        const authHeaders = await getAuthHeaders();
+
+        if (!authHeaders) {
+            sendResponse({
+                ok: false,
+                error: "User not logged in",
+            });
+            return true;
+        }
+
+        const mode = message.mode || "full";
+
+        const postMarketData = async (url, body) => {
+            const response = await fetch(`${API_URL}${url}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...authHeaders,
+                },
+                body: JSON.stringify(body),
+            });
+
+            const text = await response.text();
+
+            let result;
 
             try {
+                result = JSON.parse(text);
+            } catch {
+                result = { raw: text };
+            }
 
-                if (message.payload) {
+            return {
+                response,
+                result,
+            };
+        };
 
-                    if (message.payload.asset) {
+        let endpoint =
+            mode === "incremental"
+                ? "/market/update/incremental"
+                : "/market/update";
 
-                        state.marketAsset =
-                            message.payload.asset;
+        let requestPayload = payload;
 
-                    }
+        let { response, result } = await postMarketData(
+            endpoint,
+            requestPayload
+        );
 
-                    if (
-                        Array.isArray(
-                            message.payload.candles
-                        )
-                    ) {
+        // The server may have restarted and lost its in-memory history.
+        // Resend the full local history before signal generation resumes.
+        if (
+            mode === "incremental" &&
+            response.status === 409 &&
+            result?.status === "needs_full_sync" &&
+            Array.isArray(history) &&
+            history.length > 0
+        ) {
+            console.log("Server requests full market history sync.");
 
-                        state.marketCandles =
-                            message.payload.candles;
+            endpoint = "/market/update";
 
-                    }
+            requestPayload = {
+                asset: payload.asset,
+                timeframe: payload.timeframe,
+                candles: history,
+            };
 
-                    await saveState();
+            ({ response, result } = await postMarketData(
+                endpoint,
+                requestPayload
+            ));
+        }
 
-                }
+        console.log("Market API status:", response.status);
+        console.log("Market API response:", result);
 
-                console.log(
-                    "Asset:",
-                    message.payload?.asset
-                );
+        sendResponse({
+            ok: response.ok,
+            status: response.status,
+            result,
+        });
+    } catch (error) {
+        console.error("Market update failed:", error);
 
-                console.log(
-                    "Candles:",
-                    message.payload?.candles?.length
-                );
-
-                const authHeaders =
-    await getAuthHeaders();
-
-if (!authHeaders) {
-
-    console.log(
-        "⏭️ Market update skipped: user not logged in"
-    );
-
-    sendResponse({
-        ok: false,
-        error: "User not logged in"
-    });
+        sendResponse({
+            ok: false,
+            error: error.message,
+        });
+    }
 
     return true;
 }
-
-const response =
-    await fetch(
-        `${API_URL}/market/update`,
-        {
-            method: "POST",
-
-            headers: {
-                "Content-Type":
-                    "application/json",
-
-                ...authHeaders
-            },
-
-            body: JSON.stringify(
-                message.payload
-            )
-        }
-    );
-
-                const text =
-                    await response.text();
-
-                let result;
-
-                try {
-
-                    result =
-                        JSON.parse(text);
-
-                }
-
-                catch {
-
-                    result = {
-                        raw: text
-                    };
-
-                }
-
-                console.log(
-                    "📡 MARKET UPDATE STATUS:",
-                    response.status
-                );
-
-                console.log(
-                    "📡 MARKET UPDATE RESPONSE:",
-                    result
-                );
-
-                sendResponse({
-
-                    ok: response.ok,
-
-                    status:
-                        response.status,
-
-                    result
-
-                });
-
-            }
-
-            catch (error) {
-
-                console.error(
-                    "❌ MARKET UPDATE FAILED:",
-                    error
-                );
-
-                sendResponse({
-
-                    ok: false,
-
-                    error:
-                        error.message
-
-                });
-
-            }
-
-            return true;
-
-        }
                  // ========================================
         // CAPTURE MARKET SCREENSHOT
         // ========================================
