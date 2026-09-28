@@ -2,6 +2,7 @@ import os
 import sqlite3
 import threading
 from pathlib import Path
+from contextlib import contextmanager
 
 
 class Database:
@@ -377,6 +378,20 @@ class Database:
     # ----------------------------------------
     # Execute
     # ----------------------------------------
+    @contextmanager
+    def transaction(self):
+        with self.db_lock:
+            cursor = self.connection.cursor()
+
+            try:
+                cursor.execute("BEGIN IMMEDIATE")
+                yield cursor
+                self.connection.commit()
+            except Exception:
+                self.connection.rollback()
+                raise
+            finally:
+                cursor.close()
 
     def execute(self, query, params=()):
         with self.db_lock:

@@ -10,7 +10,6 @@ from pydantic import BaseModel
 from app.database.database import database
 from app.services.auth_dependency import get_current_user
 
-
 router = APIRouter(prefix="/payments", tags=["Payments"])
 
 
@@ -37,6 +36,14 @@ class PayPalCreateOrder(BaseModel):
 
 class PayPalCaptureOrder(BaseModel):
     order_id: str
+
+
+class StripeCreateCheckout(BaseModel):
+    plan: str
+
+
+class StripeConfirmCheckout(BaseModel):
+    session_id: str
 
 
 def _paypal_base_url() -> str:
@@ -230,6 +237,348 @@ def _activate_subscription(user_id: str, plan: str):
     return subscription_id
 
 
+def _complete_paid_payment(payment_id: str, user_id: str, plan: str):
+    now = datetime.now(timezone.utc)
+    now_iso = now.isoformat()
+
+    if plan == "lifetime":
+        expires_at = None
+    elif plan in {"pro", "elite"}:
+        expires_at = (now + timedelta(days=30)).isoformat()
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported subscription plan.",
+        )
+
+    with database.transaction() as cursor:
+        payment = cursor.execute(
+            """
+            SELECT id, user_id, status, subscription_id
+            FROM payments
+            WHERE id = ? AND user_id = ?
+            LIMIT 1
+            """,
+            (payment_id, user_id),
+        ).fetchone()
+
+        if not payment:
+            raise HTTPException(
+                status_code=404,
+                detail="Payment was not found.",
+            )
+
+        if payment["status"] == "paid":
+            if payment["subscription_id"]:
+                return payment["subscription_id"]
+
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "This payment is marked paid but has no subscription link. "
+                    "Manual reconciliation is required."
+                ),
+            )
+
+        if payment["status"] != "pending":
+            raise HTTPException(
+                status_code=409,
+                detail="Payment is not in a completable state.",
+            )
+
+        subscription = cursor.execute(
+            """
+            SELECT id
+            FROM subscriptions
+            WHERE user_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (user_id,),
+        ).fetchone()
+
+        if subscription:
+            subscription_id = subscription["id"]
+
+            cursor.execute(
+                """
+                UPDATE subscriptions
+                SET
+                    plan = ?,
+                    status = 'active',
+                    started_at = ?,
+                    expires_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+                """,
+                (
+                    plan,
+                    now_iso,
+                    expires_at,
+                    now_iso,
+                    subscription_id,
+                ),
+            )
+        else:
+            subscription_id = str(uuid.uuid4())
+
+            cursor.execute(
+                """
+                INSERT INTO subscriptions (
+                    id,
+                    user_id,
+                    plan,
+                    status,
+                    started_at,
+                    expires_at,
+                    created_at,
+                    updated_at
+                )
+                VALUES (?, ?, ?, 'active', ?, ?, ?, ?)
+                """,
+                (
+                    subscription_id,
+                    user_id,
+                    plan,
+                    now_iso,
+                    expires_at,
+                    now_iso,
+                    now_iso,
+                ),
+            )
+
+        cursor.execute(
+            """
+            UPDATE payments
+            SET
+                status = 'paid',
+                subscription_id = ?,
+                paid_at = ?,
+                updated_at = ?
+            WHERE id = ?
+              AND user_id = ?
+              AND status = 'pending'
+            """,
+            (
+                subscription_id,
+                now_iso,
+                now_iso,
+                payment_id,
+                user_id,
+            ),
+        )
+
+        if cursor.rowcount != 1:
+            raise HTTPException(
+                status_code=409,
+                detail="Payment completion could not be confirmed.",
+            )
+
+    return subscription_id
+
+
+def _stripe_secret_key() -> str:
+    key = os.getenv("STRIPE_SECRET_KEY", "").strip()
+    if not key:
+        raise HTTPException(
+            status_code=503,
+            detail="Stripe is not configured on the server.",
+        )
+    return key
+
+
+def _stripe_request(method: str, path: str, data: dict | None = None):
+    try:
+        response = requests.request(
+            method=method,
+            url=f"https://api.stripe.com/v1{path}",
+            headers={
+                "Authorization": f"Bearer {_stripe_secret_key()}",
+            },
+            data=data,
+            timeout=30,
+        )
+    except requests.RequestException:
+        raise HTTPException(
+            status_code=502,
+            detail="Unable to connect to Stripe.",
+        )
+
+    try:
+        result = response.json()
+    except ValueError:
+        result = {}
+
+    if response.status_code >= 400:
+        error = result.get("error", {}).get("message")
+        raise HTTPException(
+            status_code=502,
+            detail=error or "Stripe request failed.",
+        )
+
+    return result
+
+
+@router.post("/stripe/create-checkout")
+def stripe_create_checkout(
+    payment: StripeCreateCheckout,
+    user: dict = Depends(get_current_user),
+):
+    plan = payment.plan.strip().lower()
+
+    if plan not in PAYPAL_PLAN_PRICES:
+        raise HTTPException(status_code=400, detail="Invalid subscription plan.")
+
+    amount = PAYPAL_PLAN_PRICES[plan]
+    payment_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+
+    session = _stripe_request(
+        "POST",
+        "/checkout/sessions",
+        {
+            "mode": "payment",
+            "success_url": (
+                "https://signalforgepro.app/payment"
+                f"?plan={plan}&session_id={{CHECKOUT_SESSION_ID}}"
+            ),
+            "cancel_url": (
+                f"https://signalforgepro.app/payment?plan={plan}&payment_cancelled=1"
+            ),
+            "client_reference_id": str(user["id"]),
+            "metadata[payment_id]": payment_id,
+            "metadata[user_id]": str(user["id"]),
+            "metadata[plan]": plan,
+            "line_items[0][quantity]": "1",
+            "line_items[0][price_data][currency]": "usd",
+            "line_items[0][price_data][unit_amount]": str(round(amount * 100)),
+            "line_items[0][price_data][product_data][name]": (
+                f"SignalForge AI {plan.title()} subscription"
+            ),
+        },
+    )
+
+    session_id = session.get("id")
+    checkout_url = session.get("url")
+
+    if not session_id or not checkout_url:
+        raise HTTPException(
+            status_code=502,
+            detail="Stripe did not return a checkout URL.",
+        )
+
+    subscription = _get_current_subscription(user["id"])
+    subscription_id = subscription["id"] if subscription else None
+
+    database.execute(
+        """
+        INSERT INTO payments (
+            id, user_id, subscription_id, amount, currency,
+            payment_method, crypto_currency, network, transaction_id,
+            wallet_address, status, description, created_at, updated_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            payment_id,
+            user["id"],
+            subscription_id,
+            amount,
+            "USD",
+            "stripe",
+            None,
+            None,
+            session_id,
+            None,
+            "pending",
+            f"{plan} subscription",
+            now,
+            now,
+        ),
+    )
+
+    return {
+        "checkout_url": checkout_url,
+        "session_id": session_id,
+        "plan": plan,
+    }
+
+
+@router.post("/stripe/confirm-checkout")
+def stripe_confirm_checkout(
+    payment: StripeConfirmCheckout,
+    user: dict = Depends(get_current_user),
+):
+    session_id = payment.session_id.strip()
+
+    if not session_id:
+        raise HTTPException(status_code=400, detail="Stripe session ID is required.")
+
+    local_payment = database.fetch_one(
+        """
+        SELECT id, user_id, amount, currency, status, description, transaction_id, subscription_id
+        FROM payments
+        WHERE transaction_id = ?
+          AND user_id = ?
+          AND payment_method = 'stripe'
+        LIMIT 1
+        """,
+        (session_id, user["id"]),
+    )
+
+    if not local_payment:
+        raise HTTPException(status_code=404, detail="Stripe payment was not found.")
+
+    if local_payment["status"] == "paid" and local_payment["subscription_id"]:
+        return {
+            "status": "paid",
+            "message": "Payment was already completed.",
+        }
+
+    session = _stripe_request("GET", f"/checkout/sessions/{session_id}")
+
+    metadata = session.get("metadata") or {}
+    description = (local_payment["description"] or "").lower()
+
+    if description.startswith("pro "):
+        plan = "pro"
+    elif description.startswith("elite "):
+        plan = "elite"
+    elif description.startswith("lifetime "):
+        plan = "lifetime"
+    else:
+        raise HTTPException(status_code=400, detail="Unable to determine the plan.")
+
+    expected_cents = round(PAYPAL_PLAN_PRICES[plan] * 100)
+
+    if (
+        session.get("payment_status") != "paid"
+        or session.get("status") != "complete"
+        or session.get("mode") != "payment"
+        or str(metadata.get("user_id")) != str(user["id"])
+        or metadata.get("payment_id") != local_payment["id"]
+        or metadata.get("plan") != plan
+        or session.get("currency") != "usd"
+        or session.get("amount_total") != expected_cents
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Stripe payment could not be verified.",
+        )
+
+    _complete_paid_payment(
+        local_payment["id"],
+        user["id"],
+        plan,
+    )
+
+    return {
+        "status": "paid",
+        "message": "Stripe payment completed successfully.",
+        "plan": plan,
+    }
+
+
 @router.get("/plans")
 def get_plans():
     return {
@@ -414,8 +763,6 @@ def paypal_create_order(
             detail="PayPal did not return an order ID.",
         )
 
-    now = datetime.now(timezone.utc).isoformat()
-
     subscription = _get_current_subscription(user["id"])
     subscription_id = subscription["id"] if subscription else None
 
@@ -505,13 +852,21 @@ def paypal_capture_order(
             status_code=404,
             detail="PayPal payment was not found.",
         )
-
     if local_payment["status"] == "paid":
-        return {
-            "message": "Payment was already completed.",
-            "status": "paid",
-            "order_id": order_id,
-        }
+        if local_payment["subscription_id"]:
+            return {
+                "message": "Payment was already completed.",
+                "status": "paid",
+                "order_id": order_id,
+            }
+
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "This payment is marked paid but has no subscription link. "
+                "Manual reconciliation is required."
+            ),
+        )
 
     description = (local_payment["description"] or "").lower()
 
@@ -549,9 +904,7 @@ def paypal_capture_order(
                 capture = captures[0]
                 capture_status = capture.get("status")
                 capture_amount = capture.get("amount", {}).get("value")
-                capture_currency = capture.get("amount", {}).get(
-                    "currency_code"
-                )
+                capture_currency = capture.get("amount", {}).get("currency_code")
         except (KeyError, IndexError, TypeError):
             pass
 
@@ -574,37 +927,10 @@ def paypal_capture_order(
                     detail="PayPal payment amount does not match the selected plan.",
                 )
 
-        now = datetime.now(timezone.utc).isoformat()
-
-        database.execute(
-            """
-            UPDATE payments
-            SET
-                status = 'paid',
-                updated_at = ?
-            WHERE id = ?
-            """,
-            (now, local_payment["id"]),
-        )
-
-        subscription_id = _activate_subscription(
+        _complete_paid_payment(
+            local_payment["id"],
             user["id"],
             plan,
-        )
-
-        database.execute(
-            """
-            UPDATE payments
-            SET
-                subscription_id = ?,
-                updated_at = ?
-            WHERE id = ?
-            """,
-            (
-                subscription_id,
-                now,
-                local_payment["id"],
-            ),
         )
 
         return {
@@ -631,16 +957,11 @@ def paypal_capture_order(
     capture_currency = None
 
     try:
-        capture = (
-            captured["purchase_units"][0]
-            ["payments"]["captures"][0]
-        )
+        capture = captured["purchase_units"][0]["payments"]["captures"][0]
 
         capture_status = capture.get("status")
         capture_amount = capture.get("amount", {}).get("value")
-        capture_currency = capture.get("amount", {}).get(
-            "currency_code"
-        )
+        capture_currency = capture.get("amount", {}).get("currency_code")
     except (KeyError, IndexError, TypeError):
         pass
 
@@ -668,37 +989,10 @@ def paypal_capture_order(
             detail="PayPal payment amount does not match the selected plan.",
         )
 
-    now = datetime.now(timezone.utc).isoformat()
-
-    database.execute(
-        """
-        UPDATE payments
-        SET
-            status = 'paid',
-            updated_at = ?
-        WHERE id = ?
-        """,
-        (now, local_payment["id"]),
-    )
-
-    subscription_id = _activate_subscription(
+    _complete_paid_payment(
+        local_payment["id"],
         user["id"],
         plan,
-    )
-
-    database.execute(
-        """
-        UPDATE payments
-        SET
-            subscription_id = ?,
-            updated_at = ?
-        WHERE id = ?
-        """,
-        (
-            subscription_id,
-            now,
-            local_payment["id"],
-        ),
     )
 
     return {
