@@ -10,7 +10,7 @@
         "tabs"
     ],
     "host_permissions": [
-        "https://pocket-option-signal-api-production.up.railway.app/*",
+        "https://api.signalforgepro.app/*",
         "https://pocketoption.com/*",
         "https://*.pocketoption.com/*"
     ],

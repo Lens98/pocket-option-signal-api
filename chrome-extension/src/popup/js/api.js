@@ -1,5 +1,5 @@
 const API =
-    "https://pocket-option-signal-api-production.up.railway.app";
+    "https://api.signalforgepro.app";
 
 async function getAuthHeaders() {
     const result = await chrome.storage.local.get(

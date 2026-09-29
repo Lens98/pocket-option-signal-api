@@ -1,5 +1,5 @@
 
-const API = "https://pocket-option-signal-api-production.up.railway.app";
+const API = "https://api.signalforgepro.app";
 const TOKEN_KEY = "pocketOptionAuthToken";
 const USER_KEY = "pocketOptionUser";
 

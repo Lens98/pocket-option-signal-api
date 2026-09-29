@@ -3,7 +3,7 @@
 // Background Engine
 // ========================================
 const API_URL =
-    "https://pocket-option-signal-api-production.up.railway.app";
+    "https://api.signalforgepro.app";
 let subscriptionActive = false;
 let subscriptionCheckInProgress = false;
 async function checkSubscription() {

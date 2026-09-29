@@ -32,6 +32,83 @@ function PaymentContent() {
     const [paymentSuccess, setPaymentSuccess] = useState("");
     const paypalContainerRef = useRef<HTMLDivElement>(null);
     const [paypalLoading, setPaypalLoading] = useState(false);
+    useEffect(() => {
+        const sessionId = searchParams.get("session_id");
+
+        if (!sessionId) return;
+
+        let cancelled = false;
+
+        const confirmStripePayment = async () => {
+            const token = localStorage.getItem("signalForgeAuthToken");
+
+            if (!token) {
+                window.location.href = "/login";
+                return;
+            }
+
+            setSubmitting(true);
+            setPaymentError("");
+
+            try {
+                const apiUrl =
+                    process.env.NEXT_PUBLIC_API_URL ||
+                    "https://api.signalforgepro.app";
+
+                const response = await fetch(
+                    `${apiUrl}/payments/stripe/confirm-checkout`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ session_id: sessionId }),
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        data.detail || "Stripe payment verification failed."
+                    );
+                }
+
+                if (cancelled) return;
+
+                setPaymentSuccess(
+                    "Payment successful! Your subscription is now active."
+                );
+
+                window.history.replaceState(
+                    {},
+                    "",
+                    `/payment?plan=${encodeURIComponent(plan || searchParams.get("plan") || "")}`
+                );
+
+                window.setTimeout(() => {
+                    window.location.href = "/dashboard";
+                }, 1500);
+            } catch (error) {
+                if (!cancelled) {
+                    setPaymentError(
+                        error instanceof Error
+                            ? error.message
+                            : "Unable to verify Stripe payment."
+                    );
+                }
+            } finally {
+                if (!cancelled) setSubmitting(false);
+            }
+        };
+
+        confirmStripePayment();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [searchParams, plan]);
 
     useEffect(() => {
         const urlPlan = searchParams.get("plan");
@@ -294,6 +371,62 @@ function PaymentContent() {
             }
         };
     }, [paymentMethod, plan]);
+
+    const startStripeCheckout = async () => {
+        setPaymentError("");
+        setPaymentSuccess("");
+
+        if (!plan || plan === "free") {
+            setPaymentError("Please select a paid subscription plan.");
+            return;
+        }
+
+        const token = localStorage.getItem("signalForgeAuthToken");
+
+        if (!token) {
+            window.location.href = "/login";
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            const apiUrl =
+                process.env.NEXT_PUBLIC_API_URL ||
+                "https://api.signalforgepro.app";
+
+            const response = await fetch(
+                `${apiUrl}/payments/stripe/create-checkout`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ plan }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.detail || "Unable to start Stripe checkout.");
+            }
+
+            if (!data.checkout_url) {
+                throw new Error("Stripe did not return a checkout URL.");
+            }
+
+            window.location.assign(data.checkout_url);
+        } catch (error) {
+            setPaymentError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to start Stripe checkout."
+            );
+            setSubmitting(false);
+        }
+    };
 
     const submitManualPayment = async () => {
         setPaymentError("");
@@ -750,15 +883,15 @@ function PaymentContent() {
 
                                 <button
                                     type="button"
-                                    disabled
-                                    className="mt-5 w-full rounded-xl bg-indigo-600 px-5 py-3.5 text-sm font-bold text-white opacity-50"
+                                    onClick={startStripeCheckout}
+                                    disabled={submitting || !plan || plan === "free"}
+                                    className="mt-5 w-full rounded-xl bg-indigo-600 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    Continue to Stripe
+                                    {submitting ? "Redirecting to Stripe..." : "Continue to Stripe"}
                                 </button>
 
                                 <p className="mt-3 text-center text-xs text-gray-500">
-                                    Stripe integration will be connected when
-                                    your Stripe account is ready.
+                                    Secure checkout hosted by Stripe. Your subscription activates after payment verification.
                                 </p>
                             </>
                         )}
