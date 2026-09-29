@@ -49,28 +49,34 @@ async function checkSubscription(user) {
 
     try {
         const data = await getPaymentStatus();
+        const subscription = data?.subscription;
 
         console.log("PAYMENT STATUS RESPONSE:", JSON.stringify(data));
-        console.log("Subscription:", data?.subscription);
-        console.log("Plan:", data?.subscription?.plan);
-        console.log("Status:", data?.subscription?.status);
+        console.log("Subscription:", subscription);
+        console.log("Plan:", subscription?.plan);
+        console.log("Status:", subscription?.status);
 
-        if (
-            data?.subscription?.status === "active" &&
-            data?.subscription?.plan?.toLowerCase() === "lifetime"
-        ) {
-            console.log("LIFETIME SUBSCRIPTION — STARTING DASHBOARD");
+        const plan = String(subscription?.plan || "").toLowerCase();
+        const status = String(subscription?.status || "").toLowerCase();
+
+        const allowedPlans = ["free", "pro", "elite", "lifetime"];
+
+        if (status === "active" && allowedPlans.includes(plan)) {
+            console.log(
+                `ACTIVE ${plan.toUpperCase()} SUBSCRIPTION — STARTING DASHBOARD`
+            );
+
             startDashboard(user);
             return;
         }
 
-        console.log("NO ACTIVE LIFETIME SUBSCRIPTION");
-
-        alert("An active Lifetime subscription is required to use SignalForge AI.");
+        console.log("NO VALID ACTIVE SUBSCRIPTION");
+        alert(
+            "Your subscription is inactive or unavailable. Please check your plan or contact support."
+        );
 
     } catch (error) {
         console.error("SUBSCRIPTION CHECK FAILED:", error);
-
         alert("Unable to verify your subscription. Please try again.");
     }
 }
