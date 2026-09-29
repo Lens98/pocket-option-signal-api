@@ -12,7 +12,7 @@ function showLogin() {
     app.innerHTML = `
         <div class="login-page">
             <div class="login-card">
-                <div class="login-logo">Ã°Å¸Â¤â€“</div>
+                <div class="login-logo">✦</div>
 
                 <h1>Pocket Option AI PRO</h1>
 
@@ -240,7 +240,7 @@ function showDashboard(user) {
                 <div class="brand">
 
                     <div class="brand-mark">
-                        Ã¢â€”Ë†
+                        ◆
                     </div>
 
                     <div class="brand-copy">
@@ -269,7 +269,7 @@ function showDashboard(user) {
                         class="nav-item active"
                         data-page="dashboard"
                     >
-                        <span>Ã¢â€“Â¦</span>
+                        <span>▦</span>
                         Dashboard
                     </button>
 
@@ -278,7 +278,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="users"
                     >
-                        <span>Ã¢â„¢â„¢</span>
+                        <span>♙</span>
                         Users
                     </button>
 
@@ -287,7 +287,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="trades"
                     >
-                        <span>Ã¢â€“Â¤</span>
+                        <span>⇄</span>
                         Trades
                     </button>
 
@@ -296,7 +296,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="performance"
                     >
-                        <span>Ã¢Å’Â</span>
+                        <span>⚙</span>
                         Performance
                     </button>
 
@@ -305,7 +305,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="assets"
                     >
-                        <span>Ã¢â€”â€°</span>
+                        <span>◈</span>
                         Assets
                     </button>
 
@@ -314,7 +314,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="signals"
                     >
-                        <span>Ã¢Å“Â¦</span>
+                        <span>✦</span>
                         Signals
                     </button>
 
@@ -323,7 +323,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="subscriptions"
                     >
-                        <span>Ã¢â€“Â£</span>
+                        <span>▣</span>
                         Subscriptions
                     </button>
 
@@ -332,7 +332,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="coupons"
                     >
-                        <span>Ã¢â€”â€¡</span>
+                        <span>◇</span>
                         Coupons
                     </button>
 
@@ -350,7 +350,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="reports"
                     >
-                        <span>Ã¢â€“Â¥</span>
+                        <span>▤</span>
                         Reports
                     </button>
 
@@ -368,7 +368,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="settings"
                     >
-                        <span>Ã¢Å¡â„¢</span>
+                        <span>⚙</span>
                         Settings
                     </button>
 
@@ -377,7 +377,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="admins"
                     >
-                        <span>Ã¢â„¢Å¸</span>
+                        <span>♟</span>
                         Admins
                     </button>
 
@@ -386,7 +386,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="logs"
                     >
-                        <span>Ã¢â€°Â¡</span>
+                        <span>≡</span>
                         Logs
                     </button>
 
@@ -395,7 +395,7 @@ function showDashboard(user) {
                         class="nav-item"
                         data-page="api-keys"
                     >
-                        <span>Ã¢Å’Ëœ</span>
+                        <span>⌘</span>
                         API Keys
                     </button>
                 </nav>
@@ -405,7 +405,7 @@ function showDashboard(user) {
                     id="logoutButton"
                     class="logout-nav"
                 >
-                    <span>Ã¢â€ Âª</span>
+                    <span>• ª</span>
                     Logout
                 </button>
 
@@ -426,7 +426,7 @@ function showDashboard(user) {
                     <div class="topbar-search">
 
                         <span>
-                            Ã¢Å’â€¢
+                            ⌕
                         </span>
 
                         <input
@@ -445,7 +445,7 @@ function showDashboard(user) {
                             title="Notifications"
                         >
 
-                            Ã¢â„¢Â§
+                            ♧
 
                             <span class="notification-dot">
                                 3
@@ -477,7 +477,7 @@ function showDashboard(user) {
 
 
                             <span class="profile-chevron">
-                                Ã¢Å’â€ž
+                                ⌄
                             </span>
 
                         </div>
@@ -517,7 +517,7 @@ function showDashboard(user) {
                         >
 
                             <span>
-                                Ã¢â€“Â£
+                                ▣
                             </span>
 
                             <span>
@@ -525,7 +525,7 @@ function showDashboard(user) {
                             </span>
 
                             <span>
-                                Ã¢Å’â€ž
+                                ⌄
                             </span>
 
                         </button>
@@ -543,7 +543,7 @@ function showDashboard(user) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon purple">
-                                Ã¢â„¢â„¢
+                                ♙
                             </div>
 
                             <div class="kpi-label">
@@ -554,7 +554,7 @@ function showDashboard(user) {
                                 id="totalUsers"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -569,7 +569,7 @@ function showDashboard(user) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon blue">
-                                Ã¢â€“Â¥
+                                ▤
                             </div>
 
                             <div class="kpi-label">
@@ -580,7 +580,7 @@ function showDashboard(user) {
                                 id="totalTrades"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -595,7 +595,7 @@ function showDashboard(user) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon green">
-                                Ã¢â€ â€”
+                                • —
                             </div>
 
                             <div class="kpi-label">
@@ -606,7 +606,7 @@ function showDashboard(user) {
                                 id="winRate"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -634,7 +634,7 @@ function showDashboard(user) {
     id="dashboardTotalProfit"
     class="kpi-value"
 >
-    Ã¢â‚¬â€
+    —
 </div>
 
                             <div class="kpi-note">
@@ -651,7 +651,7 @@ function showDashboard(user) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon red">
-                                Ã¢â€ Ëœ
+                                • Ëœ
                             </div>
 
                             <div class="kpi-label">
@@ -662,7 +662,7 @@ function showDashboard(user) {
     id="dashboardTotalLoss"
     class="kpi-value"
 >
-    Ã¢â‚¬â€
+    —
 </div>
 
                             <div class="kpi-note">
@@ -678,7 +678,7 @@ function showDashboard(user) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon violet">
-                                Ã¢â€“Â£
+                                ▣
                             </div>
 
                             <div class="kpi-label">
@@ -689,7 +689,7 @@ function showDashboard(user) {
     id="dashboardNetProfit"
     class="kpi-value"
 >
-    Ã¢â‚¬â€
+    —
 </div>
 
                             <div class="kpi-note">
@@ -732,7 +732,7 @@ function showDashboard(user) {
 
 
                                 <button class="panel-select">
-                                    Last 7 Days Ã¢Å’â€ž
+                                    Last 7 Days ⌄
                                 </button>
 
                             </div>
@@ -918,7 +918,7 @@ function showDashboard(user) {
                                         <strong
                                             id="assetTotal"
                                         >
-                                            Ã¢â‚¬â€
+                                            —
                                         </strong>
 
                                         <span>
@@ -955,7 +955,7 @@ function showDashboard(user) {
                                         <strong
                                             id="assetTrades"
                                         >
-                                            Ã¢â‚¬â€
+                                            —
                                         </strong>
 
                                     </div>
@@ -1250,7 +1250,7 @@ function showDashboard(user) {
                         <div class="summary-item">
 
                             <div class="summary-icon blue">
-                                Ã¢â„¢â„¢
+                                ♙
                             </div>
 
                             <div>
@@ -1262,7 +1262,7 @@ function showDashboard(user) {
                                 <strong
                                     id="summaryUsers"
                                 >
-                                    Ã¢â‚¬â€
+                                    —
                                 </strong>
 
                             </div>
@@ -1273,7 +1273,7 @@ function showDashboard(user) {
                         <div class="summary-item">
 
                             <div class="summary-icon green">
-                                Ã¢Å“â€œ
+                                ✓
                             </div>
 
                             <div>
@@ -1285,7 +1285,7 @@ function showDashboard(user) {
                                 <strong
                                     id="summaryTrades"
                                 >
-                                    Ã¢â‚¬â€
+                                    —
                                 </strong>
 
                             </div>
@@ -1296,7 +1296,7 @@ function showDashboard(user) {
                         <div class="summary-item">
 
                             <div class="summary-icon gold">
-                                Ã°Å¸Ââ€ 
+                                • 
                             </div>
 
                             <div>
@@ -1308,7 +1308,7 @@ function showDashboard(user) {
                                 <strong
                                     id="summaryWinRate"
                                 >
-                                    Ã¢â‚¬â€
+                                    —
                                 </strong>
 
                             </div>
@@ -1319,7 +1319,7 @@ function showDashboard(user) {
                         <div class="summary-item">
 
                             <div class="summary-icon violet">
-                                Ã¢Å“Â¦
+                                ✦
                             </div>
 
                             <div>
@@ -1448,9 +1448,9 @@ function renderDashboardRecentTrades() {
     table.innerHTML = recent.map(trade => `
         <tr>
             <td>${escapeHtml(shortenId(trade.id))}</td>
-            <td>${escapeHtml(trade.asset || "Ã¢â‚¬â€")}</td>
-            <td>${escapeHtml(trade.action || "Ã¢â‚¬â€")}</td>
-            <td>${escapeHtml(trade.result || trade.status || "Ã¢â‚¬â€")}</td>
+            <td>${escapeHtml(trade.asset || "—")}</td>
+            <td>${escapeHtml(trade.action || "—")}</td>
+            <td>${escapeHtml(trade.result || trade.status || "—")}</td>
             <td>${formatPercent(trade.confidence)}</td>
             <td>${formatDateTime(trade.entry_time)}</td>
         </tr>
@@ -1682,8 +1682,8 @@ function updateOverviewChart(
     if (notice) {
 
         notice.textContent =
-            `${formatNumber(wins)} estimated wins Ã‚Â· ` +
-            `${formatNumber(losses)} estimated losses Ã‚Â· ` +
+            `${formatNumber(wins)} estimated wins · ` +
+            `${formatNumber(losses)} estimated losses · ` +
             `${winRate.toFixed(1)}% overall win rate. ` +
             `Historical daily breakdown will use exact trade dates.`;
 
@@ -1773,7 +1773,7 @@ function updateUserGrowthChart(growth) {
                 <div class="brand">
 
                     <div class="brand-mark">
-                        Ã¢â€”Ë†
+                        ◆
                     </div>
 
                     <div class="brand-copy">
@@ -1802,7 +1802,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="dashboard"
                     >
-                        <span>Ã¢â€“Â¦</span>
+                        <span>▦</span>
                         Dashboard
                     </button>
 
@@ -1811,7 +1811,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item active"
                         data-page="users"
                     >
-                        <span>Ã¢â„¢â„¢</span>
+                        <span>♙</span>
                         Users
                     </button>
 
@@ -1820,7 +1820,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="trades"
                     >
-                        <span>Ã¢â€“Â¤</span>
+                        <span>⇄</span>
                         Trades
                     </button>
 
@@ -1829,7 +1829,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="performance"
                     >
-                        <span>Ã¢Å’Â</span>
+                        <span>⚙</span>
                         Performance
                     </button>
 
@@ -1838,7 +1838,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="assets"
                     >
-                        <span>Ã¢â€”â€°</span>
+                        <span>◈</span>
                         Assets
                     </button>
 
@@ -1847,7 +1847,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="signals"
                     >
-                        <span>Ã¢Å“Â¦</span>
+                        <span>✦</span>
                         Signals
                     </button>
 
@@ -1856,7 +1856,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="subscriptions"
                     >
-                        <span>Ã¢â€“Â£</span>
+                        <span>▣</span>
                         Subscriptions
                     </button>
 
@@ -1865,7 +1865,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="coupons"
                     >
-                        <span>Ã¢â€”â€¡</span>
+                        <span>◇</span>
                         Coupons
                     </button>
 
@@ -1883,7 +1883,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="reports"
                     >
-                        <span>Ã¢â€“Â¥</span>
+                        <span>▤</span>
                         Reports
                     </button>
 
@@ -1901,7 +1901,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="settings"
                     >
-                        <span>Ã¢Å¡â„¢</span>
+                        <span>⚙</span>
                         Settings
                     </button>
 
@@ -1910,7 +1910,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="admins"
                     >
-                        <span>Ã¢â„¢Å¸</span>
+                        <span>♟</span>
                         Admins
                     </button>
 
@@ -1919,7 +1919,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="logs"
                     >
-                        <span>Ã¢â€°Â¡</span>
+                        <span>≡</span>
                         Logs
                     </button>
 
@@ -1928,7 +1928,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="api-keys"
                     >
-                        <span>Ã¢Å’Ëœ</span>
+                        <span>⌘</span>
                         API Keys
                     </button>
 
@@ -1937,7 +1937,7 @@ function updateUserGrowthChart(growth) {
                         class="nav-item"
                         data-page="maintenance"
                     >
-                        <span>Ã¢â€”Å’</span>
+                        <span>↻</span>
                         Maintenance
                     </button>
 
@@ -1948,7 +1948,7 @@ function updateUserGrowthChart(growth) {
                     id="logoutButton"
                     class="logout-nav"
                 >
-                    <span>Ã¢â€ Âª</span>
+                    <span>• ª</span>
                     Logout
                 </button>
 
@@ -1969,7 +1969,7 @@ function updateUserGrowthChart(growth) {
                     <div class="topbar-search">
 
                         <span>
-                            Ã¢Å’â€¢
+                            ⌕
                         </span>
 
                         <input
@@ -1986,7 +1986,7 @@ function updateUserGrowthChart(growth) {
                         <button
                             class="icon-button"
                         >
-                            Ã¢â„¢Â§
+                            ♧
 
                             <span class="notification-dot">
                                 3
@@ -2015,7 +2015,7 @@ function updateUserGrowthChart(growth) {
                             </div>
 
                             <span class="profile-chevron">
-                                Ã¢Å’â€ž
+                                ⌄
                             </span>
 
                         </div>
@@ -2056,7 +2056,7 @@ function updateUserGrowthChart(growth) {
                                 id="refreshUsers"
                                 class="date-filter"
                             >
-                                Ã¢â€ Â»
+                                • »
                                 Refresh
                             </button>
 
@@ -2075,7 +2075,7 @@ function updateUserGrowthChart(growth) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon purple">
-                                Ã¢â„¢â„¢
+                                ♙
                             </div>
 
                             <div class="kpi-label">
@@ -2086,7 +2086,7 @@ function updateUserGrowthChart(growth) {
                                 id="usersTotal"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -2099,7 +2099,7 @@ function updateUserGrowthChart(growth) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon green">
-                                Ã¢Å“â€œ
+                                ✓
                             </div>
 
                             <div class="kpi-label">
@@ -2110,7 +2110,7 @@ function updateUserGrowthChart(growth) {
                                 id="usersActive"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -2123,7 +2123,7 @@ function updateUserGrowthChart(growth) {
                         <div class="kpi-card">
 
                             <div class="kpi-icon gold">
-                                Ã¢â„¢â€º
+                                ↪
                             </div>
 
                             <div class="kpi-label">
@@ -2134,7 +2134,7 @@ function updateUserGrowthChart(growth) {
                                 id="usersAdmins"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -2158,7 +2158,7 @@ function updateUserGrowthChart(growth) {
                                 id="regularUsers"
                                 class="kpi-value"
                             >
-                                Ã¢â‚¬â€
+                                —
                             </div>
 
                             <div class="kpi-note">
@@ -2198,7 +2198,7 @@ function updateUserGrowthChart(growth) {
                                 <span
                                     id="usersResultCount"
                                 >
-                                    Ã¢â‚¬â€
+                                    —
                                 </span>
 
                             </div>
@@ -2958,7 +2958,7 @@ async function showUserDetails(user) {
                 class="modal-close"
                 id="closeUserModal"
             >
-                Ãƒâ€”
+                ×
             </button>
 
             <div class="modal-avatar">
@@ -3066,7 +3066,7 @@ async function showUserDetails(user) {
             </span>
 
             <strong id="userTotalTrades">
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3082,7 +3082,7 @@ async function showUserDetails(user) {
                 id="userWins"
                 class="stat-win"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3098,7 +3098,7 @@ async function showUserDetails(user) {
                 id="userLosses"
                 class="stat-loss"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3113,7 +3113,7 @@ async function showUserDetails(user) {
             <strong
                 id="userDraws"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3126,7 +3126,7 @@ async function showUserDetails(user) {
             </span>
 
             <strong id="userWinRate">
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3152,7 +3152,7 @@ async function showUserDetails(user) {
                 id="userTotalProfit"
                 class="stat-win"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3168,7 +3168,7 @@ async function showUserDetails(user) {
                 id="userTotalLoss"
                 class="stat-loss"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3181,7 +3181,7 @@ async function showUserDetails(user) {
             </span>
 
             <strong id="userNetProfit">
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3206,7 +3206,7 @@ async function showUserDetails(user) {
             <strong
                 id="userAvgConfidence"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3221,7 +3221,7 @@ async function showUserDetails(user) {
             <strong
                 id="userAvgProbability"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3236,7 +3236,7 @@ async function showUserDetails(user) {
             <strong
                 id="userAvgAgreement"
             >
-                Ã¢â‚¬â€
+                —
             </strong>
 
         </div>
@@ -3501,7 +3501,7 @@ async function loadUserPerformance(userId) {
             "userWinRate",
             stats.total_trades > 0
                 ? `${stats.win_rate}%`
-                : "Ã¢â‚¬â€"
+                : "—"
         );
 
 
@@ -3597,57 +3597,57 @@ async function loadUserPerformance(userId) {
 
         setText(
             "userTotalTrades",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userWins",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userLosses",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userWinRate",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userTotalProfit",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userTotalLoss",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userNetProfit",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userAvgConfidence",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userAvgProbability",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userAvgAgreement",
-            "Ã¢â‚¬â€"
+            "—"
         );
 
         setText(
             "userDraws",
-            "Ã¢â‚¬â€"
+            "—"
         );
     }
 }
@@ -3718,7 +3718,7 @@ function renderUserRecentTrades(trades) {
 
                         <div class="user-trade-asset">
                             ${escapeHtml(
-                                trade.asset || "Ã¢â‚¬â€"
+                                trade.asset || "—"
                             )}
                         </div>
 
@@ -3730,7 +3730,7 @@ function renderUserRecentTrades(trades) {
                                 "
                             >
                                 ${escapeHtml(
-                                    action || "Ã¢â‚¬â€"
+                                    action || "—"
                                 )}
                             </span>
                         </div>
@@ -3743,7 +3743,7 @@ function renderUserRecentTrades(trades) {
                                 "
                             >
                                 ${escapeHtml(
-                                    result || "Ã¢â‚¬â€"
+                                    result || "—"
                                 )}
                             </span>
                         </div>
@@ -3752,7 +3752,7 @@ function renderUserRecentTrades(trades) {
                             ${
                                 trade.confidence != null
                                     ? `${trade.confidence}%`
-                                    : "Ã¢â‚¬â€"
+                                    : "—"
                             }
                         </div>
 
@@ -3812,13 +3812,13 @@ function formatMoney(value) {
 
 function formatPercent(value) {
     if (value === null || value === undefined || value === "") {
-        return "Ã¢â‚¬â€";
+        return "—";
     }
     return `${Number(value).toFixed(1)}%`;
 }
 
 function formatDateTime(value) {
-    if (!value) return "Ã¢â‚¬â€";
+    if (!value) return "—";
 
     const date = new Date(value);
 
@@ -3871,7 +3871,7 @@ function shortenId(id) {
 }
 
 function formatDate(value) {
-    if (!value) return "Ã¢â‚¬â€";
+    if (!value) return "—";
 
     const date = new Date(value);
 
@@ -4235,7 +4235,7 @@ async function loadLogs() {
                         <tr>
 
                             <td>
-                                ${escapeHtml(String(log.id ?? "Ã¢â‚¬â€"))}
+                                ${escapeHtml(String(log.id ?? "—"))}
                             </td>
 
                             <td>
@@ -4243,23 +4243,23 @@ async function loadLogs() {
                             </td>
 
                             <td>
-                                ${escapeHtml(log.admin_email || log.admin_id || "Ã¢â‚¬â€")}
+                                ${escapeHtml(log.admin_email || log.admin_id || "—")}
                             </td>
 
                             <td>
-                                ${escapeHtml(log.action || "Ã¢â‚¬â€")}
+                                ${escapeHtml(log.action || "—")}
                             </td>
 
                             <td>
                                 ${escapeHtml(
                                     log.target_type
-                                        ? `${log.target_type}: ${log.target_id || "Ã¢â‚¬â€"}`
-                                        : "Ã¢â‚¬â€"
+                                        ? `${log.target_type}: ${log.target_id || "—"}`
+                                        : "—"
                                 )}
                             </td>
 
                             <td>
-                                ${escapeHtml(log.details || "Ã¢â‚¬â€")}
+                                ${escapeHtml(log.details || "—")}
                             </td>
 
                         </tr>
@@ -4322,27 +4322,27 @@ async function showTradesPage() {
 
                 <div class="trades-kpi">
                     <span>TOTAL TRADES</span>
-                    <strong id="tradesTotal">Ã¢â‚¬â€</strong>
+                    <strong id="tradesTotal">—</strong>
                 </div>
 
                 <div class="trades-kpi">
                     <span>WINS</span>
-                    <strong id="tradesWins" class="win">Ã¢â‚¬â€</strong>
+                    <strong id="tradesWins" class="win">—</strong>
                 </div>
 
                 <div class="trades-kpi">
                     <span>LOSSES</span>
-                    <strong id="tradesLosses" class="loss">Ã¢â‚¬â€</strong>
+                    <strong id="tradesLosses" class="loss">—</strong>
                 </div>
 
                 <div class="trades-kpi">
                     <span>WIN RATE</span>
-                    <strong id="tradesWinRate">Ã¢â‚¬â€</strong>
+                    <strong id="tradesWinRate">—</strong>
                 </div>
 
                 <div class="trades-kpi">
                     <span>NET P/L</span>
-                    <strong id="tradesProfit" class="gold">Ã¢â‚¬â€</strong>
+                    <strong id="tradesProfit" class="gold">—</strong>
                 </div>
 
             </div>
@@ -4719,7 +4719,7 @@ function updateTradeStatistics() {
 
     setText(
         "tradesCount",
-        `${formatNumber(total)} trades Ã¢â‚¬Â¢ ${draws} draws`
+        `${formatNumber(total)} trades • ${draws} draws`
     );
 }
 
@@ -4995,12 +4995,12 @@ function renderAdminTrades(
 
                 const result =
                     String(
-                        trade.result || "Ã¢â‚¬â€"
+                        trade.result || "—"
                     ).toUpperCase();
 
                 const action =
                     String(
-                        trade.action || "Ã¢â‚¬â€"
+                        trade.action || "—"
                     ).toUpperCase();
 
                 const resultClass =
@@ -5044,7 +5044,7 @@ function renderAdminTrades(
 
                         <td class="trade-asset">
                             ${escapeHtml(
-                                trade.asset || "Ã¢â‚¬â€"
+                                trade.asset || "—"
                             )}
                         </td>
 
@@ -5077,20 +5077,20 @@ function renderAdminTrades(
                         <td>
                             <span class="trade-badge trade-grade">
                                 ${escapeHtml(
-                                    trade.grade || "Ã¢â‚¬â€"
+                                    trade.grade || "—"
                                 )}
                             </span>
                         </td>
 
                         <td>
                             ${escapeHtml(
-                                trade.risk || "Ã¢â‚¬â€"
+                                trade.risk || "—"
                             )}
                         </td>
 
                         <td>
                             ${escapeHtml(
-                                trade.trend || "Ã¢â‚¬â€"
+                                trade.trend || "—"
                             )}
                         </td>
 
@@ -5100,7 +5100,7 @@ function renderAdminTrades(
 
                         <td class="trade-status">
                             ${escapeHtml(
-                                trade.status || "Ã¢â‚¬â€"
+                                trade.status || "—"
                             )}
                         </td>
 
@@ -5196,7 +5196,7 @@ function renderTradePagination(
                 ${adminTradesPage === 1 ? "disabled" : ""}
                 onclick="changeTradesPage(${adminTradesPage - 1})"
             >
-                Ã¢â€ Â PREVIOUS
+                ‹ PREVIOUS
             </button>
 
             <span class="pagination-current">
@@ -5208,7 +5208,7 @@ function renderTradePagination(
                 ${adminTradesPage === totalPages ? "disabled" : ""}
                 onclick="changeTradesPage(${adminTradesPage + 1})"
             >
-                NEXT Ã¢â€ â€™
+                NEXT • ’
             </button>
 
         </div>
@@ -5282,7 +5282,7 @@ async function showSignalsPage() {
                     id="signalsRefresh"
                     class="refresh-button"
                 >
-                    Ã¢â€ Â» Refresh
+                    • » Refresh
                 </button>
 
             </div>
@@ -5297,7 +5297,7 @@ async function showSignalsPage() {
                 <div class="trades-kpi">
                     <span>TOTAL SIGNALS</span>
                     <strong id="signalsTotal">
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
@@ -5307,7 +5307,7 @@ async function showSignalsPage() {
                         id="signalsCall"
                         class="stat-win"
                     >
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
@@ -5317,21 +5317,21 @@ async function showSignalsPage() {
                         id="signalsPut"
                         class="stat-loss"
                     >
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
                 <div class="trades-kpi">
                     <span>WAIT SIGNALS</span>
                     <strong id="signalsWait">
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
                 <div class="trades-kpi">
                     <span>WIN RATE</span>
                     <strong id="signalsWinRate">
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
@@ -5370,7 +5370,7 @@ async function showSignalsPage() {
                         <strong
                             id="signalsAvgConfidence"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </strong>
 
                     </div>
@@ -5385,7 +5385,7 @@ async function showSignalsPage() {
                         <strong
                             id="signalsAvgProbability"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </strong>
 
                     </div>
@@ -5400,7 +5400,7 @@ async function showSignalsPage() {
                         <strong
                             id="signalsAvgAgreement"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </strong>
 
                     </div>
@@ -6199,12 +6199,12 @@ function renderSignalsTable(signals) {
 
                 const action =
                     String(
-                        signal.action || "Ã¢â‚¬â€"
+                        signal.action || "—"
                     ).toUpperCase();
 
                 const result =
                     String(
-                        signal.result || "Ã¢â‚¬â€"
+                        signal.result || "—"
                     ).toUpperCase();
 
                 const confidence =
@@ -6253,7 +6253,7 @@ function renderSignalsTable(signals) {
                             <strong>
                                 ${escapeHtml(
                                     signal.asset ||
-                                    "Ã¢â‚¬â€"
+                                    "—"
                                 )}
                             </strong>
                         </td>
@@ -6283,7 +6283,7 @@ function renderSignalsTable(signals) {
                         <td>
                             ${escapeHtml(
                                 signal.grade ||
-                                "Ã¢â‚¬â€"
+                                "—"
                             )}
                         </td>
 
@@ -6377,7 +6377,7 @@ function renderSignalsPagination(total) {
             data-page="prev"
             ${adminSignalsPage === 1 ? "disabled" : ""}
         >
-            Ã¢â‚¬Â¹
+            ‹
         </button>
     `;
 
@@ -6413,7 +6413,7 @@ function renderSignalsPagination(total) {
                     : ""
             }
         >
-            Ã¢â‚¬Âº
+            ›
         </button>
     `;
 
@@ -6630,7 +6630,7 @@ async function showNewSubscriptionModal() {
                     id="closeSubscriptionModal"
                     class="modal-close"
                 >
-                    Ãƒâ€”
+                    ×
                 </button>
 
             </div>
@@ -6687,11 +6687,11 @@ async function showNewSubscriptionModal() {
                     </option>
 
                     <option value="pro">
-                        PRO Ã¢â‚¬â€ $39.99 / 30 DAYS
+                        PRO — $39.99 / 30 DAYS
                     </option>
 
                     <option value="elite">
-                        ELITE Ã¢â‚¬â€ $79.99 / 30 DAYS
+                        ELITE — $79.99 / 30 DAYS
                     </option>
 
                     <option value="lifetime">
@@ -7037,7 +7037,7 @@ async function showSubscriptionsPage() {
             id="subscriptionsRefresh"
             class="refresh-button"
         >
-            Ã¢â€ Â» Refresh
+            • » Refresh
         </button>
 
     </div>
@@ -7058,7 +7058,7 @@ async function showSubscriptionsPage() {
                     </span>
 
                     <strong id="subscriptionsTotal">
-                        Ã¢â‚¬â€
+                        —
                     </strong>
 
                 </div>
@@ -7074,7 +7074,7 @@ async function showSubscriptionsPage() {
                         id="subscriptionsActive"
                         class="stat-win"
                     >
-                        Ã¢â‚¬â€
+                        —
                     </strong>
 
                 </div>
@@ -7089,7 +7089,7 @@ async function showSubscriptionsPage() {
                     <strong
                         id="subscriptionsInactive"
                     >
-                        Ã¢â‚¬â€
+                        —
                     </strong>
 
                 </div>
@@ -7105,7 +7105,7 @@ async function showSubscriptionsPage() {
                         id="subscriptionsExpired"
                         class="stat-loss"
                     >
-                        Ã¢â‚¬â€
+                        —
                     </strong>
 
                 </div>
@@ -7627,7 +7627,7 @@ function showSubscriptionDetailsModal(subscription) {
                     id="closeSubscriptionEditModal"
                     class="modal-close"
                 >
-                    Ãƒâ€”
+                    ×
                 </button>
 
             </div>
@@ -7667,14 +7667,14 @@ function showSubscriptionDetailsModal(subscription) {
                         value="pro"
                         ${String(subscription.plan).toLowerCase() === "pro" ? "selected" : ""}
                     >
-                        PRO Ã¢â‚¬â€ $39.99 / 30 DAYS
+                        PRO — $39.99 / 30 DAYS
                     </option>
 
                     <option
                         value="elite"
                         ${String(subscription.plan).toLowerCase() === "elite" ? "selected" : ""}
                     >
-                        ELITE Ã¢â‚¬â€ $79.99 / 30 DAYS
+                        ELITE — $79.99 / 30 DAYS
                     </option>
 
                     <option
@@ -8117,7 +8117,7 @@ async function showCouponsPage() {
                     id="couponsRefresh"
                     class="refresh-button"
                 >
-                    Ã¢â€ Â» Refresh
+                    • » Refresh
                 </button>
 
             </div>
@@ -8572,7 +8572,7 @@ function showNewCouponModal() {
                         id="closeCouponModal"
                         class="coupon-modal-close"
                     >
-                        Ãƒâ€”
+                        ×
                     </button>
                 </div>
 
@@ -8906,7 +8906,7 @@ async function editCoupon(couponId) {
                             id="closeCouponModal"
                             class="coupon-modal-close"
                         >
-                            Ãƒâ€”
+                            ×
                         </button>
 
                     </div>
@@ -9771,7 +9771,7 @@ function renderPaymentsTable(
                 const methodLabel =
                     methodLabels[method] ||
                     payment.payment_method ||
-                    "Ã¢â‚¬â€";
+                    "—";
 
                 const cryptoInfo =
                     method === "crypto"
@@ -9800,7 +9800,7 @@ function renderPaymentsTable(
                         ? formatDateTime(
                             payment.created_at
                         )
-                        : "Ã¢â‚¬â€";
+                        : "—";
 
                 return `
                     <tr>
@@ -9817,7 +9817,7 @@ function renderPaymentsTable(
                         <td>
                             ${escapeHtml(
                                 payment.user_id ||
-                                "Ã¢â‚¬â€"
+                                "—"
                             )}
                         </td>
 
@@ -10033,7 +10033,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportTotalTrades"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10045,7 +10045,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportWins"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10057,7 +10057,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportLosses"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10069,7 +10069,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportWinRate"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10095,7 +10095,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportTotalPayments"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10107,7 +10107,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportPaidPayments"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10119,7 +10119,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportPendingPayments"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10131,7 +10131,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportRevenue"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10157,7 +10157,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportTotalUsers"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10169,7 +10169,7 @@ async function showReportsPage() {
                             class="stat-value"
                             id="reportTradingUsers"
                         >
-                            Ã¢â‚¬â€
+                            —
                         </div>
                     </div>
 
@@ -10888,7 +10888,7 @@ async function showAssetsPage() {
                     id="assetsRefresh"
                     class="refresh-button"
                 >
-                    Ã¢â€ Â» Refresh
+                    • » Refresh
                 </button>
             </div>
 
@@ -10924,7 +10924,7 @@ async function showAssetsPage() {
                     </span>
 
                     <strong id="assetBestAsset">
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
@@ -10934,7 +10934,7 @@ async function showAssetsPage() {
                     </span>
 
                     <strong id="assetBestRate">
-                        Ã¢â‚¬â€
+                        —
                     </strong>
                 </div>
 
@@ -11642,7 +11642,7 @@ const bestAsset =
         "assetBestAsset",
         bestAsset
             ? bestAsset.asset
-            : "Ã¢â‚¬â€"
+            : "—"
     );
 
     setText(
@@ -11653,7 +11653,7 @@ const bestAsset =
                 bestAsset.trades) *
                 100
             ).toFixed(1)}%`
-            : "Ã¢â‚¬â€"
+            : "—"
     );
 
     setText(
@@ -11792,7 +11792,7 @@ async function showPerformancePage() {
                     id="performanceRefresh"
                     class="secondary-button"
                 >
-                    Ã¢â€ Â» Refresh
+                    • » Refresh
                 </button>
             </div>
 
@@ -11800,32 +11800,32 @@ async function showPerformancePage() {
 
                 <div class="performance-card">
                     <span>TOTAL TRADES</span>
-                    <strong id="perfTotalTrades">Ã¢â‚¬â€</strong>
+                    <strong id="perfTotalTrades">—</strong>
                 </div>
 
                 <div class="performance-card">
                     <span>WINS</span>
-                    <strong id="perfWins" class="stat-win">Ã¢â‚¬â€</strong>
+                    <strong id="perfWins" class="stat-win">—</strong>
                 </div>
 
                 <div class="performance-card">
                     <span>LOSSES</span>
-                    <strong id="perfLosses" class="stat-loss">Ã¢â‚¬â€</strong>
+                    <strong id="perfLosses" class="stat-loss">—</strong>
                 </div>
 
                 <div class="performance-card">
                     <span>DRAWS</span>
-                    <strong id="perfDraws">Ã¢â‚¬â€</strong>
+                    <strong id="perfDraws">—</strong>
                 </div>
 
                 <div class="performance-card">
                     <span>WIN RATE</span>
-                    <strong id="perfWinRate">Ã¢â‚¬â€</strong>
+                    <strong id="perfWinRate">—</strong>
                 </div>
 
                 <div class="performance-card">
                     <span>NET P/L</span>
-                    <strong id="perfNetProfit">Ã¢â‚¬â€</strong>
+                    <strong id="perfNetProfit">—</strong>
                 </div>
 
             </div>
@@ -11843,7 +11843,7 @@ async function showPerformancePage() {
                         <strong
                             id="perfTotalProfit"
                             class="stat-win"
-                        >Ã¢â‚¬â€</strong>
+                        >—</strong>
                     </div>
 
                     <div class="performance-card">
@@ -11851,12 +11851,12 @@ async function showPerformancePage() {
                         <strong
                             id="perfTotalLoss"
                             class="stat-loss"
-                        >Ã¢â‚¬â€</strong>
+                        >—</strong>
                     </div>
 
                     <div class="performance-card">
                         <span>NET P/L</span>
-                        <strong id="perfNetProfit2">Ã¢â‚¬â€</strong>
+                        <strong id="perfNetProfit2">—</strong>
                     </div>
 
                 </div>
@@ -11873,17 +11873,17 @@ async function showPerformancePage() {
 
                     <div class="performance-card">
                         <span>AVG CONFIDENCE</span>
-                        <strong id="perfConfidence">Ã¢â‚¬â€</strong>
+                        <strong id="perfConfidence">—</strong>
                     </div>
 
                     <div class="performance-card">
                         <span>AVG PROBABILITY</span>
-                        <strong id="perfProbability">Ã¢â‚¬â€</strong>
+                        <strong id="perfProbability">—</strong>
                     </div>
 
                     <div class="performance-card">
                         <span>AVG AGREEMENT</span>
-                        <strong id="perfAgreement">Ã¢â‚¬â€</strong>
+                        <strong id="perfAgreement">—</strong>
                     </div>
 
                 </div>
@@ -12737,7 +12737,7 @@ async function showNewPaymentModal() {
                         id="closePaymentModal"
                         class="coupon-modal-close"
                     >
-                        Ãƒâ€”
+                        ×
                     </button>
 
                 </div>
@@ -13220,7 +13220,7 @@ async function editPayment(paymentId) {
                             id="closePaymentModal"
                             class="coupon-modal-close"
                         >
-                            Ãƒâ€”
+                            ×
                         </button>
 
                     </div>
