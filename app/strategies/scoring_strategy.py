@@ -5,83 +5,182 @@ class ScoringStrategy:
 
     def calculate(self, results):
 
-    bullish = 0.0
-    bearish = 0.0
+        bullish_score = 0
+        bearish_score = 0
 
-    reasons = []
+        bullish_reasons = []
+        bearish_reasons = []
+        candle_next_bias = "WAIT"
 
-    trend = "SIDEWAYS"
+        # ========================================
+        # Collect Results (Bias Aware)
+        # ========================================
 
-    for result in results:
+        BULLISH_KEYWORDS = [
+            "Bullish",
+            "Higher High",
+            "Demand Zone",
+            "EMA20 Above",
+            "EMA50 Above",
+            "MACD Above",
+            "Oversold",
+            "Hammer",
+        ]
 
-        bullish += float(result.bullish_score)
+        BEARISH_KEYWORDS = [
+            "Bearish",
+            "Lower High",
+            "Supply Zone",
+            "EMA20 Below",
+            "EMA50 Below",
+            "MACD Below",
+            "Overbought",
+            "Shooting Star",
+        ]
 
-        bearish += float(result.bearish_score)
+        NEUTRAL_KEYWORDS = ["ATR", "ADX", "Volatility", "Regime"]
 
-        reasons.extend(result.reasons)
+        for result in results:
+            # ----------------------------------------
+            # Candlestick next-candle prediction
+            # ----------------------------------------
 
-        if result.trend != "SIDEWAYS":
+            result_candle_bias = getattr(
+                result,
+                "next_candle_bias",
+                "WAIT",
+            )
 
-            trend = result.trend
+            if result_candle_bias in ["CALL", "PUT"]:
 
-    total = bullish + bearish
+                candle_next_bias = result_candle_bias
 
-    if total == 0:
+            # ADX and ATR measure market quality,
+            # NOT CALL/PUT direction.
+            is_neutral = any(
+                keyword in reason
+                for reason in result.reasons
+                for keyword in NEUTRAL_KEYWORDS
+            )
 
-        confidence = 0.0
+            if not is_neutral:
+                bullish_score += result.bullish_score
+                bearish_score += result.bearish_score
 
-    else:
+            for reason in result.reasons:
 
-        confidence = round(
+                if any(word in reason for word in BULLISH_KEYWORDS):
 
-            max(bullish, bearish)
+                    bullish_reasons.append(reason)
 
-            / total
+                elif any(word in reason for word in BEARISH_KEYWORDS):
 
-            * 100,
+                    bearish_reasons.append(reason)
 
-            1
+                elif any(word in reason for word in NEUTRAL_KEYWORDS):
 
-        )
+                    bullish_reasons.append(reason)
+                    bearish_reasons.append(reason)
+        # ========================================
+        # Clamp Scores
+        # ========================================
 
-    action = "WAIT"
+        bullish_score = min(bullish_score, 100)
+        bearish_score = min(bearish_score, 100)
 
-    if (
+        # ========================================
+        # Difference
+        # ========================================
 
-        trend == "BULLISH"
+        difference = bullish_score - bearish_score
 
-        and bullish > bearish
+        # ========================================
+        # Binary Direction Threshold
+        # ========================================
 
-        and confidence >= settings.MIN_CONFIDENCE
+        MIN_DIRECTIONAL_EDGE = 10
 
-    ):
+        if difference >= MIN_DIRECTIONAL_EDGE:
 
-        action = "CALL"
+            bias = "CALL"
+            trend = "BULLISH"
+            reasons = bullish_reasons
 
-    elif (
+        elif difference <= -MIN_DIRECTIONAL_EDGE:
 
-        trend == "BEARISH"
+            bias = "PUT"
+            trend = "BEARISH"
+            reasons = bearish_reasons
 
-        and bearish > bullish
+        else:
 
-        and confidence >= settings.MIN_CONFIDENCE
+            bias = "WAIT"
+            trend = "SIDEWAYS"
+            reasons = bullish_reasons + bearish_reasons
 
-    ):
+        # ========================================
+        # Confidence
+        # ========================================
 
-        action = "PUT"
+        winning_score = max(bullish_score, bearish_score)
 
-    return {
+        confidence = round((winning_score * 0.70) + (abs(difference) * 0.30), 2)
 
-        "action": action,
+        confidence = min(confidence, 100)
 
-        "confidence": confidence,
+        # ========================================
+        # Probability
+        # ========================================
 
-        "trend": trend,
+        total = bullish_score + bearish_score
 
-        "bullish_score": round(bullish, 1),
+        if total == 0:
 
-        "bearish_score": round(bearish, 1),
+            probability = 50.0
 
-        "reasons": reasons
+        else:
 
-    }
+            probability = round((winning_score / total) * 100, 2)
+        # ========================================
+        # FINAL NEXT-CANDLE DIRECTION
+        # ========================================
+
+        #
+        # The final market bias is the single
+        # authoritative binary direction.
+        #
+        # Candlestick analysis contributes to
+        # the scoring, but must not create a
+        # conflicting CALL/PUT signal.
+        #
+
+        candle_next_bias = bias
+
+        # ========================================
+        # Debug
+        # ========================================
+
+        print()
+        print("========================================")
+        print("SCORING ENGINE")
+        print("========================================")
+        print("Bullish Score :", bullish_score)
+        print("Bearish Score :", bearish_score)
+        print("Difference    :", difference)
+        print("Bias          :", bias)
+        print("Confidence    :", confidence)
+        print("Probability   :", probability)
+        print("========================================")
+        print()
+
+        return {
+            "bias": bias,
+            "candle_next_bias": candle_next_bias,
+            "action": bias,
+            "trend": trend,
+            "confidence": confidence,
+            "probability": probability,
+            "bullish_score": bullish_score,
+            "bearish_score": bearish_score,
+            "reasons": reasons,
+        }

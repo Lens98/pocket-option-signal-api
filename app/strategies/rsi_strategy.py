@@ -1,91 +1,120 @@
 from app.strategies.strategy_result import StrategyResult
 from app.config.settings import settings
+from app.config.weights import Weights
 
 
 class RsiStrategy:
 
     def analyze(self, indicators):
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    rsi = indicators.rsi
+        rsi = indicators.rsi
 
-    # ----------------------------
-    # Oversold
-    # ----------------------------
+        # ----------------------------------------
+        # RSI Not Available
+        # ----------------------------------------
 
-    if rsi <= settings.RSI_OVERSOLD:
+        if rsi is None:
 
-        result.trend = "BULLISH"
+            result.reasons.append(
+                "RSI unavailable"
+            )
 
-        result.bullish_score += 20
+            return result
 
-        result.reasons.append(
-            "RSI Oversold"
-        )
+        # ----------------------------------------
+        # Strong Oversold
+        # ----------------------------------------
 
         if rsi <= 20:
+
+            result.trend = "BULLISH"
+
+            result.bullish_score += Weights.RSI + 5
+
+            result.reasons.append(
+                "Strong RSI Oversold"
+            )
+
+        # ----------------------------------------
+        # Oversold
+        # ----------------------------------------
+
+        elif rsi <= settings.RSI_OVERSOLD:
+
+            result.trend = "BULLISH"
+
+            result.bullish_score += Weights.RSI
+
+            result.reasons.append(
+                "RSI Oversold"
+            )
+
+        # ----------------------------------------
+        # Bullish Momentum
+        # ----------------------------------------
+
+        elif 50 <= rsi < settings.RSI_OVERBOUGHT:
+
+            result.trend = "BULLISH"
 
             result.bullish_score += 5
 
             result.reasons.append(
-                "Extreme Oversold"
+                "Bullish RSI Momentum"
             )
 
-    # ----------------------------
-    # Overbought
-    # ----------------------------
+        # ----------------------------------------
+        # Strong Overbought
+        # ----------------------------------------
 
-    elif rsi >= settings.RSI_OVERBOUGHT:
+        elif rsi >= 80:
 
-        result.trend = "BEARISH"
+            result.trend = "BEARISH"
 
-        result.bearish_score += 20
+            result.bearish_score += Weights.RSI + 5
 
-        result.reasons.append(
-            "RSI Overbought"
-        )
+            result.reasons.append(
+                "Strong RSI Overbought"
+            )
 
-        if rsi >= 80:
+        # ----------------------------------------
+        # Overbought
+        # ----------------------------------------
+
+        elif rsi >= settings.RSI_OVERBOUGHT:
+
+            result.trend = "BEARISH"
+
+            result.bearish_score += Weights.RSI
+
+            result.reasons.append(
+                "RSI Overbought"
+            )
+
+        # ----------------------------------------
+        # Bearish Momentum
+        # ----------------------------------------
+
+        elif 30 < rsi < 50:
+
+            result.trend = "BEARISH"
 
             result.bearish_score += 5
 
             result.reasons.append(
-                "Extreme Overbought"
+                "Bearish RSI Momentum"
             )
 
-    # ----------------------------
-    # Bullish Momentum
-    # ----------------------------
+        # ----------------------------------------
+        # Neutral
+        # ----------------------------------------
 
-    elif rsi >= 55 and rsi < settings.RSI_OVERBOUGHT:
+        else:
 
-        result.trend = "BULLISH"
+            result.reasons.append(
+                "RSI Neutral"
+            )
 
-        result.bullish_score += 8
-
-        result.reasons.append(
-            "Bullish RSI Momentum"
-        )
-
-    # ----------------------------
-    # Bearish Momentum
-    # ----------------------------
-
-    elif rsi <= 45 and rsi > settings.RSI_OVERSOLD:
-
-        result.trend = "BEARISH"
-
-        result.bearish_score += 8
-
-        result.reasons.append(
-            "Bearish RSI Momentum"
-        )
-
-    else:
-
-        result.reasons.append(
-            "RSI Neutral"
-        )
-
-    return result
+        return result

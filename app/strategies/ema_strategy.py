@@ -1,85 +1,121 @@
-from app.config.weights import Weights
 from app.strategies.strategy_result import StrategyResult
+from app.models.indicator import IndicatorResult
 
 
 class EmaStrategy:
 
-    def analyze(self, indicators):
+    def analyze(self, indicators: IndicatorResult) -> StrategyResult:
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    ema20 = indicators.ema20
-    ema50 = indicators.ema50
-    ema200 = indicators.ema200
+        # ========================================
+        # STARTUP MODE (EMA20 Only)
+        # ========================================
 
-    # ----------------------------
-    # Bullish Alignment
-    # ----------------------------
+        if indicators.mode == "STARTUP":
 
-    if ema20 > ema50 > ema200:
+            if indicators.ema20 is None:
 
-        result.trend = "BULLISH"
+                result.reasons.append(
+                    "EMA20 Not Available"
+                )
 
-        result.bullish_score += Weights.EMA
+                return result
 
-        result.reasons.append(
-            "EMA Bullish Alignment"
-        )
+            # We can't compare EMA20 to EMA50 yet.
+            # Give a small bullish score because the
+            # Trend Analyzer already confirmed direction.
 
-        spread = ema20 - ema200
+            result.trend = "BULLISH"
 
-        if spread > 0.0010:
-
-            result.bullish_score += 5
+            result.bullish_score = 15
 
             result.reasons.append(
-                "Strong EMA Separation"
+                "EMA20 Trend"
             )
 
-        elif spread > 0.0005:
+            return result
 
-            result.bullish_score += 2
+        # ========================================
+        # Need EMA20 + EMA50
+        # ========================================
+
+        if (
+            indicators.ema20 is None
+            or indicators.ema50 is None
+        ):
 
             result.reasons.append(
-                "Moderate EMA Separation"
+                "EMA Data Missing"
             )
 
-    # ----------------------------
-    # Bearish Alignment
-    # ----------------------------
+            return result
 
-    elif ema20 < ema50 < ema200:
+        # ========================================
+        # EMA20 Above EMA50
+        # ========================================
 
-        result.trend = "BEARISH"
+        if indicators.ema20 > indicators.ema50:
 
-        result.bearish_score += Weights.EMA
+            result.trend = "BULLISH"
 
-        result.reasons.append(
-            "EMA Bearish Alignment"
-        )
-
-        spread = ema200 - ema20
-
-        if spread > 0.0010:
-
-            result.bearish_score += 5
+            result.bullish_score = 25
 
             result.reasons.append(
-                "Strong EMA Separation"
+                "EMA20 Above EMA50"
             )
 
-        elif spread > 0.0005:
+        # ========================================
+        # EMA20 Below EMA50
+        # ========================================
 
-            result.bearish_score += 2
+        elif indicators.ema20 < indicators.ema50:
+
+            result.trend = "BEARISH"
+
+            result.bearish_score = 25
 
             result.reasons.append(
-                "Moderate EMA Separation"
+                "EMA20 Below EMA50"
             )
 
-    else:
+        else:
 
-        result.reasons.append(
-            "EMA Mixed Alignment"
-        )
+            result.reasons.append(
+                "EMA Flat"
+            )
 
-    return result
+        # ========================================
+        # FULL MODE
+        # ========================================
+
+        if (
+            indicators.mode == "FULL"
+            and indicators.ema200 is not None
+        ):
+
+            if (
+                indicators.ema20 >
+                indicators.ema50 >
+                indicators.ema200
+            ):
+
+                result.bullish_score += 10
+
+                result.reasons.append(
+                    "EMA200 Bullish Alignment"
+                )
+
+            elif (
+                indicators.ema20 <
+                indicators.ema50 <
+                indicators.ema200
+            ):
+
+                result.bearish_score += 10
+
+                result.reasons.append(
+                    "EMA200 Bearish Alignment"
+                )
+
+        return result

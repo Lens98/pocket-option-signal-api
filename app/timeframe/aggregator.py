@@ -3,15 +3,30 @@ from app.models.candle import Candle
 
 class TimeframeAggregator:
 
-    def aggregate(self, candles, size):
+    # Base candle size (seconds)
+    BASE_SECONDS = 10
+
+    def aggregate(self, candles, minutes):
+
+        if not candles:
+            return []
+
+        candles_per_group = (minutes * 60) // self.BASE_SECONDS
 
         result = []
 
-        for i in range(0, len(candles), size):
+        print("----------------------------------------")
+        print(f"Building {minutes}m timeframe")
+        print("Input Candles :", len(candles))
+        print("Candles/Group :", candles_per_group)
+        print("----------------------------------------")
 
-            chunk = candles[i:i + size]
+        for i in range(0, len(candles), candles_per_group):
 
-            if len(chunk) < size:
+            chunk = candles[i:i + candles_per_group]
+
+            # Skip incomplete groups
+            if len(chunk) < candles_per_group:
                 break
 
             result.append(
@@ -33,5 +48,8 @@ class TimeframeAggregator:
                 )
 
             )
+
+        print(f"{minutes}m candles built:", len(result))
+        print("----------------------------------------")
 
         return result

@@ -1,5 +1,3 @@
-import { Candle } from "./candle.js";
-
 export class CandleBuilder {
 
     constructor(timeframe = 10) {
@@ -11,82 +9,94 @@ export class CandleBuilder {
 
     update(tick) {
 
-    const candleTime =
-        Math.floor(tick.timestamp / this.timeframe) * this.timeframe;
+        const bucket =
+            Math.floor(
+                Number(tick.timestamp) / this.timeframe
+            ) * this.timeframe;
 
-    console.log("================================");
-    console.log("Asset:", tick.asset);
-    console.log("Timestamp:", tick.timestamp);
-    console.log("Bucket:", candleTime);
-
-    if (this.current) {
-        console.log("Current Candle:", this.current.openTime);
-        console.log("Difference:", candleTime - this.current.openTime);
-    } else {
-        console.log("Current Candle: NONE");
-    }
-
-    console.log("================================");
-
+        // -----------------------------
         // First candle
+        // -----------------------------
+
         if (!this.current) {
 
-            this.current = new Candle(candleTime, this.timeframe);
+            this.current = {
 
-            this.current.asset = tick.asset;
-            this.current.open = tick.price;
-            this.current.high = tick.price;
-            this.current.low = tick.price;
-            this.current.close = tick.price;
-            this.current.volume = 1;
+                asset: tick.asset,
 
-            console.log("🟢 Started first candle:", this.current);
+                timeframe: this.timeframe.toString(),
+
+                timestamp: bucket.toString(),
+
+                open: tick.price,
+
+                high: tick.price,
+
+                low: tick.price,
+
+                close: tick.price,
+
+                volume: 1
+
+            };
 
             return null;
 
         }
 
-        // Candle closed
-        if (candleTime > this.current.openTime) {
+        // -----------------------------
+        // Same candle
+        // -----------------------------
 
-            console.log("################################");
-            console.log("CANDLE CLOSED");
-            console.log("Previous:", this.current.openTime);
-            console.log("New:", candleTime);
+        if (
+            Number(this.current.timestamp) === bucket
+        ) {
 
-            const finished = this.current;
+            this.current.high = Math.max(
+                this.current.high,
+                tick.price
+            );
 
-            this.current = new Candle(candleTime, this.timeframe);
+            this.current.low = Math.min(
+                this.current.low,
+                tick.price
+            );
 
-            this.current.asset = tick.asset;
-            this.current.open = tick.price;
-            this.current.high = tick.price;
-            this.current.low = tick.price;
             this.current.close = tick.price;
-            this.current.volume = 1;
 
-            console.log("🟢 Started new candle:", this.current);
+            this.current.volume++;
 
-            return finished;
+            return null;
 
         }
 
-        // Update current candle
-        this.current.close = tick.price;
+        // -----------------------------
+        // Candle closed
+        // -----------------------------
 
-        if (tick.price > this.current.high) {
-            this.current.high = tick.price;
-        }
+        const closed = { ...this.current };
 
-        if (tick.price < this.current.low) {
-            this.current.low = tick.price;
-        }
+        this.current = {
 
-        this.current.volume++;
+            asset: tick.asset,
 
-        console.log("Updating candle:", this.current);
+            timeframe: this.timeframe.toString(),
 
-        return null;
+            timestamp: bucket.toString(),
+
+            open: tick.price,
+
+            high: tick.price,
+
+            low: tick.price,
+
+            close: tick.price,
+
+            volume: 1
+
+        };
+
+        return closed;
 
     }
 

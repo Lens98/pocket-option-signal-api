@@ -1,0 +1,162 @@
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    margin-bottom: 0;
+}
+
+.brand-logo span {
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+/* ==========================================
+   HEADER
+========================================== */
+
+.header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    height:100%;
+
+}
+
+/* ==========================================
+   LEFT
+========================================== */
+.header-left{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    flex:1;
+    min-width:0;
+}
+
+/* ==========================================
+   TITLE
+========================================== */
+
+.app-title{
+
+    font-size:26px;
+
+    font-weight:700;
+
+    color:#FFFFFF;
+
+    letter-spacing:.5px;
+
+    line-height:1;
+
+}
+
+/* ==========================================
+   VERSION
+========================================== */
+
+.version{
+    margin-top:2px;
+    color:#94A3B8;
+    font-size:8px;
+    font-weight:600;
+    letter-spacing:.08em;
+}
+
+/* ==========================================
+   RIGHT
+========================================== */
+
+.header-right{
+    display:flex;
+    align-items:center;
+    margin-left:auto;
+    flex-shrink:0;
+}
+
+/* ==========================================
+   STATUS
+========================================== */
+
+.status{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    min-width:120px;
+
+    height:36px;
+
+    padding:0 18px;
+
+    border-radius:999px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    transition:.25s;
+
+}
+
+/* ==========================================
+   ONLINE
+========================================== */
+
+.status.online{
+
+    background:#14532D;
+
+    color:#4ADE80;
+
+}
+
+/* ==========================================
+   OFFLINE
+========================================== */
+
+.status.offline{
+
+    background:#4B1113;
+
+    color:#F87171;
+
+}
+
+/* ==========================================
+   WARNING
+========================================== */
+
+.status.warning{
+
+    background:#3B3414;
+
+    color:#FACC15;
+
+}

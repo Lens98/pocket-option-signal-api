@@ -1,81 +1,123 @@
 from app.strategies.strategy_result import StrategyResult
 from app.config.weights import Weights
 
+
 class MacdStrategy:
 
     def analyze(self, indicators):
 
-    result = StrategyResult()
+        result = StrategyResult()
 
-    macd = indicators.macd
-    signal = indicators.signal_line
+        macd = indicators.macd
+        signal = indicators.signal_line
+        histogram = indicators.histogram
 
-    histogram = macd - signal
+        # ----------------------------------------
+        # MACD Not Available
+        # ----------------------------------------
 
-    # --------------------------------
-    # Bullish MACD
-    # --------------------------------
-
-    if macd > signal:
-
-        result.trend = "BULLISH"
-
-        result.bullish_score += Weights.MACD
-
-        result.reasons.append(
-            "MACD Bullish Cross"
-        )
-
-        if histogram > 0.0005:
-
-            result.bullish_score += 5
+        if macd is None or signal is None:
 
             result.reasons.append(
-                "Strong Bullish Momentum"
+                "MACD unavailable"
             )
 
-        elif histogram > 0:
+            return result
 
-            result.bullish_score += 2
+        # ----------------------------------------
+        # Bullish
+        # ----------------------------------------
+
+        if macd > signal:
+
+            result.trend = "BULLISH"
+
+            result.bullish_score += Weights.MACD
 
             result.reasons.append(
-                "Bullish Momentum Building"
+                "MACD Above Signal"
             )
 
-    # --------------------------------
-    # Bearish MACD
-    # --------------------------------
+            # Histogram confirmation
 
-    elif macd < signal:
+            if histogram is not None:
 
-        result.trend = "BEARISH"
+                if histogram > 0:
 
-        result.bearish_score += Weights.MACD
+                    result.bullish_score += 3
 
-        result.reasons.append(
-            "MACD Bearish Cross"
-        )
+                    result.reasons.append(
+                        "Bullish Histogram"
+                    )
 
-        if histogram < -0.0005:
+            strength = macd - signal
 
-            result.bearish_score += 5
+            if strength > 0.0005:
+
+                result.bullish_score += 5
+
+                result.reasons.append(
+                    "Strong Bullish Momentum"
+                )
+
+            elif strength > 0.0002:
+
+                result.bullish_score += 2
+
+                result.reasons.append(
+                    "Moderate Bullish Momentum"
+                )
+
+        # ----------------------------------------
+        # Bearish
+        # ----------------------------------------
+
+        elif macd < signal:
+
+            result.trend = "BEARISH"
+
+            result.bearish_score += Weights.MACD
 
             result.reasons.append(
-                "Strong Bearish Momentum"
+                "MACD Below Signal"
             )
 
-        elif histogram < 0:
+            if histogram is not None:
 
-            result.bearish_score += 2
+                if histogram < 0:
+
+                    result.bearish_score += 3
+
+                    result.reasons.append(
+                        "Bearish Histogram"
+                    )
+
+            strength = signal - macd
+
+            if strength > 0.0005:
+
+                result.bearish_score += 5
+
+                result.reasons.append(
+                    "Strong Bearish Momentum"
+                )
+
+            elif strength > 0.0002:
+
+                result.bearish_score += 2
+
+                result.reasons.append(
+                    "Moderate Bearish Momentum"
+                )
+
+        # ----------------------------------------
+        # Neutral
+        # ----------------------------------------
+
+        else:
 
             result.reasons.append(
-                "Bearish Momentum Building"
+                "MACD Neutral"
             )
 
-    else:
-
-        result.reasons.append(
-            "MACD Neutral"
-        )
-
-    return result
+        return result

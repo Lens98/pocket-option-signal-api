@@ -1,0 +1,264 @@
+/* ==========================================
+   FOOTER
+   ========================================== */
+
+.footer-panel {
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+/* ==========================================
+   STATUS BAR
+   ========================================== */
+
+.footer-status-bar {
+
+    display: grid;
+
+    grid-template-columns:
+        1.15fr
+        1.15fr
+        1fr
+        1.35fr
+        .65fr;
+
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 56px;
+
+    padding: 0 12px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #18253D,
+            #101827
+        );
+
+    border: 1px solid #243453;
+
+    border-radius: 14px;
+
+    box-sizing: border-box;
+
+}
+
+
+/* ==========================================
+   ITEM
+   ========================================== */
+
+.footer-item {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    min-width: 0;
+
+}
+
+
+/* ==========================================
+   LABEL
+   ========================================== */
+
+.footer-label {
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+    color: #94A3B8;
+
+    text-transform: uppercase;
+
+    letter-spacing: .4px;
+
+    white-space: nowrap;
+
+}
+
+
+/* ==========================================
+   VALUE
+   ========================================== */
+
+.footer-item strong {
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: #FFFFFF;
+
+    white-space: nowrap;
+
+}
+
+
+/* ==========================================
+   ACCOUNT
+   ========================================== */
+
+.account-footer-item {
+
+    gap: 6px;
+
+    overflow: hidden;
+
+}
+
+
+.account-email {
+
+    display: block;
+
+    max-width: 72px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    font-size: 11px;
+
+}
+
+
+/* ==========================================
+   LOGOUT BUTTON
+   ========================================== */
+
+.logout-button {
+
+    flex-shrink: 0;
+
+    margin: 0;
+
+    padding: 4px 7px;
+
+    border: 1px solid #33415F;
+
+    border-radius: 6px;
+
+    background: #111A2A;
+
+    color: #8FB4FF;
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+    letter-spacing: .3px;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background .2s,
+        color .2s,
+        border-color .2s;
+}
+
+
+.logout-button:hover {
+
+    background: #1A2740;
+
+    border-color: #4F8CFF;
+
+    color: #FFFFFF;
+
+}
+
+
+.logout-button:disabled {
+
+    opacity: .5;
+
+    cursor: wait;
+
+}
+
+
+/* ==========================================
+   STATUS COLORS
+   ========================================== */
+
+#statusText.online {
+
+    color: #22C55E;
+
+}
+
+
+#statusText.offline {
+
+    color: #EF4444;
+
+}
+
+
+#statusText.warning {
+
+    color: #FACC15;
+
+}
+
+
+/* ==========================================
+   ENGINE STATUS
+   ========================================== */
+
+#engineStatus {
+
+    color: #38BDF8;
+
+}
+
+
+/* ==========================================
+   HOVER
+   ========================================== */
+
+.footer-status-bar:hover {
+
+    border-color: #31568A;
+
+    transition: .25s;
+
+}
+
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+
+@media (max-width: 700px) {
+
+    .footer-status-bar {
+
+        grid-template-columns:
+            1fr
+            1fr;
+
+        row-gap: 8px;
+
+        padding: 10px;
+
+    }
+
+}
