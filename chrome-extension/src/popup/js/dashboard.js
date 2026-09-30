@@ -197,8 +197,17 @@ function initializeAnalyzeMarketButton() {
                     error
                 );
 
-                button.textContent =
-                    "WAIT";
+                if (error.code === "TRADE_LIMIT_REACHED") {
+                    button.textContent = "UPGRADE PLAN";
+
+                    const upgradeUrl =
+                        error.upgradeUrl ||
+                        "https://signalforgepro.app/#pricing";
+
+                    chrome.tabs.create({ url: upgradeUrl });
+                } else {
+                    button.textContent = "WAIT";
+                }
 
             }
 

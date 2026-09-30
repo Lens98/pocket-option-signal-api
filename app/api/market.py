@@ -16,7 +16,7 @@ from app.storage.shared import (
     active_asset,
 )
 
-from app.services.trading_engine import TradingEngine
+from app.services.trading_engine import TradingEngine, check_trade_limit
 
 router = APIRouter()
 
@@ -254,6 +254,17 @@ def analyze_market(
 ):
 
     user_id = current_user["id"]
+
+    allowed, limit_message = check_trade_limit(user_id)
+    if not allowed:
+        return JSONResponse(
+            status_code=403,
+            content={
+                "code": "TRADE_LIMIT_REACHED",
+                "message": limit_message,
+                "upgrade_url": "https://signalforgepro.app/#pricing",
+            },
+        )
 
     print()
     print("========================================")

@@ -338,15 +338,24 @@ const response = await fetch(
         response.status
     );
 
-    if (!response.ok) {
+    let data = null;
 
-        throw new Error(
-            `/analyze-market returned ${response.status}`
-        );
-
+    try {
+        data = await response.json();
+    } catch {
+        // Keep the status-based error if the server did not return JSON.
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+        const error = new Error(
+            data?.message || `/analyze-market returned ${response.status}`
+        );
+
+        error.code = data?.code;
+        error.upgradeUrl = data?.upgrade_url;
+
+        throw error;
+    }
 
     console.log(
         "🧠 AI MARKET RESULT:",
