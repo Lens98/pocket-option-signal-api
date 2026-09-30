@@ -106,47 +106,12 @@ export default function LoginPage() {
                                         JSON.stringify(data.user)
                                     );
 
-                                    const selectedPlan =
-                                        localStorage.getItem(
-                                            "signalForgeSelectedPlan"
-                                        );
-
-                                    try {
-                                        const subscriptionResponse =
-                                            await fetch(
-                                                "https://api.signalforgepro.app/payments/status",
-                                                {
-                                                    headers: {
-                                                        Authorization: `Bearer ${data.token}`,
-                                                    },
-                                                }
-                                            );
-
-                                        if (subscriptionResponse.ok) {
-                                            const subscriptionData =
-                                                await subscriptionResponse.json();
-
-                                            if (
-                                                subscriptionData.subscription
-                                                    ?.status === "active"
-                                            ) {
-                                                localStorage.removeItem(
-                                                    "signalForgeSelectedPlan"
-                                                );
-
-                                                window.location.href =
-                                                    "/dashboard";
-
-                                                return;
-                                            }
-                                        }
-                                    } catch {
-                                        // If subscription check fails,
-                                        // continue with normal login flow.
-                                    }
+                                    const selectedPlan = localStorage.getItem(
+                                        "signalForgeSelectedPlan"
+                                    );
 
                                     if (selectedPlan) {
-                                        window.location.href = `/payment?plan=${selectedPlan}`;
+                                        window.location.href = `/payment?plan=${encodeURIComponent(selectedPlan)}`;
                                     } else {
                                         window.location.href = "/dashboard";
                                     }
