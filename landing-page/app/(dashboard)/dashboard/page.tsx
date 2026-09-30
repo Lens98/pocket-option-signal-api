@@ -8,7 +8,7 @@ export default function DashboardPage() {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [subscription, setSubscription] = useState<any>(null);
-
+    const [usage, setUsage] = useState<any>(null);
     useEffect(() => {
         const token = localStorage.getItem("signalForgeAuthToken");
 
@@ -52,6 +52,24 @@ export default function DashboardPage() {
                     })
                     .then((subscriptionData) => {
                         setSubscription(subscriptionData);
+                    });
+
+                fetch("https://api.signalforgepro.app/trade/usage", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                })
+                    .then(async (response) => {
+                        if (!response.ok) {
+                            throw new Error("Could not load trade usage");
+                        }
+                        return response.json();
+                    })
+                    .then((usageData) => {
+                        setUsage(usageData);
+                    })
+                    .catch((error) => {
+                        console.error("Usage request failed:", error);
                     });
             })
             .finally(() => {
@@ -207,8 +225,44 @@ export default function DashboardPage() {
                                 AI Powered
                             </span>
                         </div>
-                    </div>
 
+                        {/* Trade Usage */}
+                        <div className="rounded-2xl border border-white/10 bg-[#0a1120] p-6 shadow-xl shadow-indigo-950/10 transition hover:border-yellow-400/20">
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                    Trade Usage
+                                </p>
+
+                                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-yellow-400/10 text-yellow-400">
+                                    ↗
+                                </div>
+                            </div>
+
+                            <p className="mt-5 text-2xl font-black text-white">
+                                {!usage
+                                    ? "Loading..."
+                                    : usage.limit === null
+                                        ? "Unlimited"
+                                        : `${usage.used} / ${usage.limit}`}
+                            </p>
+
+                            <p className="mt-3 text-sm text-gray-400">
+                                {!usage
+                                    ? "Checking your usage"
+                                    : usage.limit === null
+                                        ? "No trade limit on your plan"
+                                        : usage.period === "daily"
+                                            ? "Signals used today"
+                                            : "Signals used in total"}
+                            </p>
+
+                            {usage && usage.remaining !== null && (
+                                <span className="mt-4 inline-flex rounded-full border border-yellow-400/10 bg-yellow-400/10 px-3 py-1 text-xs font-bold text-yellow-400">
+                                    {usage.remaining} remaining
+                                </span>
+                            )}
+                        </div>
+                    </div>
                     {/* Extension banner */}
                     <div className="relative mt-6 overflow-hidden rounded-3xl border border-indigo-400/10 bg-gradient-to-br from-[#0b1426] to-[#070d1a] p-8 shadow-2xl shadow-indigo-950/20 lg:p-10">
                         <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />

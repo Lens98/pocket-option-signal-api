@@ -7,7 +7,7 @@ from app.services.auth_dependency import require_active_subscription
 from app.models.market import MarketData
 from app.models.market_update import MarketUpdate
 from fastapi.responses import JSONResponse
-
+from app.database.database import database
 from app.storage.shared import (
     market_storage,
     signal_storage,
@@ -403,6 +403,78 @@ def analyze_market(
     print("========================================")
 
     return {"action": decision}
+
+
+@router.get("/trade/usage")
+def trade_usage(current_user: dict = Depends(require_active_subscription)):
+    user_id = current_user["id"]
+
+    subscription = database.fetch_one(
+        """
+        SELECT plan
+        FROM subscriptions
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    )
+
+    plan = str(subscription["plan"] or "").lower() if subscription else ""
+
+    if plan == "free":
+        result = database.fetch_one(
+            """
+            SELECT COUNT(*) AS count
+            FROM trades
+            WHERE user_id = ?
+            """,
+            (user_id,),
+        )
+        used = int(result["count"] or 0)
+        return {
+            "plan": plan,
+            "used": used,
+            "limit": 3,
+            "period": "total",
+            "remaining": max(0, 3 - used),
+        }
+
+    if plan == "pro":
+        result = database.fetch_one(
+            """
+            SELECT COUNT(*) AS count
+            FROM trades
+            WHERE user_id = ?
+              AND date(entry_time) = date('now')
+            """,
+            (user_id,),
+        )
+        used = int(result["count"] or 0)
+        return {
+            "plan": plan,
+            "used": used,
+            "limit": 20,
+            "period": "daily",
+            "remaining": max(0, 20 - used),
+        }
+
+    if plan in ("elite", "lifetime"):
+        return {
+            "plan": plan,
+            "used": None,
+            "limit": None,
+            "period": "unlimited",
+            "remaining": None,
+        }
+
+    return {
+        "plan": plan or "unknown",
+        "used": None,
+        "limit": None,
+        "period": "unknown",
+        "remaining": None,
+    }
 
 
 # ========================================
