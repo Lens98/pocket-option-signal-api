@@ -82,14 +82,32 @@ function TierCard({
       </div>
 
       <a
-        href={tier.href}
-        className={`mt-7 rounded-xl px-5 py-3.5 text-center text-sm font-bold transition ${featured
-          ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-400"
-          : "border border-white/10 bg-white/[0.06] text-white hover:border-indigo-400/40 hover:bg-white/10"
-          }`}
-      >
-        {tier.cta}
-      </a>
+  href={tier.href}
+  onClick={(event) => {
+    const token = localStorage.getItem("signalForgeAuthToken");
+    const selectedPlan = new URL(
+      tier.href,
+      window.location.origin
+    ).searchParams.get("plan");
+
+    if (token && selectedPlan && selectedPlan !== "free") {
+      event.preventDefault();
+
+      localStorage.setItem(
+        "signalForgeSelectedPlan",
+        selectedPlan
+      );
+
+      window.location.href = `/payment?plan=${encodeURIComponent(selectedPlan)}`;
+    }
+  }}
+  className={`mt-7 rounded-xl px-5 py-3.5 text-center text-sm font-bold transition ${featured
+    ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-400"
+    : "border border-white/10 bg-white/[0.06] text-white hover:border-indigo-400/40 hover:bg-white/10"
+    }`}
+>
+  {tier.cta}
+</a>
 
       <div className="mt-8 border-t border-white/10 pt-7">
         <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">
