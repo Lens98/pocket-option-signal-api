@@ -23,6 +23,7 @@ app.add_middleware(
     "http://localhost:5173",
     "https://signalforgepro.app",
     "https://www.signalforgepro.app",
+    "https://admin.signalforgepro.app",
     "https://prolific-vision-production-6fe1.up.railway.app",
     "https://overflowing-adventure-production-5fef.up.railway.app",
 ],

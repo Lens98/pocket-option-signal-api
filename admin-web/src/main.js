@@ -1,5 +1,5 @@
 const API =
-    "https://pocket-option-signal-api-production.up.railway.app";
+    "https://api.signalforgepro.app";
 
 const app = document.getElementById("app");
 
