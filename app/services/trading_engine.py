@@ -74,9 +74,7 @@ def check_trade_limit(user_id):
             return False, "Subscription expiration date is missing."
 
         try:
-            expires_dt = datetime.fromisoformat(
-                str(expires_at).replace("Z", "+00:00")
-            )
+            expires_dt = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
             if expires_dt.tzinfo is None:
                 expires_dt = expires_dt.replace(tzinfo=timezone.utc)
         except (TypeError, ValueError):
@@ -218,6 +216,52 @@ class TradingEngine:
         # ----------------------------------------
 
         self.signal_lock = user_signal_lock_manager.get(user_id)
+        # ----------------------------------------
+        # REUSE LOCKED ENTRY PREDICTION
+        # ----------------------------------------
+        # If an ENTRY prediction is already locked for
+        # the current 1-minute candle, reuse it instead
+        # of running the expensive AI pipeline again.
+        # A new candle is allowed to run the full pipeline.
+        # ----------------------------------------
+
+        if self.signal_lock.is_locked() and not self.signal_lock.is_trade_locked():
+
+            locked_signal = self.signal_lock.current()
+
+            if locked_signal is not None:
+
+                locked_bucket = getattr(
+                    locked_signal,
+                    "locked_candle_bucket",
+                    None,
+                )
+
+                latest_candle = market.candles[-1] if market.candles else None
+
+                current_bucket = (
+                    self.get_minute_bucket(latest_candle.timestamp)
+                    if latest_candle is not None
+                    else None
+                )
+
+                if (
+                    locked_bucket is not None
+                    and current_bucket is not None
+                    and current_bucket == locked_bucket
+                ):
+
+                    print("----------------------------------------")
+                    print("⚡ REUSING LOCKED ENTRY PREDICTION")
+                    print("----------------------------------------")
+                    print("Asset         :", market.asset)
+                    print("Locked Bucket :", locked_bucket)
+                    print("Current Bucket:", current_bucket)
+                    print("Bias          :", locked_signal.bias)
+                    print("Action        :", locked_signal.action)
+                    print("----------------------------------------")
+
+                    return locked_signal.model_copy(deep=True)
 
         # ----------------------------------------
         # ACTIVE TRADE LOCK
