@@ -373,7 +373,7 @@ def analyze_market(
 
     print("CALLING OPENAI REVIEWER...")
 
-    result = engine.openai.review(
+    result = engine.reviewer.review(
         signal,
         screenshot=screenshot,
         timeframe_seconds=timeframe_seconds,

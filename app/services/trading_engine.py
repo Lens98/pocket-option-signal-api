@@ -153,6 +153,18 @@ class TradingEngine:
         self.performance_learning = PerformanceLearning()
         self.candle_strategy = CandleStrategy()
         self.openai = OpenAIReviewer()
+
+        # Select the AI reviewer. OpenAI remains available for rollback.
+        provider = os.getenv("AI_PROVIDER", "openai").strip().lower()
+
+        if provider == "claude":
+            from app.services.claude_reviewer import ClaudeReviewer
+            self.reviewer = ClaudeReviewer()
+        elif provider == "openai":
+            self.reviewer = self.openai
+        else:
+            raise ValueError(f"Unsupported AI_PROVIDER: {provider}")
+
         # ----------------------------------------
         # Risk
         # ----------------------------------------
