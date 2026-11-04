@@ -489,7 +489,30 @@ WAIT
             print("CLAUDE RAW RESPONSE:")
             print(raw_response)
 
-            result = json.loads(raw_response)
+            try:
+                result = json.loads(raw_response)
+            except json.JSONDecodeError:
+                decoder = json.JSONDecoder()
+                result = None
+
+                for index, character in enumerate(raw_response):
+                    if character != "{":
+                        continue
+
+                    try:
+                        candidate, _ = decoder.raw_decode(raw_response[index:])
+                    except json.JSONDecodeError:
+                        continue
+
+                    if isinstance(candidate, dict) and "decision" in candidate:
+                        result = candidate
+                        break
+
+                if result is None:
+                    raise ValueError("Claude response did not contain valid decision JSON")
+
+            if not isinstance(result, dict):
+                raise ValueError("Claude response JSON must be an object")
 
             decision = str(result.get("decision", "WAIT")).strip().upper()
 
