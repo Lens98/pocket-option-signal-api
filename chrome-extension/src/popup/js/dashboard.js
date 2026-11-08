@@ -12,6 +12,9 @@ import {
     updateSignal,
     updateConnectionStatus
 } from "./signal.js";
+// Track consecutive API signal failures
+let consecutiveSignalFailures = 0;
+const MAX_SIGNAL_FAILURES = 3;
 /* ==========================================
    TRADE SOUND ALERT
 ========================================== */
@@ -359,10 +362,12 @@ async function refreshDashboard() {
 
     try {
 
-        signal = await withTimeout(
+     signal = await withTimeout(
     getSignal(),
-    5000
-    );
+    15000
+);
+
+consecutiveSignalFailures = 0;
         console.log(
     "📡 NEW SIGNAL FROM RAILWAY:",
     signal
@@ -382,7 +387,16 @@ async function refreshDashboard() {
 
     catch (error) {
 
-        updateConnectionStatus(false);
+        consecutiveSignalFailures++;
+
+console.warn(
+    `Signal API failure ${consecutiveSignalFailures}/${MAX_SIGNAL_FAILURES}:`,
+    error
+);
+
+if (consecutiveSignalFailures >= MAX_SIGNAL_FAILURES) {
+    updateConnectionStatus(false);
+}
 
         console.error(
             "API Connection Error:",
