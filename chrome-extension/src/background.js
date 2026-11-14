@@ -6,6 +6,7 @@ const API_URL =
     "https://api.signalforgepro.app";
 let subscriptionActive = false;
 let subscriptionCheckInProgress = false;
+
 async function checkSubscription() {
     if (subscriptionCheckInProgress) {
         return subscriptionActive;
@@ -58,8 +59,8 @@ async function checkSubscription() {
         subscriptionCheckInProgress = false;
     }
 }
-async function getAuthHeaders() {
 
+async function getAuthHeaders() {
     const result =
         await chrome.storage.local.get(
             "pocketOptionAuthToken"
@@ -69,40 +70,27 @@ async function getAuthHeaders() {
         result.pocketOptionAuthToken;
 
     if (!token) {
-
         return null;
-
     }
 
     return {
-
         "Authorization": `Bearer ${token}`
-
     };
-
 }
 
 const state = {
-
     connected: false,
-
     tradeState: "WAITING",
-
     signal: null,
-
     lastSignalKey: "",
-
     history: [],
     marketAsset: null,
-
     marketCandles: [],
-
     stats: {
         CALL: 0,
         PUT: 0,
         WAIT: 0
     },
-
     lastUpdate: null
 };
 
@@ -111,12 +99,10 @@ const state = {
 // ========================================
 
 async function restoreState() {
-
     const result =
         await chrome.storage.local.get("pocketState");
 
     if (result.pocketState) {
-
         Object.assign(
             state,
             result.pocketState
@@ -131,7 +117,6 @@ async function restoreState() {
 // ========================================
 
 async function saveState() {
-
     await chrome.storage.local.set({
         pocketState: state
     });
@@ -142,7 +127,6 @@ async function saveState() {
 // ========================================
 
 function getSignalKey(signal) {
-
     if (!signal) {
         return "";
     }
@@ -157,7 +141,19 @@ function getSignalKey(signal) {
     ].join("|");
 }
 
+// ========================================
+// Refresh Engine
+// ========================================
+
+let refreshInProgress = false;
+
 async function refresh() {
+    if (refreshInProgress) {
+        return;
+    }
+
+    refreshInProgress = true;
+
     try {
         // ========================================
         // CHECK SUBSCRIPTION BEFORE API POLLING
@@ -309,6 +305,9 @@ async function refresh() {
             "❌ Background refresh failed:",
             err.message
         );
+
+    } finally {
+        refreshInProgress = false;
     }
 }
 
@@ -317,7 +316,6 @@ async function refresh() {
 // ========================================
 
 async function initialize() {
-
     await restoreState();
 
     await refresh();
@@ -337,7 +335,7 @@ initialize();
 chrome.runtime.onMessage.addListener(
     async (message, sender, sendResponse) => {
 
-         // ========================================
+        // ========================================
         // CHECK SUBSCRIPTION
         // ========================================
 
@@ -389,176 +387,171 @@ chrome.runtime.onMessage.addListener(
             }
 
             return true;
-        }       
+        }
 
         // ========================================
         // GET STATE
         // ========================================
 
         if (message.type === "GET_STATE") {
-
             sendResponse(state);
-
             return true;
         }
 
         // ========================================
         // SEND MARKET DATA TO RAILWAY
         // ========================================
+
         if (message.type === "SEND_MARKET") {
-    console.log("Sending market data to API...");
+            console.log("Sending market data to API...");
 
-    try {
-        const payload = message.payload;
-        const history = message.history;
+            try {
+                const payload = message.payload;
+                const history = message.history;
 
-        if (payload?.asset) {
-            state.marketAsset = payload.asset;
-        }
+                if (payload?.asset) {
+                    state.marketAsset = payload.asset;
+                }
 
-        // Preserve the full local history in extension state.
-        if (Array.isArray(history)) {
-            state.marketCandles = history;
-        } else if (Array.isArray(payload?.candles)) {
-            state.marketCandles = payload.candles;
-        }
+                // Preserve the full local history in extension state.
+                if (Array.isArray(history)) {
+                    state.marketCandles = history;
+                } else if (Array.isArray(payload?.candles)) {
+                    state.marketCandles = payload.candles;
+                }
 
-        await saveState();
+                await saveState();
 
-        const authHeaders = await getAuthHeaders();
+                const authHeaders = await getAuthHeaders();
 
-        if (!authHeaders) {
-            sendResponse({
-                ok: false,
-                error: "User not logged in",
-            });
+                if (!authHeaders) {
+                    sendResponse({
+                        ok: false,
+                        error: "User not logged in",
+                    });
+                    return true;
+                }
+
+                const mode = message.mode || "full";
+
+                const postMarketData = async (url, body) => {
+                    const response = await fetch(`${API_URL}${url}`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...authHeaders,
+                        },
+                        body: JSON.stringify(body),
+                    });
+
+                    const text = await response.text();
+
+                    let result;
+
+                    try {
+                        result = JSON.parse(text);
+                    } catch {
+                        result = { raw: text };
+                    }
+
+                    return {
+                        response,
+                        result,
+                    };
+                };
+
+                let endpoint =
+                    mode === "incremental"
+                        ? "/market/update/incremental"
+                        : "/market/update";
+
+                let requestPayload = payload;
+
+                let { response, result } = await postMarketData(
+                    endpoint,
+                    requestPayload
+                );
+
+                // The server may have restarted and lost its in-memory history.
+                // Resend the full local history before signal generation resumes.
+                if (
+                    mode === "incremental" &&
+                    response.status === 409 &&
+                    result?.status === "needs_full_sync" &&
+                    Array.isArray(history) &&
+                    history.length > 0
+                ) {
+                    console.log("Server requests full market history sync.");
+
+                    endpoint = "/market/update";
+
+                    requestPayload = {
+                        asset: payload.asset,
+                        timeframe: payload.timeframe,
+                        candles: history,
+                    };
+
+                    ({ response, result } = await postMarketData(
+                        endpoint,
+                        requestPayload
+                    ));
+                }
+
+                console.log("Market API status:", response.status);
+                console.log("Market API response:", result);
+
+                sendResponse({
+                    ok: response.ok,
+                    status: response.status,
+                    result,
+                });
+            } catch (error) {
+                console.error("Market update failed:", error);
+
+                sendResponse({
+                    ok: false,
+                    error: error.message,
+                });
+            }
+
             return true;
         }
 
-        const mode = message.mode || "full";
-
-        const postMarketData = async (url, body) => {
-            const response = await fetch(`${API_URL}${url}`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    ...authHeaders,
-                },
-                body: JSON.stringify(body),
-            });
-
-            const text = await response.text();
-
-            let result;
-
-            try {
-                result = JSON.parse(text);
-            } catch {
-                result = { raw: text };
-            }
-
-            return {
-                response,
-                result,
-            };
-        };
-
-        let endpoint =
-            mode === "incremental"
-                ? "/market/update/incremental"
-                : "/market/update";
-
-        let requestPayload = payload;
-
-        let { response, result } = await postMarketData(
-            endpoint,
-            requestPayload
-        );
-
-        // The server may have restarted and lost its in-memory history.
-        // Resend the full local history before signal generation resumes.
-        if (
-            mode === "incremental" &&
-            response.status === 409 &&
-            result?.status === "needs_full_sync" &&
-            Array.isArray(history) &&
-            history.length > 0
-        ) {
-            console.log("Server requests full market history sync.");
-
-            endpoint = "/market/update";
-
-            requestPayload = {
-                asset: payload.asset,
-                timeframe: payload.timeframe,
-                candles: history,
-            };
-
-            ({ response, result } = await postMarketData(
-                endpoint,
-                requestPayload
-            ));
-        }
-
-        console.log("Market API status:", response.status);
-        console.log("Market API response:", result);
-
-        sendResponse({
-            ok: response.ok,
-            status: response.status,
-            result,
-        });
-    } catch (error) {
-        console.error("Market update failed:", error);
-
-        sendResponse({
-            ok: false,
-            error: error.message,
-        });
-    }
-
-    return true;
-}
-                 // ========================================
+        // ========================================
         // CAPTURE MARKET SCREENSHOT
         // ========================================
 
         if (message.type === "CAPTURE_MARKET_SCREENSHOT") {
-
             try {
-
                 const tabs = await chrome.tabs.query({
                     active: true,
                     currentWindow: true
                 });
+
                 const tab = tabs[0];
 
                 if (!tab || !tab.id) {
-
-                     throw new Error(
-                          "No active tab found"
-                   );
-
-               }
-
-               // ========================================
-               // VERIFY POCKET OPTION PAGE
-               // ========================================
-
-               if (
-                  !tab.url ||
-                  !tab.url.includes("pocketoption.com")
-                ) {
-
-                   throw new Error(
-                        "Please open the Pocket Option trading page before analyzing."
-                   );
-
+                    throw new Error(
+                        "No active tab found"
+                    );
                 }
 
-                 console.log(
-                  "📸 CAPTURING POCKET OPTION:",
-                   tab.url
+                // ========================================
+                // VERIFY POCKET OPTION PAGE
+                // ========================================
+
+                if (
+                    !tab.url ||
+                    !tab.url.includes("pocketoption.com")
+                ) {
+                    throw new Error(
+                        "Please open the Pocket Option trading page before analyzing."
+                    );
+                }
+
+                console.log(
+                    "📸 CAPTURING POCKET OPTION:",
+                    tab.url
                 );
 
                 const screenshot =
@@ -569,6 +562,7 @@ chrome.runtime.onMessage.addListener(
                             quality: 70
                         }
                     );
+
                 console.log(
                     "📸 MARKET SCREENSHOT CAPTURED"
                 );
@@ -578,10 +572,7 @@ chrome.runtime.onMessage.addListener(
                     screenshot
                 });
 
-            }
-
-            catch (error) {
-
+            } catch (error) {
                 console.error(
                     "❌ SCREENSHOT CAPTURE FAILED:",
                     error
@@ -591,14 +582,11 @@ chrome.runtime.onMessage.addListener(
                     ok: false,
                     error: error.message
                 });
-
             }
 
             return true;
-
         }
+
         return true;
-
     }
-
 );

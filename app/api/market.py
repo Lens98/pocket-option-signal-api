@@ -371,7 +371,7 @@ def analyze_market(
     # OPENAI REVIEW
     # ========================================
 
-    print("CALLING OPENAI REVIEWER...")
+    print("CALLING AI REVIEWER...")
 
     result = engine.reviewer.review(
         signal,
@@ -379,6 +379,7 @@ def analyze_market(
         timeframe_seconds=timeframe_seconds,
         seconds_elapsed=seconds_elapsed,
         seconds_remaining=seconds_remaining,
+        candles=market.candles[-100:],
     )
 
     # Remove local references immediately
@@ -387,11 +388,11 @@ def analyze_market(
     if data:
         data.screenshot = None
 
-    print("OPENAI RESULT:", result)
+    print("AI RESULT:", result)
 
     decision = str(result.get("decision", "WAIT")).upper()
 
-    print("OPENAI DECISION:", decision)
+    print("AI DECISION:", decision)
 
     if decision not in ["CALL", "PUT", "WAIT"]:
 

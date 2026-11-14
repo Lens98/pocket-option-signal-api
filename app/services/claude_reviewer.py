@@ -15,7 +15,23 @@ class ClaudeReviewer:
         timeframe_seconds=None,
         seconds_elapsed=None,
         seconds_remaining=None,
+        candles=None,
     ):
+
+        candle_history = []
+
+        if candles:
+            for candle in candles:
+                candle_history.append(
+                    {
+                        "timestamp": candle.timestamp,
+                        "open": candle.open,
+                        "high": candle.high,
+                        "low": candle.low,
+                        "close": candle.close,
+                        "volume": candle.volume,
+                    }
+                )
 
         prompt = f"""
 You are an independent AI market analyst for SHORT-TERM BINARY OPTIONS.
@@ -376,6 +392,27 @@ When multiple strategies produce conflicting directions:
 4. Prioritize strong momentum.
 5. Use candlestick patterns as confirmation, not as the only reason.
 6. If no direction has a meaningful advantage, choose WAIT.
+BINARY OPTIONS CANDLE HISTORY (OLDEST TO NEWEST):
+
+The following are actual market candles supplied by the trading system.
+Analyze their OHLCV values and timestamps independently.
+
+CANDLE HISTORY:
+{json.dumps(candle_history, separators=(",", ":"))}
+
+BINARY EXPIRATION ANALYSIS:
+
+The intended trade duration is 60 seconds after entry.
+
+Evaluate the likely closing price relative to the entry price after
+the full 60-second expiration.
+
+Do not predict only the next candle.
+
+If candle history is insufficient or market conditions are unclear,
+return WAIT.
+
+Never invent market prices or candle information.
 
 MARKET DATA:
 
@@ -437,9 +474,9 @@ WAIT
             print("Seconds remaining:", seconds_remaining)
 
             if screenshot:
-                print("📸 SCREENSHOT PROVIDED TO CLAUDE")
+                print("SCREENSHOT PROVIDED TO CLAUDE")
             else:
-                print("⚠️ NO SCREENSHOT PROVIDED")
+                print("NO SCREENSHOT PROVIDED")
 
             print("CALLING CLAUDE...")
 
@@ -455,19 +492,23 @@ WAIT
                 if not match:
                     raise ValueError("Unsupported screenshot data URL")
 
-                content.append({
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": match.group(1),
-                        "data": match.group(2),
-                    },
-                })
+                content.append(
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": match.group(1),
+                            "data": match.group(2),
+                        },
+                    }
+                )
 
-            content.append({
-                "type": "text",
-                "text": prompt,
-            })
+            content.append(
+                {
+                    "type": "text",
+                    "text": prompt,
+                }
+            )
 
             response = client.messages.create(
                 model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-5-5"),
@@ -481,9 +522,7 @@ WAIT
             )
 
             raw_response = "\\n".join(
-                block.text
-                for block in response.content
-                if block.type == "text"
+                block.text for block in response.content if block.type == "text"
             ).strip()
 
             print("CLAUDE RAW RESPONSE:")
@@ -509,7 +548,9 @@ WAIT
                         break
 
                 if result is None:
-                    raise ValueError("Claude response did not contain valid decision JSON")
+                    raise ValueError(
+                        "Claude response did not contain valid decision JSON"
+                    )
 
             if not isinstance(result, dict):
                 raise ValueError("Claude response JSON must be an object")
