@@ -1,69 +1,138 @@
+
 from app.models.market import MarketData
 
 
 class MarketStorage:
 
     def __init__(self):
-
         self.markets = {}
+        self.timeframes = {}
 
-    def update(self, market: MarketData):
+    # UPDATE MARKET FOR ONE USER
+    def update(self, user_id: str, market: MarketData):
 
         asset = market.asset
 
-        if asset not in self.markets:
-            self.markets[asset] = []
+        if user_id not in self.timeframes:
+            self.timeframes[user_id] = {}
 
-        history = self.markets[asset]
+        self.timeframes[user_id][asset] = market.timeframe
 
-        # Existing candle timestamps
-        existing = {
-            candle.timestamp
-            for candle in history
-        }
+        if user_id not in self.markets:
+            self.markets[user_id] = {}
 
-        # Add only new candles
+        user_markets = self.markets[user_id]
+
+        if asset not in user_markets:
+            user_markets[asset] = []
+
+        history = user_markets[asset]
+
+        candle_map = {}
+
+        for candle in history:
+            ts = str(candle.timestamp).strip()
+
+            if ts == "" or ts.lower() in ("undefined", "none"):
+                continue
+
+            candle_map[ts] = candle
+
+        print("----------------------------------------")
+        print("User ID          :", user_id)
+        print("Asset            :", asset)
+        print("Existing Candles :", len(candle_map))
+        print("Incoming Candles :", len(market.candles))
+        print("----------------------------------------")
+
+        added = 0
+        updated = 0
+        ignored = 0
+
         for candle in market.candles:
+            ts = str(candle.timestamp).strip()
 
-            if candle.timestamp not in existing:
-                history.append(candle)
+            if ts == "" or ts.lower() in ("undefined", "none"):
+                print("Ignoring invalid candle:", candle)
+                ignored += 1
+                continue
 
-        # Keep history sorted
-        history.sort(
-            key=lambda c: c.timestamp
+            if ts in candle_map:
+                candle_map[ts] = candle
+                updated += 1
+            else:
+                candle_map[ts] = candle
+                added += 1
+
+        history = sorted(
+            candle_map.values(),
+            key=lambda c: (
+                int(str(c.timestamp)) if str(c.timestamp).isdigit() else 0
+            ),
         )
 
-        # Keep only latest 500 candles
-        self.markets[asset] = history[-500:]
+        if len(history) > 500:
+            history = history[-500:]
 
-        print(
-            "Stored History:",
-            len(self.markets[asset])
-        )
+        user_markets[asset] = history
 
-    def get(self, asset):
+        print("----------------------------------------")
+        print("New Candles Added :", added)
+        print("Candles Updated   :", updated)
+        print("Ignored Candles   :", ignored)
+        print("Stored History    :", len(history))
+        print("----------------------------------------")
 
-        history = self.markets.get(asset, [])
+    # GET MARKET FOR ONE USER
+    def get(self, user_id: str, asset: str):
+
+        user_markets = self.markets.get(user_id, {})
+        history = user_markets.get(asset, [])
+
+        timeframe = self.timeframes.get(user_id, {}).get(asset, "10")
 
         return MarketData(
             asset=asset,
-            timeframe="10",
-            candles=history
+            timeframe=timeframe,
+            candles=history,
         )
 
-    def size(self, asset):
+    # SIZE FOR ONE USER + ASSET
+    def size(self, user_id: str, asset: str):
 
-        return len(
-            self.markets.get(asset, [])
-        )
+        user_markets = self.markets.get(user_id, {})
+        return len(user_markets.get(asset, []))
 
-    # ----------------------------------------
-    # NEW
-    # Return latest candle history
-    # ----------------------------------------
+    # RETURN HISTORY FOR ONE USER
+    def history(self, user_id: str, asset: str, limit=None):
 
-    def history(self, asset, limit=50):
+        user_markets = self.markets.get(user_id, {})
+        history = user_markets.get(asset, [])
 
-        history = self.markets.get(asset, [])
+        if limit is None:
+            return history
 
         return history[-limit:]
+
+    # CLEAR ONE USER ASSET
+    def clear(self, user_id: str, asset: str):
+
+        if user_id not in self.markets:
+            return
+
+        self.markets[user_id][asset] = []
+
+        if user_id in self.timeframes:
+            self.timeframes[user_id].pop(asset, None)
+
+    # CLEAR ALL ASSETS FOR ONE USER
+    def clear_user(self, user_id: str):
+
+        self.markets.pop(user_id, None)
+        self.timeframes.pop(user_id, None)
+
+    # CLEAR EVERYTHING
+    def clear_all(self):
+
+        self.markets.clear()
+        self.timeframes.clear()

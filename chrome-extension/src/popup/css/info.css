@@ -1,0 +1,226 @@
+/* ==========================================
+   MARKET INFORMATION CARD
+========================================== */
+
+.info-card{
+
+    display:flex;
+
+    flex-direction:column;
+
+    width:100%;
+
+    height:100%;
+
+}
+
+/* ==========================================
+   GRID
+========================================== */
+
+.info-grid{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:8px;
+
+    margin-top:8px;
+
+}
+
+/* ==========================================
+   INFO BOX
+========================================== */
+
+.info-item{
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:center;
+
+    align-items:center;
+
+    text-align:center;
+
+    min-height:58px;
+
+    padding:8px;
+
+    border-radius:10px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #18253D,
+            #101827
+        );
+
+    border:1px solid #243453;
+
+    transition:.25s ease;
+
+}
+
+/* ==========================================
+   HOVER
+========================================== */
+
+.info-item:hover{
+
+    transform:translateY(-1px);
+
+    border-color:#31568A;
+
+    box-shadow:
+
+        0 4px 10px rgba(49,86,138,.15);
+
+}
+
+/* ==========================================
+   LABEL
+========================================== */
+
+.info-item span{
+
+    color:#94A3B8;
+
+    font-size:9px;
+
+    font-weight:700;
+
+    text-transform:uppercase;
+
+    letter-spacing:.8px;
+
+    margin-bottom:4px;
+
+}
+
+/* ==========================================
+   VALUE
+========================================== */
+
+.info-item strong{
+
+    color:#FFFFFF;
+
+    font-size:14px;
+
+    font-weight:700;
+
+    line-height:1.15;
+
+    word-break:break-word;
+
+    transition:.25s;
+
+}
+
+/* ==========================================
+   TREND
+========================================== */
+
+#trend.BULLISH{
+
+    color:#22C55E;
+
+}
+
+#trend.BEARISH{
+
+    color:#EF4444;
+
+}
+
+#trend.SIDEWAYS{
+
+    color:#FACC15;
+
+}
+
+/* ==========================================
+   RISK
+========================================== */
+
+#risk.LOW{
+
+    color:#22C55E;
+
+}
+
+#risk.MEDIUM{
+
+    color:#FACC15;
+
+}
+
+#risk.HIGH{
+
+    color:#EF4444;
+
+}
+
+/* ==========================================
+   GRADE
+========================================== */
+
+#grade{
+
+    color:#38BDF8;
+
+}
+
+/* ==========================================
+   PROBABILITY
+========================================== */
+
+#probability{
+
+    color:#FFFFFF;
+
+}
+
+/* ==========================================
+   SESSION
+========================================== */
+
+#session{
+
+    color:#A78BFA;
+
+}
+
+/* ==========================================
+   REGIME
+========================================== */
+
+#regime{
+
+    color:#F59E0B;
+
+}
+
+/* ==========================================
+   ASSET
+========================================== */
+
+#asset{
+
+    color:#E2E8F0;
+
+}
+
+/* ==========================================
+   EXPIRATION
+========================================== */
+
+#expiration{
+
+    color:#22C55E;
+
+}

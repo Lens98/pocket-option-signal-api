@@ -1,19 +1,46 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class IndicatorResult(BaseModel):
 
-    ema20: float
-    ema50: float
-    ema200: float
+    # ----------------------------------------
+    # Indicator Mode
+    # ----------------------------------------
 
-    rsi: float
+    mode: str
 
-    macd: float
+    # ----------------------------------------
+    # Moving Averages
+    # ----------------------------------------
 
-    signal_line: float
+    ema20: Optional[float] = None
 
-    histogram: float
-    
-    adx: float
-    atr: float
+    ema50: Optional[float] = None
+
+    ema200: Optional[float] = None
+
+    # ----------------------------------------
+    # RSI
+    # ----------------------------------------
+
+    rsi: Optional[float] = None
+
+    # ----------------------------------------
+    # MACD
+    # ----------------------------------------
+
+    macd: Optional[float] = None
+
+    signal_line: Optional[float] = None
+
+    histogram: Optional[float] = None
+
+    # ----------------------------------------
+    # Trend Strength
+    # ----------------------------------------
+
+    adx: Optional[float] = None
+
+    atr: Optional[float] = None
